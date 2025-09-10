@@ -4,7 +4,8 @@
     "serve": "govuk-prototype-kit serve",
     "start": "govuk-prototype-kit start",
     "generate-data": "npx prisma db push --force-reset && npx prisma db seed",
-    "prisma-studio": "npx prisma studio"
+    "prisma-studio": "npx prisma studio",
+    "heroku-postbuild": "npx prisma generate && npx prisma db push && npx prisma db seed"
   },
   "dependencies": {
     "@govuk-prototype-kit/common-templates": "2.0.1",
