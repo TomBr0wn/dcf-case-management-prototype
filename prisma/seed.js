@@ -7,7 +7,6 @@ import firstNames from "../app/data/first-names.js";
 import lastNames from "../app/data/last-names.js";
 import types from "../app/data/types.js";
 import specialisms from "../app/data/specialisms.js";
-import serveSection9Options from "../app/data/witness-serve-section9-options.js";
 
 const prisma = new PrismaClient();
 
