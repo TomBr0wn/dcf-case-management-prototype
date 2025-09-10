@@ -56,7 +56,6 @@ router.get('/clear-data', function (req, res) {
   });
 });
 
-require('./routes/generate-data')(router)
 require('./routes/account')(router)
 require('./routes/overview')(router)
 require('./routes/cases')(router)
