@@ -5,23 +5,28 @@ const prisma = new PrismaClient()
 module.exports = router => {
   
   router.get("/cases/:caseId/witnesses/:witnessId/statements/:statementId/withdraw-section9", async (req, res) => {
+    const caseId = parseInt(req.params.caseId)
+    const witnessId = parseInt(req.params.witnessId)
+    const statementId = parseInt(req.params.statementId)
+
     const _case = await prisma.case.findUnique({
-      where: { id: parseInt(req.params.caseId) },
+      where: { id: caseId },
       include: { defendants: true, witnesses: true },
     })
 
     const witness = await prisma.witness.findUnique({
-      where: { id: parseInt(req.params.witnessId )}
+      where: { id: witnessId },
+      include: { statements: true },
     })
 
-    const witnessStatement = await prisma.witnessStatement.findUnique({
-      where: { id: parseInt(req.params.statementId )}
-    })
+    const witnessStatement = witness.statements.find((s) => s.id === statementId)
+    const statementNumber = witness.statements.findIndex((s) => s.id === statementId) + 1
 
     res.render("cases/witnesses/withdraw-section9/index", { 
       _case,
       witness,
-      witnessStatement
+      witnessStatement,
+      statementNumber
     })
   })
 

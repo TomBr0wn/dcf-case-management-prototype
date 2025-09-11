@@ -136,6 +136,10 @@ $statuses: (
   }
 }
 
+.app-margin-top-negative-3 {
+  margin-top: -15px;
+}
+
 .app-case-navigation {
   margin-top: -35px;
 }
@@ -154,4 +158,8 @@ $statuses: (
   @include govuk-media-query($from: desktop) {
     padding-bottom: 10px;
   }
+}
+
+.govuk-summary-card .govuk-summary-list:last-child {
+  margin-bottom: 0 !important;
 }

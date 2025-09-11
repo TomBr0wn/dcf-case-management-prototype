@@ -156,15 +156,16 @@ async function main() {
       caseUnitId = faker.number.int({ min: 1, max: 6 });
     }
 
-    const caseType = faker.helpers.arrayElement(types);
+    const courtType = faker.helpers.arrayElement(['Magistrates court', 'Crown court'])
 
     const createdCase = await prisma.case.create({
       data: {
         reference: generateCaseReference(),
-        type: caseType,
+        type: faker.helpers.arrayElement(types),
         user: { connect: { id: faker.helpers.arrayElement([users[0].id, users[1].id]) } },
         priority: faker.helpers.arrayElement(priorities),
         complexity: faker.helpers.arrayElement(complexities),
+        courtType: courtType,
         unit: { connect: { id: caseUnitId } },
         defendants: { connect: assignedDefendants.map((d) => ({ id: d.id })) },
         victims: { connect: assignedVictims.map((v) => ({ id: v.id })) },
@@ -221,9 +222,9 @@ async function main() {
         await prisma.witnessStatement.create({
           data: {
             witnessId: createdWitness.id,
-            useInCourt: faker.helpers.arrayElement([true, false, null]),
+            useAsEvidence: faker.helpers.arrayElement([true, false, null]),
             serveSection9:
-              caseType === "magistrates"
+              courtType === "Magistrates court"
                 ? faker.helpers.arrayElement([true, false, null])
                 : null,
           },

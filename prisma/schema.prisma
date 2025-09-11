@@ -37,23 +37,24 @@ model WitnessStatement {
   witnessId         Int
   witness           Witness  @relation(fields: [witnessId], references: [id])
   serveSection9     Boolean?  // if Case.type = "magistrates"
-  useInCourt        Boolean?  // used if Case.type != "magistrates"
+  useAsEvidence        Boolean?  // used if Case.type != "magistrates"
 }
 
 
 model Case {
-  id          Int        @id @default(autoincrement())
-  reference   String     @unique
+  id          Int         @id @default(autoincrement())
+  reference   String      @unique
   priority    String?
   complexity  String?
   type        String?
+  courtType   String
   userId      Int
-  user        User       @relation(fields: [userId], references: [id])
+  user        User        @relation(fields: [userId], references: [id])
   unitId      Int
   unit        Unit        @relation(fields: [unitId], references: [id])
   defendants  Defendant[] @relation("CaseDefendants")
-  victims     Victim[]  @relation("CaseVictims")
-  lawyers     Lawyer[] @relation("CaseLawyers")
+  victims     Victim[]    @relation("CaseVictims")
+  lawyers     Lawyer[]    @relation("CaseLawyers")
   witnesses   Witness[]
   hearing     Hearing?
   location    Location?

@@ -16,7 +16,6 @@
       <h1 class="govuk-heading-l">{{pageName}}</h1>
       
       {% if _case.witnesses.length %}
-         {# <div class="app-list"> #}
           {% for witness in _case.witnesses %}
             <div class="govuk-summary-card">
               <div class="govuk-summary-card__title-wrapper">
@@ -94,22 +93,24 @@
                   {% for statement in witness.statements %}
                     <h3 class="govuk-heading-m">Statement {{loop.index}}</h3>
 
-                    {% if statement.serveSection9 == true %}
-                      <p>Served as Section 9.</p>
-                      <p><a href="/cases/{{_case.id}}/witnesses/{{witness.id}}/statements/{{statement.id}}/withdraw-section9">Withdraw section 9</a></p>
-                    {% elseif statement.serveSection9 == false %}
-                      <p>Section 9 withdrawn.</p>
-                      <p><a href="/cases/{{_case.id}}/witnesses/{{witness.id}}/statements/{{statement.id}}/issue-section9">Serve as Section 9</a></p>
-                    {% else %}
-                      <p><a href="/cases/{{_case.id}}/witnesses/{{witness.id}}/statements/{{statement.id}}/issue-section9">Serve as Section 9</a></p>
+                    {% if _case.courtType == 'Magistrates court' %}
+                      {% if statement.serveSection9 == true %}
+                        <p>Served as Section 9.</p>
+                        <p><a href="/cases/{{_case.id}}/witnesses/{{witness.id}}/statements/{{statement.id}}/withdraw-section9">Withdraw section 9</a></p>
+                      {% elseif statement.serveSection9 == false %}
+                        <p>Section 9 withdrawn.</p>
+                        <p><a href="/cases/{{_case.id}}/witnesses/{{witness.id}}/statements/{{statement.id}}/issue-section9">Serve as Section 9</a></p>
+                      {% else %}
+                        <p><a href="/cases/{{_case.id}}/witnesses/{{witness.id}}/statements/{{statement.id}}/issue-section9">Serve as Section 9</a></p>
+                      {% endif %}
                     {% endif %}
 
-                    {% if statement.useInCourt == true %}                    
-                      {% set useInCourtValue = 'Using' %}
-                    {% elseif statement.useInCourt == false %}
-                      {% set useInCourtValue = 'Not using' %}
+                    {% if statement.useAsEvidence == true %}                    
+                      {% set useAsEvidenceValue = 'Using' %}
+                    {% elseif statement.useAsEvidence == false %}
+                      {% set useAsEvidenceValue = 'Not using' %}
                     {% else %}
-                      {% set useInCourtValue = 'Not entered' %}
+                      {% set useAsEvidenceValue = 'Not entered' %}
                     {% endif %}
 
 
@@ -137,7 +138,7 @@
                             html: 'Using as evidence'
                           },
                           value: {
-                            html: useInCourtValue
+                            html: useAsEvidenceValue
                           }
                         },
                         {
@@ -157,8 +158,6 @@
                   <h3 class="govuk-heading-s">Statements</h3>
                   <p class="govuk-!-font-size-16">No statements.</p>
                 {% endif %}
-
-
               </div>
             </div>
           {% endfor %}
@@ -166,7 +165,6 @@
       {% else %}
         <p>There are no witnesses.</p>
       {% endif %}
-
     </div>
   </div>
 {% endblock %}
