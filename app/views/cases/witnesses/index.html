@@ -25,6 +25,26 @@
                 </h2>
               </div>
               <div class="govuk-summary-card__content">
+                {{ xGovukSecondaryNavigation({
+                  classes: 'govuk-!-margin-bottom-5',
+                  visuallyHiddenTitle: "Secondary menu",
+                  items: [{
+                    text: "Court details and statements",
+                    href: "#",
+                    current: true
+                  }, {
+                    text: "Witness details",
+                    href: "#"
+                  }, {
+                    text: "Availability",
+                    href: "#"
+                  }, {
+                    text: "Special measures",
+                    href: "#"
+                  }]
+                })}}
+
+
                  <h3 class="govuk-heading-m">Court details</h3>
 
                 {% if witness.appearingInCourt == true %}
