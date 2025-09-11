@@ -5,7 +5,7 @@ const Pagination = require('../helpers/pagination')
 const types = require('../data/types')
 const priorities = require('../data/priorities')
 const complexities = require('../data/complexities')
-const dgaReviewStatuses = ['Needs review', 'Does not need review']
+const dgaStatuses = ['Needs review', 'Does not need review']
 
 function resetFilters(req) {
   _.set(req, 'session.data.filters.dga', null)
@@ -157,9 +157,9 @@ module.exports = router => {
       })
     }
 
-    let dgaReviewItems = dgaReviewStatuses.map(dgaReviewStatus => ({ 
-      text: dgaReviewStatus, 
-      value: dgaReviewStatus
+    let dgaItems = dgaStatuses.map(dgaStatus => ({ 
+      text: dgaStatus, 
+      value: dgaStatus
     }))
 
     let priorityItems = priorities.map(priority => ({ 
@@ -196,7 +196,7 @@ module.exports = router => {
     res.render('cases/index', {
       totalCases, 
       cases,
-      dgaReviewItems,
+      dgaItems,
       priorityItems,
       complexityItems, 
       typeItems, 

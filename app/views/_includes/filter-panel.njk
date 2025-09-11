@@ -1,6 +1,6 @@
 {% set filterOptionsHtml %}
 
-  {# {{ govukCheckboxes({
+  {{ govukCheckboxes({
     idPrefix: "filters[dga]",
     name: "filters[dga]",
     classes: "govuk-checkboxes--small",
@@ -12,7 +12,7 @@
     },
     items: dgaItems,
     values: data.filters.dga
-  }) }} #}
+  }) }}
 
   {{ govukCheckboxes({
     idPrefix: "filters[priorities]",
