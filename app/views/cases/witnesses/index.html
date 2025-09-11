@@ -22,6 +22,16 @@
               <div class="govuk-summary-card__title-wrapper">
                 <h2 class="govuk-summary-card__title govuk-!-font-size-27">
                   {{witness.firstName}} {{witness.lastName}}
+
+                  {{ govukTag({
+                    classes: 'govuk-!-margin-left-1',
+                    text: "Key witness"
+                  }) if 1 == [1,2] | random }}
+
+                  {{ govukTag({
+                    classes: 'govuk-!-margin-left-1',
+                    text: "Previous convictions"
+                  }) if 1 == [1,2] | random }}
                 </h2>
               </div>
               <div class="govuk-summary-card__content">
