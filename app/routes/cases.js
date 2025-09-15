@@ -167,7 +167,10 @@ module.exports = router => {
 
     let cases = await prisma.case.findMany({
       where: where,
-      include: { unit: true, user: true, lawyers: true, defendants: true, hearing: true, location: true, tasks: true, dga: true }
+      include: { unit: true, user: true, lawyers: true, defendants: true, hearing: true, location: true, tasks: true, dga: true },
+      orderBy: {
+        ctl: 'desc', // true values first
+      }
     })
 
     let keywords = _.get(req.session.data.caseSearch, 'keywords')
