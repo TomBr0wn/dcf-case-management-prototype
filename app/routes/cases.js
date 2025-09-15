@@ -3,13 +3,12 @@ const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 const Pagination = require('../helpers/pagination')
 const types = require('../data/types')
-const priorities = require('../data/priorities')
 const complexities = require('../data/complexities')
 const dgaStatuses = ['Needs review', 'Does not need review']
 
 function resetFilters(req) {
   _.set(req, 'session.data.filters.dga', null)
-  _.set(req, 'session.data.filters.priorities', null)
+  _.set(req, 'session.data.filters.ctl', null)
   _.set(req, 'session.data.filters.complexities', null)
   _.set(req, 'session.data.filters.types', null)
   _.set(req, 'session.data.filters.lawyers', null)
@@ -29,7 +28,7 @@ module.exports = router => {
 
   router.get("/cases", async (req, res) => {
     let selectedDgaFilters = _.get(req.session.data.filters, 'dga', [])
-    let selectedPriorityFilters = _.get(req.session.data.filters, 'priorities', [])
+    let selectedCtlFilters = _.get(req.session.data.filters, 'ctl', [])
     let selectedComplexityFilters = _.get(req.session.data.filters, 'complexities', [])
     let selectedTypeFilters = _.get(req.session.data.filters, 'types', [])
     let selectedLawyerFilters = _.get(req.session.data.filters, 'lawyers', [])
@@ -46,12 +45,12 @@ module.exports = router => {
       })
     }
 
-    // Priority filter display
-    if (selectedPriorityFilters?.length) {
+    // CTL filter display
+    if (selectedCtlFilters?.length) {
       selectedFilters.categories.push({
-        heading: { text: 'Priority' },
-        items: selectedPriorityFilters.map(function(label) {
-          return { text: label, href: '/cases/remove-priority/' + label }
+        heading: { text: 'CTL' },
+        items: selectedCtlFilters.map(function(label) {
+          return { text: label, href: '/cases/remove-ctl/' + label }
         })
       })
     }
@@ -122,9 +121,22 @@ module.exports = router => {
     }
   
 
-    if (selectedPriorityFilters?.length) {
-      where.AND.push({ priority: { in: selectedPriorityFilters } })
+    if (selectedCtlFilters?.length) {
+      const ctlFilters = []
+
+      if (selectedCtlFilters.includes('CTL')) {
+        ctlFilters.push({ ctl: true })
+      }
+
+      if (selectedCtlFilters.includes('Not CTL')) {
+        ctlFilters.push({ ctl: false })
+      }
+
+      if (ctlFilters.length) {
+        where.AND.push({ OR: ctlFilters })
+      }
     }
+
     if (selectedComplexityFilters?.length) {
       where.AND.push({ complexity: { in: selectedComplexityFilters } })
     }
@@ -174,9 +186,9 @@ module.exports = router => {
       value: dgaStatus
     }))
 
-    let priorityItems = priorities.map(priority => ({ 
-      text: priority, 
-      value: priority
+    let ctlItems = ['CTL', 'Not CTL'].map(ctl => ({ 
+      text: ctl, 
+      value: ctl
     }))
 
     let complexityItems = complexities.map(complexity => ({ 
@@ -209,7 +221,7 @@ module.exports = router => {
       totalCases, 
       cases,
       dgaItems,
-      priorityItems,
+      ctlItems,
       complexityItems, 
       typeItems, 
       lawyerItems,
@@ -223,8 +235,8 @@ module.exports = router => {
     res.redirect('/cases')
   })
 
-  router.get('/cases/remove-priority/:priority', (req, res) => {
-    _.set(req, 'session.data.filters.priorities', _.pull(req.session.data.filters.priorities, req.params.priority))
+  router.get('/cases/remove-ctl/:ctl', (req, res) => {
+    _.set(req, 'session.data.filters.ctl', _.pull(req.session.data.filters.ctl, req.params.ctl))
     res.redirect('/cases')
   })
 

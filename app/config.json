@@ -1,5 +1,5 @@
 {
-  "serviceName": "Manage criminal cases",
+  "serviceName": "Manage pre-charge decisions",
   "plugins": {
     "govuk-frontend": {
       "rebrand": true

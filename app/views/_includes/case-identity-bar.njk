@@ -6,10 +6,10 @@
       and {{_case.defendants.length - 1}} more
     {% endif %}
   </b>
-  {{ govukTag({
-    text: _case.priority,
-    classes: _case.priority | priorityTagClass
-  }) }}
+
+  {% if _case.ctl %}
+    {{ govukTag({ text: 'CTL', classes: 'govuk-tag--red' })}}
+  {% endif %}
 {% endset %}
 {{ appIdentityBar({
   title: {

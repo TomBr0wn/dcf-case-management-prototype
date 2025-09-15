@@ -1,7 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { faker } from "@faker-js/faker";
-import priorities from "../app/data/priorities.js";
 import complexities from "../app/data/complexities.js";
 import firstNames from "../app/data/first-names.js";
 import lastNames from "../app/data/last-names.js";
@@ -163,7 +162,7 @@ async function main() {
         reference: generateCaseReference(),
         type: faker.helpers.arrayElement(types),
         user: { connect: { id: faker.helpers.arrayElement([users[0].id, users[1].id]) } },
-        priority: faker.helpers.arrayElement(priorities),
+        ctl: faker.datatype.boolean(),
         complexity: faker.helpers.arrayElement(complexities),
         courtType: courtType,
         unit: { connect: { id: caseUnitId } },

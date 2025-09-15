@@ -44,7 +44,7 @@ model WitnessStatement {
 model Case {
   id          Int         @id @default(autoincrement())
   reference   String      @unique
-  priority    String?
+  ctl         Boolean
   complexity  String?
   type        String?
   courtType   String

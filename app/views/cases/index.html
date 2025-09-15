@@ -6,6 +6,10 @@
 {% block content %}
   <h1 class="govuk-heading-l">{{pageName}}</h1>
 
+  {{ govukButton({
+    text: "Create case"
+  }) }}
+
   <div class="app-filter-layout">
     <div class="app-filter-layout__filter">
       {% include "_includes/filter-panel.njk" %}
@@ -34,7 +38,9 @@
               <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
                 <a href="/cases/{{_case.id}}" class="govuk-link--no-visited-state">{{defendantsValue}}</a>
                 <div class="app-list__tag">
-                  {{ govukTag({ text: _case.priority, classes: _case.priority | priorityTagClass }) }}
+                  {% if _case.ctl %}
+                    {{ govukTag({ text: 'CTL', classes: 'govuk-tag--red' })}}
+                  {% endif %}
                 </div>
               </h2>
 
@@ -76,7 +82,7 @@
                     value: {
                       html: _case.courtType
                     }
-                  },
+                  } if 1==2,
                   {
                     key: {
                       html: 'Complexity'

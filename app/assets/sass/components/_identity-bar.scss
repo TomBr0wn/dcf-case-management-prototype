@@ -14,7 +14,7 @@
 
 
 .app-identity-bar__container {
-  @include govuk-width-container;
+  // @include govuk-width-container;
   font-size: 0; /* Hide whitespace between elements */
   text-align: justify; /* Trick to remove the need for floats */
 

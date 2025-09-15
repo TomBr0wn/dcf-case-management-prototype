@@ -15,17 +15,17 @@
   }) }}
 
   {{ govukCheckboxes({
-    idPrefix: "filters[priorities]",
-    name: "filters[priorities]",
+    idPrefix: "filters[ctl]",
+    name: "filters[ctl]",
     classes: "govuk-checkboxes--small",
     fieldset: {
       legend: {
-        text: "Priority",
+        text: "CTL",
         classes: "govuk-fieldset__legend--s"
       }
     },
-    items: priorityItems,
-    values: data.filters.priorities
+    items: ctlItems,
+    values: data.filters.ctl
   }) }}
 
   {{ govukCheckboxes({
