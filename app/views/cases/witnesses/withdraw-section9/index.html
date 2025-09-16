@@ -2,6 +2,7 @@
 
 {% set navId = 'cases' %}
 {% set pageName = "Confirm that you want to withdraw Section 9" %}
+{% set pageName = "Confirm that you want to unmark statement as Section 9" %}
 
 {% block beforeContent %}
   {{ govukBackLink({
@@ -17,7 +18,7 @@
       <h1 class="govuk-heading-l">{{pageName}}</h1>
       <form method="post">
         {{ govukButton({
-          text: "Withdraw Section 9"
+          text: "Unmark statement as Section 9"
         }) }}
       </form>
       <p><a href="/cases/{{_case.id}}/witnesses">Cancel</a></p>

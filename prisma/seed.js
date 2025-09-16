@@ -216,16 +216,14 @@ async function main() {
         },
       });
 
-      const numStatements = faker.number.int({ min: 1, max: 2 });
+      const numStatements = faker.number.int({ min: 1, max: 5 });
       for (let s = 0; s < numStatements; s++) {
         await prisma.witnessStatement.create({
           data: {
             witnessId: createdWitness.id,
+            receivedDate: faker.date.past(),
             useAsEvidence: faker.helpers.arrayElement([true, false, null]),
-            serveSection9:
-              courtType === "Magistrates court"
-                ? faker.helpers.arrayElement([true, false, null])
-                : null,
+            serveSection9: faker.helpers.arrayElement([true, false, null])
           },
         });
       }

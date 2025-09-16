@@ -36,10 +36,10 @@ model WitnessStatement {
   id                Int      @id @default(autoincrement())
   witnessId         Int
   witness           Witness  @relation(fields: [witnessId], references: [id])
-  serveSection9     Boolean?  // if Case.type = "magistrates"
-  useAsEvidence        Boolean?  // used if Case.type != "magistrates"
+  serveSection9     Boolean?  
+  useAsEvidence     Boolean?  
+  receivedDate      DateTime
 }
-
 
 model Case {
   id          Int         @id @default(autoincrement())

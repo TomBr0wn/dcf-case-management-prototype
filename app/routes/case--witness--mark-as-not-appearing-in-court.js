@@ -29,7 +29,7 @@ module.exports = router => {
       }
     })
 
-    req.flash('success', 'Witness dewarned')
+    req.flash('success', 'Witness marked as not attending court')
 
     res.redirect(`/cases/${req.params.caseId}/witnesses`)
 

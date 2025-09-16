@@ -38,7 +38,7 @@ module.exports = router => {
       }
     })
 
-    req.flash('success', 'Section 9 withdrawn')
+    req.flash('success', 'Statement unmarked as Section 9')
 
     res.redirect(`/cases/${req.params.caseId}/witnesses`)
 

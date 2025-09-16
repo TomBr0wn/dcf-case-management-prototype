@@ -17,6 +17,14 @@
       
       {% if _case.witnesses.length %}
           {% for witness in _case.witnesses %}
+            {% if witness.appearingInCourt %}
+              {% set attendanceStatus = 'Attending court' %}
+            {% elseif witness.appearingInCourt == false %}
+              {# {% set attendanceStatus = 'Dewarned' %} #}
+            {% endif %}
+
+
+
             <div class="govuk-summary-card">
               <div class="govuk-summary-card__title-wrapper">
                 <h2 class="govuk-summary-card__title govuk-!-font-size-27">
@@ -31,6 +39,8 @@
                     classes: 'govuk-!-margin-left-1',
                     text: "Previous convictions"
                   }) if 1 == [1,2] | random }}
+
+                  {% if attendanceStatus %} {{ govukTag({ text: attendanceStatus, classes: 'govuk-!-margin-left-1' }) }}{% endif %}
                 </h2>
               </div>
               <div class="govuk-summary-card__content">
@@ -38,7 +48,7 @@
                   classes: 'govuk-!-margin-bottom-5',
                   visuallyHiddenTitle: "Secondary menu",
                   items: [{
-                    text: "Court details and statements",
+                    text: "Statements",
                     href: "#",
                     current: true
                   }, {
@@ -52,18 +62,17 @@
                     href: "#"
                   }]
                 })}}
+               
 
-
-                 <h3 class="govuk-heading-m">Court details</h3>
-
+                <h3 class="govuk-heading-m">Court attendance</h3>
                 {% if witness.appearingInCourt == true %}
-                  <p>Witness called.</p>
-                  <p><a href="/cases/{{_case.id}}/witnesses/{{witness.id}}/mark-as-not-appearing-in-court">Dewarn witness</a></p>
+                  {# <p>Witness called.</p> #}
+                  <p><a href="/cases/{{_case.id}}/witnesses/{{witness.id}}/mark-as-not-appearing-in-court">Mark as not attending court</a></p>
                 {% elseif witness.appearingInCourt == false %}
-                  <p>Witness dewarned.</p>
-                  <p><a href="/cases/{{_case.id}}/witnesses/{{witness.id}}/mark-as-appearing-in-court">Call witness</a></p>
+                  {# <p>Witness dewarned.</p> #}
+                  <p><a href="/cases/{{_case.id}}/witnesses/{{witness.id}}/mark-as-appearing-in-court">Mark as attending court</a></p>
                 {% else %}
-                  <p><a href="/cases/{{_case.id}}/witnesses/{{witness.id}}/mark-as-appearing-in-court">Call witness</a></p>
+                  <p><a href="/cases/{{_case.id}}/witnesses/{{witness.id}}/mark-as-appearing-in-court">Mark as attending court</a></p>
                 {% endif %}
 
                 {{ govukSummaryList({
@@ -91,20 +100,27 @@
 
 
                   {% for statement in witness.statements %}
-                    <h3 class="govuk-heading-m">Statement {{loop.index}}</h3>
-
-                    {% if _case.courtType == 'Magistrates court' %}
-                      {% if statement.serveSection9 == true %}
-                        <p>Served as Section 9.</p>
-                        <p><a href="/cases/{{_case.id}}/witnesses/{{witness.id}}/statements/{{statement.id}}/withdraw-section9">Withdraw section 9</a></p>
-                      {% elseif statement.serveSection9 == false %}
-                        <p>Section 9 withdrawn.</p>
-                        <p><a href="/cases/{{_case.id}}/witnesses/{{witness.id}}/statements/{{statement.id}}/issue-section9">Serve as Section 9</a></p>
-                      {% else %}
-                        <p><a href="/cases/{{_case.id}}/witnesses/{{witness.id}}/statements/{{statement.id}}/issue-section9">Serve as Section 9</a></p>
-                      {% endif %}
+                    {% if statement.serveSection9 %}
+                      {% set section9Status = 'Section 9' %}
+                    {% elseif statement.serveSection9 == false %}
+                      {# {% set section9Status = 'Section 9 withdrawn' %} #}
                     {% endif %}
 
+                    <h3 class="govuk-heading-m">
+                      Statement {{loop.index}}
+                      {% if section9Status %} {{ govukTag({ text: section9Status, classes: 'govuk-!-margin-left-1' }) }}{% endif %}
+                    </h3>
+
+                    {% if statement.serveSection9 == true %}
+                      {# <p>Served as Section 9.</p> #}
+                      <p><a href="/cases/{{_case.id}}/witnesses/{{witness.id}}/statements/{{statement.id}}/withdraw-section9">Unmark as Section 9</a></p>
+                    {% elseif statement.serveSection9 == false %}
+                      {# <p>Section 9 withdrawn.</p> #}
+                      <p><a href="/cases/{{_case.id}}/witnesses/{{witness.id}}/statements/{{statement.id}}/issue-section9">Mark as Section 9</a></p>
+                    {% else %}
+                      <p><a href="/cases/{{_case.id}}/witnesses/{{witness.id}}/statements/{{statement.id}}/issue-section9">Mark as Section 9</a></p>
+                    {% endif %}
+ 
                     {% if statement.useAsEvidence == true %}                    
                       {% set useAsEvidenceValue = 'Used' %}
                     {% elseif statement.useAsEvidence == false %}
@@ -112,7 +128,6 @@
                     {% else %}
                       {% set useAsEvidenceValue = 'None' %}
                     {% endif %}
-
 
                     {{ govukSummaryList({
                       classes: 'app-summary-list--compac app-summary-list--small-tex govuk-!-margin-bottom-5',
@@ -124,15 +139,31 @@
                           value: {
                             html: loop.index
                           }
-                        },
+                        } if 1==2,
                         {
                           key: {
                             html: 'Statement'
                           },
                           value: {
-                            html: '<a href="">statement.pdf</a>'
+                            html: '<a href="">View statement</a>'
                           }
                         },
+                        {
+                          key: {
+                            html: 'Statement date'
+                          },
+                          value: {
+                            html: statement.receivedDate | isoDateString | govukDateTime
+                          }
+                        },
+                        {
+                          key: {
+                            html: 'Date received from police'
+                          },
+                          value: {
+                            html: statement.receivedDate | isoDateString | govukDateTime
+                          }
+                        } if 1==2,
                         {
                           key: {
                             html: 'Material status'
