@@ -62,17 +62,18 @@
                       Statement {{loop.index}}
                       {% if section9Status %} {{ govukTag({ text: section9Status, classes: 'govuk-!-margin-left-1' }) }}{% endif %}
                     </h3>
-
-                    {% if statement.serveSection9 == true %}
-                      {# <p>Served as Section 9.</p> #}
-                      <p><a href="/cases/{{_case.id}}/witnesses/{{witness.id}}/statements/{{statement.id}}/withdraw-section9">Unmark as Section 9</a></p>
+                    
+                    <div class="govuk-button-group govuk-!-margin-bottom-0">
+                      <a class="govuk-link govuk-link--no-visited-state" href="#">View statement</a>
+                      {% if statement.serveSection9 == true %}
+                      <a class="govuk-link--no-visited-state" href="/cases/{{_case.id}}/witnesses/{{witness.id}}/statements/{{statement.id}}/withdraw-section9">Unmark as Section 9</a>
                     {% elseif statement.serveSection9 == false %}
-                      {# <p>Section 9 withdrawn.</p> #}
-                      <p><a href="/cases/{{_case.id}}/witnesses/{{witness.id}}/statements/{{statement.id}}/issue-section9">Mark as Section 9</a></p>
+                      <a class="govuk-link--no-visited-state" href="/cases/{{_case.id}}/witnesses/{{witness.id}}/statements/{{statement.id}}/issue-section9">Mark as Section 9</a>
                     {% else %}
-                      <p><a href="/cases/{{_case.id}}/witnesses/{{witness.id}}/statements/{{statement.id}}/issue-section9">Mark as Section 9</a></p>
-                    {% endif %}
- 
+                      <a class="govuk-link--no-visited-state" href="/cases/{{_case.id}}/witnesses/{{witness.id}}/statements/{{statement.id}}/issue-section9">Mark as Section 9</a>
+                    {% endif %} 
+                    </div>
+                    
                     {% if statement.useAsEvidence == true %}                    
                       {% set useAsEvidenceValue = 'Used' %}
                     {% elseif statement.useAsEvidence == false %}
@@ -97,9 +98,9 @@
                             html: 'Statement'
                           },
                           value: {
-                            html: '<a href="">View statement</a>'
+                            html: '<a class="govuk-link govuk-link--no-visited-state" href="#">View statement</a>'
                           }
-                        },
+                        } if 1==2,
                         {
                           key: {
                             html: 'Statement date'
@@ -291,12 +292,12 @@
                     <h3 class="govuk-heading-m">Court attendance</h3>
                     {% if witness.appearingInCourt == true %}
                       {# <p>Witness called.</p> #}
-                      <p><a href="/cases/{{_case.id}}/witnesses/{{witness.id}}/mark-as-not-appearing-in-court">Mark as not attending court</a></p>
+                      <p><a class="govuk-link--no-visited-state" href="/cases/{{_case.id}}/witnesses/{{witness.id}}/mark-as-not-appearing-in-court">Mark as not attending court</a></p>
                     {% elseif witness.appearingInCourt == false %}
                       {# <p>Witness dewarned.</p> #}
-                      <p><a href="/cases/{{_case.id}}/witnesses/{{witness.id}}/mark-as-appearing-in-court">Mark as attending court</a></p>
+                      <p><a class="govuk-link--no-visited-state" href="/cases/{{_case.id}}/witnesses/{{witness.id}}/mark-as-appearing-in-court">Mark as attending court</a></p>
                     {% else %}
-                      <p><a href="/cases/{{_case.id}}/witnesses/{{witness.id}}/mark-as-appearing-in-court">Mark as attending court</a></p>
+                      <p><a class="govuk-link--no-visited-state" href="/cases/{{_case.id}}/witnesses/{{witness.id}}/mark-as-appearing-in-court">Mark as attending court</a></p>
                     {% endif %}
 
                     <h3 class="govuk-heading-m">Availability</h3>
