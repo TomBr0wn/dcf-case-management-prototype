@@ -58,7 +58,7 @@
                       {# {% set section9Status = 'Section 9 withdrawn' %} #}
                     {% endif %}
 
-                    <h3 class="govuk-heading-m">
+                    <h3 class="govuk-heading-m govuk-!-margin-bottom-2">
                       Statement {{loop.index}}
                       {% if section9Status %} {{ govukTag({ text: section9Status, classes: 'govuk-!-margin-left-1' }) }}{% endif %}
                     </h3>
@@ -83,7 +83,7 @@
                     {% endif %}
 
                     {{ govukSummaryList({
-                      classes: 'app-summary-list--compac app-summary-list--small-tex govuk-!-margin-bottom-5',
+                      classes: 'app-summary-list--compac app-summary-list--small-tex govuk-!-margin-bottom-5 govuk-!-margin-top-0',
                       rows: [
                         {
                           key: {
