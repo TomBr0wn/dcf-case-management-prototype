@@ -12,20 +12,22 @@
           {% for event in events %}
             <div class="app-activity-log__item">
               <div class="app-activity-log__header">
+                
                 <h2 class="app-activity-log__title govuk-heading-s govuk-!-margin-bottom-1">
                   {{event.title}}
-
+                  
                   {% if event.case %}
-                    ({{event.case.defendants[0].firstName}} {{event.case.defendants[0].lastName}} 
-                    {%- if event.case.defendants.length > 1 %}
-                      and {{event.case.defendants.length - 1}} more
-                    {%- endif -%})
+                    ({{event.case.reference}})
                   {% endif %}
                 </h2>
                 <p class="app-activity-log__byline">
-                  {% if event.user %}
-                    {{event.user.email}},
-                  {% endif %}
+                  By 
+                  {% if event.user -%}
+                    {{event.user.firstName}}
+                    {{event.user.lastName}}
+                  {%- else -%}
+                    System
+                  {%- endif %} on
                   <time datetime="{{ event.createdAt }}">
                     {{- event.createdAt | isoDateString | govukDateTime -}}
                   </time>
