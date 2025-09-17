@@ -82,7 +82,7 @@ module.exports = router => {
           }
         },
         cases: {
-          select: { id: true, priority: true, complexity: true }
+          select: { id: true, complexity: true }
         }
       },
       orderBy: {

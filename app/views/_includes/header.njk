@@ -10,6 +10,10 @@
   navigationClasses: "govuk-header__navigation--end",
   navigation: [
     {
+      href: "/account",
+      text: "Account"
+    } if data.user,
+    {
       href: "/account/sign-out",
       text: "Sign out" if data.user else "Sign in"
     }

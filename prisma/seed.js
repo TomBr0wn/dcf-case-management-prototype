@@ -42,14 +42,17 @@ async function main() {
   // -------------------- Users --------------------
   const users = [];
   const userData = [
-    { email: "admin@example.com", password: "password123", role: "ADMIN" },
-    { email: "user@example.com", password: "password123", role: "USER" },
+    { email: "admin@example.com", password: "password123", role: "ADMIN", firstName: "Rachael", lastName: "Harvey" },
+    { email: "user@example.com", password: "password123", role: "USER", firstName: "Simon", lastName: "Whatley" },
   ];
 
   for (const u of userData) {
     const hashedPassword = await bcrypt.hash(u.password, 10);
     const user = await prisma.user.create({
-      data: { email: u.email, password: hashedPassword, role: u.role },
+      data: {
+        ...u,
+        password: hashedPassword,
+      },
     });
     users.push(user);
   }
@@ -133,7 +136,12 @@ async function main() {
   console.log("✅ Victims seeded");
 
   // -------------------- Cases --------------------
-  for (let i = 0; i < 51; i++) {
+  const TOTAL_CASES = 2465;
+  const UNASSIGNED_TARGET = 39;
+
+  const createdCases = [];
+
+  for (let i = 0; i < TOTAL_CASES; i++) {
     const assignedDefendants = faker.helpers.arrayElements(
       defendants,
       faker.number.int({ min: 1, max: 3 })
@@ -142,23 +150,8 @@ async function main() {
       victims,
       faker.number.int({ min: 1, max: 3 })
     );
-    const assignedLawyers = faker.helpers.arrayElements(
-      lawyers,
-      faker.number.int({ min: 0, max: 3 })
-    );
 
-    let caseUnitId;
-    if (assignedLawyers.length > 0) {
-      const lawyerUnitIds = assignedLawyers.map((l) => l.unitId);
-      caseUnitId = faker.helpers.arrayElement(lawyerUnitIds);
-    } else {
-      caseUnitId = faker.number.int({ min: 1, max: 6 });
-    }
-
-    const courtType = faker.helpers.arrayElement([
-      "Magistrates court",
-      "Crown court",
-    ]);
+    const caseUnitId = faker.number.int({ min: 1, max: 6 });
 
     const createdCase = await prisma.case.create({
       data: {
@@ -169,11 +162,9 @@ async function main() {
         },
         ctl: faker.datatype.boolean(),
         complexity: faker.helpers.arrayElement(complexities),
-        courtType: courtType,
         unit: { connect: { id: caseUnitId } },
         defendants: { connect: assignedDefendants.map((d) => ({ id: d.id })) },
         victims: { connect: assignedVictims.map((v) => ({ id: v.id })) },
-        lawyers: { connect: assignedLawyers.map((l) => ({ id: l.id })) },
         hearing: { create: { date: futureDateAt10am() } },
         location: {
           create: {
@@ -218,7 +209,6 @@ async function main() {
           lastName: faker.helpers.arrayElement(lastNames),
           appearingInCourt: faker.helpers.arrayElement([false, null]),
           caseId: createdCase.id,
-          // New fields
           relevant: faker.datatype.boolean(),
           keyWitness: faker.datatype.boolean(),
           type: faker.helpers.arrayElement(["Expert", "Character", "Eye witness", "Other"]),
@@ -241,17 +231,45 @@ async function main() {
         await prisma.witnessStatement.create({
           data: {
             witnessId: createdWitness.id,
-            number: s + 1, // 1, 2, 3… per witness
+            number: s + 1, // per witness
             receivedDate: faker.date.past(),
             useAsEvidence: faker.helpers.arrayElement([true, false, null]),
             serveSection9: faker.helpers.arrayElement([true, false, null]),
           },
-        })
+        });
       }
     }
+
+    createdCases.push({ id: createdCase.id });
   }
 
-  console.log("✅ Cases with witnesses and statements seeded");
+  console.log(`✅ Created ${createdCases.length} cases`);
+
+  // -------------------- Assign cases --------------------
+  const unassignedCount = Math.min(UNASSIGNED_TARGET, createdCases.length);
+  const unassignedIds = new Set(
+    faker.helpers.arrayElements(createdCases, unassignedCount).map((c) => c.id)
+  );
+  const assignableCases = createdCases.filter((c) => !unassignedIds.has(c.id));
+
+  for (const c of assignableCases) {
+    const chosenLawyer = faker.helpers.arrayElement(lawyers);
+
+    await prisma.case.update({
+      where: { id: c.id },
+      data: {
+        unitId: chosenLawyer.unitId,
+        lawyers: {
+          set: [{ id: chosenLawyer.id }],
+        },
+      },
+    });
+  }
+
+  console.log(
+    `✅ Assigned ${assignableCases.length} cases to exactly one lawyer, left ${unassignedCount} unassigned`
+  );
+
   console.log("🌱 Seed finished.");
 }
 

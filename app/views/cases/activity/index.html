@@ -22,8 +22,9 @@
               <div class="app-activity-log__header">
                 <h2 class="app-activity-log__title govuk-heading-s govuk-!-font-size-2 govuk-!-margin-bottom-1">{{event.title}}</h2>
                 <p class="app-activity-log__byline">
+                  {{event | log}}
                   {% if event.user %}
-                    {{event.user.email}},
+                    {{event.user.firstName}} {{event.user.lastName}},
                   {% endif %}
                   <time datetime="{{ event.createdAt }}">
                     {{- event.createdAt | isoDateString | govukDateTime -}}
