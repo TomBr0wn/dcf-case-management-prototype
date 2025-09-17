@@ -173,3 +173,34 @@ $statuses: (
     padding-bottom: 0 !important;
   }
 }
+
+.app-activity-log__item:first-child {
+  border-top: 1px solid govuk-colour("mid-grey");
+  padding-top: 20px;
+}
+
+.app-activity-log__item {
+  border-bottom: 1px solid govuk-colour("mid-grey");
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+}
+
+.app-activity-log__box {
+  // border-left: 10px solid govuk-colour("mid-grey");
+  padding: 15px 20px 10px 20px;
+  margin-bottom: 15px;
+  background-color: #f9f9f9;
+}
+
+.app-activity-log__description .govuk-summary-list {
+  margin-bottom: 0;
+}
+
+.app-activity-log__box .govuk-summary-list .govuk-summary-list__row:last-child,
+.app-activity-log__box .govuk-summary-list .govuk-summary-list__row:last-child {
+  border-bottom: 0;
+}
+
+.app-log-card__note--link {
+  margin-bottom: 0;
+}

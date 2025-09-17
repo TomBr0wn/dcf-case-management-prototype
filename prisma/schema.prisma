@@ -13,6 +13,21 @@ model User {
   password String
   role     String
   cases    Case[]
+  activityLogs ActivityLog[]
+}
+
+model ActivityLog {
+  id        Int      @id @default(autoincrement())
+  action    String
+  model     String
+  recordId  Int?
+  title     String
+  meta      Json?
+  userId    Int?
+  user      User?    @relation(fields: [userId], references: [id])
+  caseId    Int?
+  case      Case?    @relation(fields: [caseId], references: [id])
+  createdAt DateTime @default(now())
 }
 
 model Victim {
@@ -74,6 +89,7 @@ model Case {
   location    Location?
   tasks       Task[]
   dga         DGA?
+  activityLogs ActivityLog[] 
 }
 
 model DGA {

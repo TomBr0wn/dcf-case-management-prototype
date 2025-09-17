@@ -22,10 +22,22 @@ module.exports = router => {
   })
 
   router.post("/cases/:caseId/witnesses/:witnessId/mark-as-appearing-in-court", async (req, res) => {
-    await prisma.witness.update({
+    let witness = await prisma.witness.update({
       where: { id: parseInt(req.params.witnessId) },
       data: {
         appearingInCourt: true
+      }
+    })
+
+    await prisma.activityLog.create({
+      data: {
+        userId: 1,
+        model: 'Witness',
+        recordId: witness.id,
+        action: 'UPDATE',
+        title: 'Witness marked as appearing in court',
+        caseId: parseInt(req.params.caseId),
+        meta: { witness }
       }
     })
 

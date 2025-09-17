@@ -18,7 +18,16 @@ module.exports = router => {
       }
     })
 
-    res.render("cases/activity/index", { _case })
+    const events = await prisma.activityLog.findMany({
+      where: { caseId: _case.id },
+      include: {
+        user: true,
+        case: true
+      },
+      orderBy: { createdAt: 'desc' }
+    })
+
+    res.render("cases/activity/index", { _case, events })
   })
 
 }
