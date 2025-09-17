@@ -33,12 +33,7 @@
                   {{ govukTag({
                     classes: 'govuk-!-margin-left-1',
                     text: "Key witness"
-                  }) if 1 == [1,2] | random }}
-
-                  {{ govukTag({
-                    classes: 'govuk-!-margin-left-1',
-                    text: "Previous convictions"
-                  }) if 1 == [1,2] | random }}
+                  }) if witness.keyWitness }}
 
                   {% if attendanceStatus %} {{ govukTag({ text: attendanceStatus, classes: 'govuk-!-margin-left-1' }) }}{% endif %}
                 </h2>
