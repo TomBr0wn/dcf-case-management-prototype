@@ -66,11 +66,11 @@
                     <div class="govuk-button-group govuk-!-margin-bottom-0">
                       <a class="govuk-link govuk-link--no-visited-state" href="#">View statement</a>
                       {% if statement.serveSection9 == true %}
-                      <a class="govuk-link--no-visited-state" href="/cases/{{_case.id}}/witnesses/{{witness.id}}/statements/{{statement.id}}/withdraw-section9">Unmark as Section 9</a>
+                      <a class="govuk-link--no-visited-state" href="/cases/{{_case.id}}/witnesses/{{witness.id}}/statements/{{statement.id}}/unmark-as-section9">Unmark as Section 9</a>
                     {% elseif statement.serveSection9 == false %}
-                      <a class="govuk-link--no-visited-state" href="/cases/{{_case.id}}/witnesses/{{witness.id}}/statements/{{statement.id}}/issue-section9">Mark as Section 9</a>
+                      <a class="govuk-link--no-visited-state" href="/cases/{{_case.id}}/witnesses/{{witness.id}}/statements/{{statement.id}}/mark-as-section9">Mark as Section 9</a>
                     {% else %}
-                      <a class="govuk-link--no-visited-state" href="/cases/{{_case.id}}/witnesses/{{witness.id}}/statements/{{statement.id}}/issue-section9">Mark as Section 9</a>
+                      <a class="govuk-link--no-visited-state" href="/cases/{{_case.id}}/witnesses/{{witness.id}}/statements/{{statement.id}}/mark-as-section9">Mark as Section 9</a>
                     {% endif %} 
                     </div>
                     
@@ -292,12 +292,12 @@
                     <h3 class="govuk-heading-m">Court attendance</h3>
                     {% if witness.appearingInCourt == true %}
                       {# <p>Witness called.</p> #}
-                      <p><a class="govuk-link--no-visited-state" href="/cases/{{_case.id}}/witnesses/{{witness.id}}/mark-as-not-appearing-in-court">Mark as not attending court</a></p>
+                      <p><a class="govuk-link--no-visited-state" href="/cases/{{_case.id}}/witnesses/{{witness.id}}/mark-as-not-attending-court">Mark as not attending court</a></p>
                     {% elseif witness.appearingInCourt == false %}
                       {# <p>Witness dewarned.</p> #}
-                      <p><a class="govuk-link--no-visited-state" href="/cases/{{_case.id}}/witnesses/{{witness.id}}/mark-as-appearing-in-court">Mark as attending court</a></p>
+                      <p><a class="govuk-link--no-visited-state" href="/cases/{{_case.id}}/witnesses/{{witness.id}}/mark-as-attending-court">Mark as attending court</a></p>
                     {% else %}
-                      <p><a class="govuk-link--no-visited-state" href="/cases/{{_case.id}}/witnesses/{{witness.id}}/mark-as-appearing-in-court">Mark as attending court</a></p>
+                      <p><a class="govuk-link--no-visited-state" href="/cases/{{_case.id}}/witnesses/{{witness.id}}/mark-as-attending-court">Mark as attending court</a></p>
                     {% endif %}
 
                     <h3 class="govuk-heading-m">Availability</h3>

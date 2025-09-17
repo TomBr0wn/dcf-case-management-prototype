@@ -4,7 +4,7 @@ const prisma = new PrismaClient()
 
 module.exports = router => {
   
-  router.get("/cases/:caseId/witnesses/:witnessId/mark-as-not-appearing-in-court", async (req, res) => {
+  router.get("/cases/:caseId/witnesses/:witnessId/mark-as-not-attending-court", async (req, res) => {
     const _case = await prisma.case.findUnique({
       where: { id: parseInt(req.params.caseId) },
       include: { defendants: true, witnesses: true },
@@ -15,17 +15,17 @@ module.exports = router => {
     })
 
 
-    res.render("cases/witnesses/mark-as-not-appearing-in-court/index", { 
+    res.render("cases/witnesses/mark-as-not-attending-court/index", { 
       _case,
       witness
     })
   })
 
-  router.post("/cases/:caseId/witnesses/:witnessId/mark-as-not-appearing-in-court", async (req, res) => {
-    res.redirect(`/cases/${req.params.caseId}/witnesses/${req.params.witnessId}/mark-as-not-appearing-in-court/check`)
+  router.post("/cases/:caseId/witnesses/:witnessId/mark-as-not-attending-court", async (req, res) => {
+    res.redirect(`/cases/${req.params.caseId}/witnesses/${req.params.witnessId}/mark-as-not-attending-court/check`)
   })
 
-  router.get("/cases/:caseId/witnesses/:witnessId/mark-as-not-appearing-in-court/check", async (req, res) => {
+  router.get("/cases/:caseId/witnesses/:witnessId/mark-as-not-attending-court/check", async (req, res) => {
     const _case = await prisma.case.findUnique({
       where: { id: parseInt(req.params.caseId) },
       include: { defendants: true, witnesses: true },
@@ -35,13 +35,13 @@ module.exports = router => {
       where: { id: parseInt(req.params.witnessId )}
     })
 
-    res.render("cases/witnesses/mark-as-not-appearing-in-court/check", { 
+    res.render("cases/witnesses/mark-as-not-attending-court/check", { 
       _case,
       witness
     })
   })
 
-  router.post("/cases/:caseId/witnesses/:witnessId/mark-as-not-appearing-in-court/check", async (req, res) => {
+  router.post("/cases/:caseId/witnesses/:witnessId/mark-as-not-attending-court/check", async (req, res) => {
     let witness = await prisma.witness.update({
       where: { id: parseInt(req.params.witnessId) },
       data: {

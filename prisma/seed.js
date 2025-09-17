@@ -216,7 +216,7 @@ async function main() {
         data: {
           firstName: faker.helpers.arrayElement(firstNames),
           lastName: faker.helpers.arrayElement(lastNames),
-          appearingInCourt: faker.helpers.arrayElement([true, false, null]),
+          appearingInCourt: faker.helpers.arrayElement([false, null]),
           caseId: createdCase.id,
           // New fields
           relevant: faker.datatype.boolean(),

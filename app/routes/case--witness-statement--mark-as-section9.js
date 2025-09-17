@@ -4,7 +4,7 @@ const prisma = new PrismaClient()
 
 module.exports = router => {
   
-  router.get("/cases/:caseId/witnesses/:witnessId/statements/:statementId/issue-section9", async (req, res) => {
+  router.get("/cases/:caseId/witnesses/:witnessId/statements/:statementId/mark-as-section9", async (req, res) => {
     const caseId = parseInt(req.params.caseId)
     const witnessId = parseInt(req.params.witnessId)
     const statementId = parseInt(req.params.statementId)
@@ -23,14 +23,14 @@ module.exports = router => {
       where: { id: statementId },
     })
 
-    res.render("cases/witnesses/issue-section9/index", { 
+    res.render("cases/witnesses/mark-as-section9/index", { 
       _case,
       witness,
       witnessStatement
     })
   })
 
-  router.post("/cases/:caseId/witnesses/:witnessId/statements/:statementId/issue-section9", async (req, res) => {
+  router.post("/cases/:caseId/witnesses/:witnessId/statements/:statementId/mark-as-section9", async (req, res) => {
     let witnessStatement = await prisma.witnessStatement.update({
       where: { id: parseInt(req.params.statementId) },
       data: {
