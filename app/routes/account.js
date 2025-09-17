@@ -1,7 +1,16 @@
+const { PrismaClient } = require('@prisma/client')
+const prisma = new PrismaClient()
+
 module.exports = router => {
 
-  router.post('/account/sign-in', (req, res) => {
-    req.session.data.user = {}
+  router.get('/account', (req, res) => {
+    res.render("account/index", { 
+      user: req.session.data.user
+    })
+  })
+
+  router.post('/account/sign-in', async (req, res) => {
+    req.session.data.user = await prisma.user.findFirst()
     res.redirect('/overview')
   })
 
@@ -9,6 +18,5 @@ module.exports = router => {
     req.session.data.user = null
     res.redirect('/account/sign-in')
   })
-
 
 }

@@ -43,7 +43,7 @@ module.exports = router => {
 
     await prisma.activityLog.create({
       data: {
-        userId: 1,
+        userId: req.session.data.user.id,
         model: 'WitnessStatement',
         recordId: witnessStatement.id,
         action: 'UPDATE',
