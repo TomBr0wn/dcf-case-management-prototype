@@ -1,7 +1,7 @@
 {% extends "layouts/main.html" %}
 
 {% set navId = 'cases' %}
-{% set pageName = "Check details and assign lawyers" %}
+{% set pageName = "Check details and assign lawyer" %}
 
 {% block beforeContent %}
   {{ govukBackLink({
@@ -17,28 +17,14 @@
       <span class="govuk-caption-l">{{_case.reference}}</span>
       <h1 class="govuk-heading-l">{{pageName}}</h1>
 
-      {% set lawyersValue %}
-        {% if lawyers.length %}
-          <ul class="govuk-list govuk-list--bullet">
-            {% for item in lawyers %}
-              <li>
-                {{item.firstName}} {{item.lastName}}
-              </li>
-            {% endfor %}
-          </ul>
-        {% else %}
-          None
-        {% endif %}
-      {% endset %}
-
       {{ govukSummaryList({
         rows: [
           {
             key: {
-              text: "Lawyers"
+              text: "Lawyer"
             },
             value: {
-              html: lawyersValue
+              html: lawyer.firstName + ' ' + lawyer.lastName
             },
             actions: {
               items: [
@@ -53,21 +39,11 @@
         ]
       }) }}
 
-      <p>Wel’ll send an email to:</p>
-
-      <ul class="govuk-list govuk-list--bullet">
-        <li>
-          the added lawyers to tell them that they’re assigned to the case
-        </li>
-        <li>
-          the removed lawyers to tell them that they’ve been removed from the case
-        </li>
-      </ul>
-
+      <p>We’ll send an email to the lawyer to tell them that they’ve been assigned to the case.</p>
 
       <form method="post">
         {{ govukButton({
-          text: "Update assigned lawyers"
+          text: "Assign lawyer"
         }) }}
       </form>
     </div>

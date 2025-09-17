@@ -147,36 +147,34 @@ module.exports = router => {
       where: { id: parseInt(req.params.id) },
     })
 
-    const lawyerIds = req.session.data.editLawyers?.lawyers?.map(Number) || []// make sure they’re numbers
-
-    // get the to be selected lawyers
-    let lawyers = await prisma.lawyer.findMany({
-      where: { id: { in: lawyerIds } },
+    // get the lawyer being assigned
+    let lawyer = await prisma.lawyer.findUnique({
+      where: { id: parseInt(req.session.data.assignLawyer.lawyer) },
       include: { 
-        cases: { select: { id: true, priority: true, complexity: true } },
+        cases: { select: { id: true, complexity: true } },
         _count: { select: { cases: true } },
       },
     })
 
     res.render("cases/edit-lawyers/check", { 
       _case,
-      lawyers
+      lawyer
     })
   })
 
   router.post("/cases/:id/edit-lawyers/check", async (req, res) => {
-    const lawyerIds = req.session.data.editLawyers?.lawyers?.map(Number) || []
-
     await prisma.case.update({
       where: { id: parseInt(req.params.id) },
       data: {
         lawyers: {
-          set: lawyerIds.map(id => ({ id }))
+          connect: { id: parseInt(req.session.data.assignLawyer.lawyer)}
         }
       }
     })
 
-    req.flash('success', 'Assigned lawyers updated')
+    delete req.session.data.assignLawyer
+
+    req.flash('success', 'Lawyer assigned')
     res.redirect(`/cases/${req.params.id}`)
   })
 
