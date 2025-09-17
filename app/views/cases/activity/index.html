@@ -79,7 +79,7 @@
                   </p>
                 {% endif %}
 
-                {% if event.title == 'Witness statement marked as Section 9' or event.title == 'Witness statement unmarked as Section 9' %}
+                {% if event.title == 'Witness statement marked as Section 9' %}
                   <div class="app-activity-log__box">  
                     {{ govukSummaryList({
                       rows: [
@@ -96,7 +96,35 @@
                             text: "Statement number"
                           },
                           value: {
-                            text: 1
+                            text: event.meta.witnessStatement.number
+                          }
+                        }
+                      ]
+                    })  }}
+                  </div>
+                  <p class="app-log-card__note--link">
+                    <a class="govuk-link" href="/cases/{{ event.case.id }}/witnesses">View statement</a>
+                  </p>
+                {% endif %}
+
+                {% if event.title == 'Witness statement unmarked as Section 9' %}
+                  <div class="app-activity-log__box">  
+                    {{ govukSummaryList({
+                      rows: [
+                        {
+                          key: {
+                            text: "Witness"
+                          },
+                          value: {
+                            text: event.meta.witness.firstName + ' ' + event.meta.witness.lastName
+                          }
+                        },
+                        {
+                          key: {
+                            text: "Statement number"
+                          },
+                          value: {
+                            text: event.meta.witnessStatement.number
                           }
                         }
                       ]

@@ -66,9 +66,11 @@ model WitnessStatement {
   id                Int      @id @default(autoincrement())
   witnessId         Int
   witness           Witness  @relation(fields: [witnessId], references: [id])
+  number   Int 
   serveSection9     Boolean?  
   useAsEvidence     Boolean?  
   receivedDate      DateTime
+  @@unique([witnessId, number]) // enforce uniqueness per witness
 }
 
 model Case {

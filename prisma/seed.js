@@ -241,11 +241,12 @@ async function main() {
         await prisma.witnessStatement.create({
           data: {
             witnessId: createdWitness.id,
+            number: s + 1, // 1, 2, 3… per witness
             receivedDate: faker.date.past(),
             useAsEvidence: faker.helpers.arrayElement([true, false, null]),
             serveSection9: faker.helpers.arrayElement([true, false, null]),
           },
-        });
+        })
       }
     }
   }

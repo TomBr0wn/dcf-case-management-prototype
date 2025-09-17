@@ -19,14 +19,14 @@ module.exports = router => {
       include: { statements: true },
     })
 
-    const witnessStatement = witness.statements.find((s) => s.id === statementId)
-    const statementNumber = witness.statements.findIndex((s) => s.id === statementId) + 1
+    const witnessStatement = await prisma.witnessStatement.findUnique({
+      where: { id: statementId },
+    })
 
     res.render("cases/witnesses/issue-section9/index", { 
       _case,
       witness,
-      witnessStatement,
-      statementNumber
+      witnessStatement
     })
   })
 

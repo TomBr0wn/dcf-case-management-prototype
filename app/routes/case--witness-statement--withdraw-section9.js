@@ -19,22 +19,37 @@ module.exports = router => {
       include: { statements: true },
     })
 
-    const witnessStatement = witness.statements.find((s) => s.id === statementId)
-    const statementNumber = witness.statements.findIndex((s) => s.id === statementId) + 1
+    const witnessStatement = await prisma.witnessStatement.findUnique({
+      where: { id: statementId },
+    })
 
     res.render("cases/witnesses/withdraw-section9/index", { 
       _case,
       witness,
-      witnessStatement,
-      statementNumber
+      witnessStatement
     })
   })
 
   router.post("/cases/:caseId/witnesses/:witnessId/statements/:statementId/withdraw-section9", async (req, res) => {
-    await prisma.witnessStatement.update({
+    let witnessStatement = await prisma.witnessStatement.update({
       where: { id: parseInt(req.params.statementId) },
       data: {
         serveSection9: false
+      },
+      include: {
+        witness: true
+      }
+    })
+
+    await prisma.activityLog.create({
+      data: {
+        userId: 1,
+        model: 'WitnessStatement',
+        recordId: witnessStatement.id,
+        action: 'UPDATE',
+        title: 'Witness statement unmarked as Section 9',
+        caseId: parseInt(req.params.caseId),
+        meta: { witnessStatement, witness: witnessStatement.witness }
       }
     })
 
