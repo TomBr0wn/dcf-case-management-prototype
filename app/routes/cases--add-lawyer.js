@@ -23,29 +23,41 @@ function getLawyerHintText(lawyer) {
   if (total === 0) {
     caseLoadBreakdown = "No cases"
   } else {
-    caseLoadBreakdown = `${total} case${total > 1 ? "s" : ""}`
+    // caseLoadBreakdown = ``
+
+    if (lawyer.ctlCases && lawyer.ctlCases.length > 0) {
+      hintParts.push(`<li>${total} case${total > 1 ? "s" : ""}</li>`)
+    }
 
     // Collect only levels that have > 0
-    let levelBreakdown = []
-    if (lawyer.level1Cases.length > 0) {
-      levelBreakdown.push(`${lawyer.level1Cases.length} complexity level one`)
-    }
-    if (lawyer.level2Cases.length > 0) {
-      levelBreakdown.push(`${lawyer.level2Cases.length} complexity level two`)
-    }
-    if (lawyer.level3Cases.length > 0) {
-      levelBreakdown.push(`${lawyer.level3Cases.length} complexity level three`)
-    }
-    if (lawyer.level4Cases.length > 0) {
-      levelBreakdown.push(`${lawyer.level4Cases.length} complexity level four`)
-    }
-    if (lawyer.level5Cases.length > 0) {
-      levelBreakdown.push(`${lawyer.level5Cases.length} complexity  level five`)
+    let breakdown = []
+
+    if (lawyer.ctlCases && lawyer.ctlCases.length > 0) {
+      breakdown.push(`${lawyer.ctlCases.length} CTL`)
     }
 
-    if (levelBreakdown.length) {
-      caseLoadBreakdown += ` (${levelBreakdown.join(", ")})`
+    if (lawyer.level1Cases.length > 0) {
+      breakdown.push(`${lawyer.level1Cases.length}  level one`)
     }
+    if (lawyer.level2Cases.length > 0) {
+      breakdown.push(`${lawyer.level2Cases.length} level two`)
+    }
+    if (lawyer.level3Cases.length > 0) {
+      breakdown.push(`${lawyer.level3Cases.length} level three`)
+    }
+    if (lawyer.level4Cases.length > 0) {
+      breakdown.push(`${lawyer.level4Cases.length} level four`)
+    }
+    if (lawyer.level5Cases.length > 0) {
+      breakdown.push(`${lawyer.level5Cases.length} level five`)
+    }
+
+    
+
+    if (breakdown.length) {
+      caseLoadBreakdown += `${breakdown.join(", ")}`
+    }
+    
   }
 
   hintParts.push(`<li>${caseLoadBreakdown}</li>`)
@@ -56,9 +68,9 @@ function getLawyerHintText(lawyer) {
 
 module.exports = router => {
 
-  router.get("/cases/:id/edit-lawyers", async (req, res) => {
+  router.get("/cases/:caseId/add-lawyer", async (req, res) => {
     const _case = await prisma.case.findUnique({
-      where: { id: parseInt(req.params.id) },
+      where: { id: parseInt(req.params.caseId) },
       include: { unit: true, lawyers: { select: { id: true } } }
     })
 
@@ -82,20 +94,13 @@ module.exports = router => {
           }
         },
         cases: {
-          select: { id: true, complexity: true }
-        }
-      },
-      orderBy: {
-        cases: {
-          _count: "asc"
+          select: { id: true, complexity: true, ctl: true }
         }
       }
     })
 
     lawyers = lawyers.map((lawyer, index) => {
-      // const highPriorityCases = lawyer.cases?.filter(c => c.priority === "High priority") || []
-      // const mediumPriorityCases = lawyer.cases?.filter(c => c.priority === "Medium priority") || []
-      // const lowPriorityCases = lawyer.cases?.filter(c => c.priority === "Low priority") || []
+      const ctlCases = lawyer.cases?.filter(c => c.ctl) || []
 
       const level1Cases = lawyer.cases?.filter(c => c.complexity === "Level 1") || []
       const level2Cases = lawyer.cases?.filter(c => c.complexity === "Level 2") || []
@@ -110,20 +115,27 @@ module.exports = router => {
         level3Cases,
         level4Cases,
         level5Cases,
+        ctlCases,
+        totalCases: lawyer._count.cases,
+        ctlCaseCount: ctlCases.length
       }
-
-
-      // hack it so the first one has a note about how they did an initial review
-      if(index == 0) {
-        newLawyer.didInitialReview = true
-      }
-
       return newLawyer
     })
 
+    lawyers.sort((a, b) => a.totalCases - b.totalCases || a.ctlCaseCount - b.ctlCaseCount)
+
+    // hack it so the first one has a note about how they did an initial review  
+    lawyers[0].didInitialReview = true
+    lawyers[0].recommended = true
+
     let lawyerItems = lawyers.map(lawyer => {
+      let text = `${lawyer.firstName} ${lawyer.lastName}`
+      if(lawyer.recommended) {
+        text += ` (recommended)`
+      }
+
       return {
-        text: `${lawyer.firstName} ${lawyer.lastName}`,
+        text: text,
         value: `${lawyer.id}`,
         hint: {
           html: getLawyerHintText(lawyer)
@@ -131,20 +143,20 @@ module.exports = router => {
       }
     })
 
-    res.render("cases/edit-lawyers/index", { 
+    res.render("cases/add-lawyer/index", { 
       _case, 
       assignedLawyers,
       lawyerItems 
     })
   })
 
-  router.post("/cases/:id/edit-lawyers", async (req, res) => {
-    res.redirect(`/cases/${req.params.id}/edit-lawyers/check`)
+  router.post("/cases/:caseId/add-lawyer", async (req, res) => {
+    res.redirect(`/cases/${req.params.caseId}/add-lawyer/check`)
   })
 
-  router.get("/cases/:id/edit-lawyers/check", async (req, res) => {
+  router.get("/cases/:caseId/add-lawyer/check", async (req, res) => {
     const _case = await prisma.case.findUnique({
-      where: { id: parseInt(req.params.id) },
+      where: { id: parseInt(req.params.caseId) },
     })
 
     // get the lawyer being assigned
@@ -156,26 +168,47 @@ module.exports = router => {
       },
     })
 
-    res.render("cases/edit-lawyers/check", { 
+    res.render("cases/add-lawyer/check", { 
       _case,
       lawyer
     })
   })
 
-  router.post("/cases/:id/edit-lawyers/check", async (req, res) => {
+  router.post("/cases/:caseId/add-lawyer/check", async (req, res) => {
+    const caseId = parseInt(req.params.caseId)
+    const lawyerId = parseInt(req.session.data.assignLawyer.lawyer)
+    
     await prisma.case.update({
-      where: { id: parseInt(req.params.id) },
+      where: { id: caseId },
       data: {
         lawyers: {
-          connect: { id: parseInt(req.session.data.assignLawyer.lawyer)}
+          connect: { id: lawyerId }
         }
+      }
+    })
+
+    const lawyer = await prisma.lawyer.findUnique({
+      where: { id: lawyerId },
+      select: { id: true, firstName: true, lastName: true } 
+    })
+
+
+    await prisma.activityLog.create({
+      data: {
+        userId: req.session.data.user.id,
+        model: 'Case',
+        recordId: caseId,
+        action: 'UPDATE',
+        title: 'Lawyer assigned',
+        caseId: caseId,
+        meta: { lawyer }
       }
     })
 
     delete req.session.data.assignLawyer
 
     req.flash('success', 'Lawyer assigned')
-    res.redirect(`/cases/${req.params.id}`)
+    res.redirect(`/cases/${req.params.caseId}`)
   })
 
 }

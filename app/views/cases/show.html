@@ -58,6 +58,29 @@
       {% endset %}
 
 
+      {% set lawyerActions = [
+        {
+          href: "/cases/:caseId/add-lawyer" | replace(':caseId', _case.id),
+          text: "Add",
+          visuallyHiddenText: "Lawyer"
+        }
+      ] %}
+      {% if _case.lawyers.length %}
+        {% set lawyerActions = [
+          {
+            href: "/cases/:caseId/add-lawyer" | replace(':caseId', _case.id),
+            text: "Add",
+            visuallyHiddenText: "Lawyer"
+          },
+          {
+            href: "#" | replace(':caseId', _case.id),
+            text: "Change",
+            visuallyHiddenText: "Lawyer"
+          }
+        ] %}
+      {% endif %}
+
+
       {{ govukSummaryList({
         rows: [
           {
@@ -177,13 +200,7 @@
               html: lawyerValue
             },
             actions: {
-              items: [
-                {
-                  href: "/cases/:caseId/edit-lawyers" | replace(':caseId', _case.id),
-                  text: "Change",
-                  visuallyHiddenText: "Lawyer"
-                }
-              ]
+              items: lawyerActions
             }
           },
           {
@@ -196,7 +213,7 @@
             actions: {
               items: [
                 {
-                  href: "/cases/:caseId/edit-lawyers" | replace(':caseId', _case.id),
+                  href: "/cases/:caseId/add-lawyer" | replace(':caseId', _case.id),
                   text: "Change",
                   visuallyHiddenText: "Lawyer"
                 }

@@ -61,7 +61,7 @@ require('./routes/overview')(router)
 require('./routes/activity')(router)
 
 require('./routes/cases')(router)
-require('./routes/cases--edit-lawyers')(router)
+require('./routes/cases--add-lawyer')(router)
 require('./routes/case--overview')(router)
 require('./routes/case--dga')(router)
 require('./routes/case--activity')(router)
