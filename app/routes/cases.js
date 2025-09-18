@@ -265,8 +265,8 @@ module.exports = router => {
     })
   })
 
-  router.get('/cases/remove-dga-review/:dgaReviewStatus', (req, res) => {
-    _.set(req, 'session.data.filters.dgaReview', _.pull(req.session.data.filters.dgaReview, req.params.dgaReviewStatus))
+  router.get('/cases/remove-dga/:dga', (req, res) => {
+    _.set(req, 'session.data.filters.dga', _.pull(req.session.data.filters.dga, req.params.dga))
     res.redirect('/cases')
   })
 
