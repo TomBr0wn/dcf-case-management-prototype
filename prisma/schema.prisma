@@ -81,7 +81,6 @@ model Case {
   ctl         Boolean
   complexity  String?
   type        String?
-  courtType   String
   userId      Int
   user        User        @relation(fields: [userId], references: [id])
   unitId      Int
