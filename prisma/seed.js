@@ -136,7 +136,7 @@ async function main() {
   console.log("✅ Victims seeded");
 
   // -------------------- Cases --------------------
-  const TOTAL_CASES = 2465;
+  const TOTAL_CASES = 465;
   const UNASSIGNED_TARGET = 39;
 
   const createdCases = [];
