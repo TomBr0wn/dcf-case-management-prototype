@@ -29,12 +29,10 @@ async function main() {
   // -------------------- Units --------------------
   await prisma.unit.createMany({
     data: [
-      { name: "Fraud division" },
-      { name: "Serious crime" },
-      { name: "Cybercrime" },
-      { name: "Drugs and organised crime" },
-      { name: "Terrorism and national security" },
-      { name: "General prosecutions" },
+      { name: "Magistrates" },
+      { name: "Crown Court" },
+      { name: "Rape and serious sexual offences " },
+      { name: "Complex casework unit" },
     ],
   });
   console.log("✅ Units seeded");
@@ -82,7 +80,7 @@ async function main() {
     data: {
       firstName: "Tony",
       lastName: "Stark",
-      unit: { connect: { id: faker.number.int({ min: 1, max: 6 }) } },
+      unit: { connect: { id: faker.number.int({ min: 1, max: 4 }) } },
     },
   });
   lawyers.push(tony);
@@ -111,7 +109,7 @@ async function main() {
       data: {
         firstName: faker.helpers.arrayElement(firstNames),
         lastName: faker.helpers.arrayElement(lastNames),
-        unit: { connect: { id: faker.number.int({ min: 1, max: 6 }) } },
+        unit: { connect: { id: faker.number.int({ min: 1, max: 4 }) } },
         specialistAreas: { connect: specialistAreas.map((name) => ({ name })) },
         preferredAreas: { connect: preferredAreas.map((name) => ({ name })) },
         restrictedAreas: { connect: restrictedAreas.map((name) => ({ name })) },
@@ -164,7 +162,7 @@ async function main() {
       faker.number.int({ min: 1, max: 3 })
     );
 
-    const caseUnitId = faker.number.int({ min: 1, max: 6 });
+    const caseUnitId = faker.number.int({ min: 1, max: 4 });
 
     const createdCase = await prisma.case.create({
       data: {
