@@ -1,11 +1,11 @@
-import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcrypt";
-import { faker } from "@faker-js/faker";
-import complexities from "../app/data/complexities.js";
-import firstNames from "../app/data/first-names.js";
-import lastNames from "../app/data/last-names.js";
-import types from "../app/data/types.js";
-import specialisms from "../app/data/specialisms.js";
+const { PrismaClient } = require("@prisma/client");
+const bcrypt = require("bcrypt");
+const { faker } = require("@faker-js/faker");
+const complexities = require("../app/data/complexities.js");
+const firstNames = require("../app/data/first-names.js");
+const lastNames = require("../app/data/last-names.js");
+const types = require("../app/data/types.js");
+const specialisms = require("../app/data/specialisms.js");
 
 const prisma = new PrismaClient();
 
@@ -42,8 +42,20 @@ async function main() {
   // -------------------- Users --------------------
   const users = [];
   const userData = [
-    { email: "admin@example.com", password: "password123", role: "ADMIN", firstName: "Rachael", lastName: "Harvey" },
-    { email: "user@example.com", password: "password123", role: "USER", firstName: "Simon", lastName: "Whatley" },
+    {
+      email: "admin@example.com",
+      password: "password123",
+      role: "ADMIN",
+      firstName: "Rachael",
+      lastName: "Harvey",
+    },
+    {
+      email: "user@example.com",
+      password: "password123",
+      role: "USER",
+      firstName: "Simon",
+      lastName: "Whatley",
+    },
   ];
 
   for (const u of userData) {
@@ -136,8 +148,9 @@ async function main() {
   console.log("✅ Victims seeded");
 
   // -------------------- Cases --------------------
-  const TOTAL_CASES = 1465;
+  const TOTAL_CASES = 3465;
   const UNASSIGNED_TARGET = 39;
+  const DGA_TARGET = 50; // set desired number of DGAs
 
   const createdCases = [];
 
@@ -158,7 +171,9 @@ async function main() {
         reference: generateCaseReference(),
         type: faker.helpers.arrayElement(types),
         user: {
-          connect: { id: faker.helpers.arrayElement([users[0].id, users[1].id]) },
+          connect: {
+            id: faker.helpers.arrayElement([users[0].id, users[1].id]),
+          },
         },
         ctl: faker.datatype.boolean(),
         complexity: faker.helpers.arrayElement(complexities),
@@ -183,20 +198,6 @@ async function main() {
             ],
           },
         },
-        dga: faker.datatype.boolean()
-          ? {
-              create: faker.datatype.boolean()
-                ? {
-                    outcome: faker.helpers.arrayElement([
-                      "NOT_DISPUTED",
-                      "DISPUTED_SUCCESSFULLY",
-                      "DISPUTED_UNSUCCESSFULLY",
-                    ]),
-                    reason: faker.lorem.sentence(),
-                  }
-                : {},
-            }
-          : undefined,
       },
     });
 
@@ -211,17 +212,34 @@ async function main() {
           caseId: createdCase.id,
           relevant: faker.datatype.boolean(),
           keyWitness: faker.datatype.boolean(),
-          type: faker.helpers.arrayElement(["Expert", "Character", "Eye witness", "Other"]),
-          attendanceIssues: faker.helpers.arrayElement([null, faker.lorem.sentence()]),
-          previousTransgressions: faker.helpers.arrayElement([null, faker.lorem.words(5)]),
+          type: faker.helpers.arrayElement([
+            "Expert",
+            "Character",
+            "Eye witness",
+            "Other",
+          ]),
+          attendanceIssues: faker.helpers.arrayElement([
+            null,
+            faker.lorem.sentence(),
+          ]),
+          previousTransgressions: faker.helpers.arrayElement([
+            null,
+            faker.lorem.words(5),
+          ]),
           warned: faker.datatype.boolean(),
           dateOfBirth: faker.date.birthdate({ min: 18, max: 90, mode: "age" }),
           emailAddress: faker.internet.email(),
           phoneNumber: faker.phone.number(),
           courtAvailabilityStartDate: faker.date.future(),
           courtAvailabilityEndDate: faker.date.future(),
-          courtSpecialMeasures: faker.helpers.arrayElement([null, faker.lorem.sentence()]),
-          courtNeeds: faker.helpers.arrayElement([null, faker.lorem.sentence()]),
+          courtSpecialMeasures: faker.helpers.arrayElement([
+            null,
+            faker.lorem.sentence(),
+          ]),
+          courtNeeds: faker.helpers.arrayElement([
+            null,
+            faker.lorem.sentence(),
+          ]),
           requiresMeeting: faker.datatype.boolean(),
         },
       });
@@ -231,7 +249,7 @@ async function main() {
         await prisma.witnessStatement.create({
           data: {
             witnessId: createdWitness.id,
-            number: s + 1, // per witness
+            number: s + 1,
             receivedDate: faker.date.past(),
             useAsEvidence: faker.helpers.arrayElement([true, false, null]),
             serveSection9: faker.helpers.arrayElement([true, false, null]),
@@ -245,12 +263,37 @@ async function main() {
 
   console.log(`✅ Created ${createdCases.length} cases`);
 
+  // -------------------- Assign DGAs --------------------
+  const dgaIds = new Set(
+    faker.helpers.arrayElements(createdCases, DGA_TARGET).map((c) => c.id)
+  );
+
+  for (const c of createdCases) {
+    if (dgaIds.has(c.id)) {
+      await prisma.dGA.create({
+        data: {
+          caseId: c.id,
+          outcome: faker.helpers.arrayElement([
+            "NOT_DISPUTED",
+            "DISPUTED_SUCCESSFULLY",
+            "DISPUTED_UNSUCCESSFULLY",
+          ]),
+          reason: faker.lorem.sentence(),
+        },
+      });
+    }
+  }
+
+  console.log(`✅ Assigned ${DGA_TARGET} cases needing DGA review`);
+
   // -------------------- Assign cases --------------------
   const unassignedCount = Math.min(UNASSIGNED_TARGET, createdCases.length);
   const unassignedIds = new Set(
     faker.helpers.arrayElements(createdCases, unassignedCount).map((c) => c.id)
   );
-  const assignableCases = createdCases.filter((c) => !unassignedIds.has(c.id));
+  const assignableCases = createdCases.filter(
+    (c) => !unassignedIds.has(c.id)
+  );
 
   for (const c of assignableCases) {
     const chosenLawyer = faker.helpers.arrayElement(lawyers);
