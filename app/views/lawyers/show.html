@@ -28,15 +28,45 @@
       </h1>
 
       {% set specialistAreas %}
-        {{appValue({ attribute: lawyer.specialistAreas, emptyLabel: 'No specialist areas' })}}
+        {% if lawyer.specialistAreas.length %}
+          <ul class="govuk-list govuk-list--bullet">
+            {% for item in lawyer.specialistAreas %}
+              <li>
+                {{item.name}}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          No specialist areas
+        {% endif %}
       {% endset %}
 
       {% set preferredAreas %}
-        {{appValue({ attribute: lawyer.preferredAreas, emptyLabel: 'No preferred areas' })}}
+        {% if lawyer.preferredAreas.length %}
+          <ul class="govuk-list govuk-list--bullet">
+            {% for item in lawyer.preferredAreas %}
+              <li>
+                {{item.name}}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          No preferred areas
+        {% endif %}
       {% endset %}
 
       {% set restrictedAreas %}
-        {{appValue({ attribute: lawyer.restrictedAreas, emptyLabel: 'No restricted areas' })}}
+        {% if lawyer.restrictedAreas.length %}
+          <ul class="govuk-list govuk-list--bullet">
+            {% for item in lawyer.restrictedAreas %}
+              <li>
+                {{item.name}}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          No restricted areas
+        {% endif %}
       {% endset %}
       
       {{ govukSummaryList({
