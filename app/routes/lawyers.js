@@ -54,11 +54,9 @@ module.exports = router => {
     res.redirect('/lawyers')
   })
 
-  router.get("/lawyers/:id", asyncHandler(async (req, res) => {
-    const { id } = req.params
-
+  router.get("/lawyers/:lawyerId", asyncHandler(async (req, res) => {
     const lawyer = await prisma.lawyer.findUnique({
-      where: { id: parseInt(id) },
+      where: { id: parseInt(req.params.lawyerId) },
       include: { 
         unit: true,
         specialistAreas: true,

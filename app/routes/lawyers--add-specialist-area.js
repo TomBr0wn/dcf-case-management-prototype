@@ -4,9 +4,9 @@ const prisma = new PrismaClient()
 
 module.exports = router => {
 
-  router.get("/lawyers/:id/specialist-areas/new", async (req, res) => {
+  router.get("/lawyers/:caseId/specialist-areas/new", async (req, res) => {
     const lawyer = await prisma.lawyer.findUnique({
-      where: { id: parseInt(req.params.id) }
+      where: { id: parseInt(req.params.caseId) }
     })
 
     const specialisms = await prisma.specialism.findMany()
@@ -25,13 +25,13 @@ module.exports = router => {
     })
   })
 
-  router.post("/lawyers/:id/specialist-areas/new", async (req, res) => {
-    res.redirect(`/lawyers/${req.params.id}/specialist-areas/new/preferred-areas`)
+  router.post("/lawyers/:caseId/specialist-areas/new", async (req, res) => {
+    res.redirect(`/lawyers/${req.params.caseId}/specialist-areas/new/preferred-areas`)
   })
 
-  router.get("/lawyers/:id/specialist-areas/new/preferred-areas", async (req, res) => {
+  router.get("/lawyers/:caseId/specialist-areas/new/preferred-areas", async (req, res) => {
     const lawyer = await prisma.lawyer.findUnique({
-      where: { id: parseInt(req.params.id) }
+      where: { id: parseInt(req.params.caseId) }
     })
 
     const specialisms = await prisma.specialism.findMany()
@@ -49,13 +49,13 @@ module.exports = router => {
     })
   })
 
-  router.post("/lawyers/:id/specialist-areas/new/preferred-areas", async (req, res) => {
-    res.redirect(`/lawyers/${req.params.id}/specialist-areas/new/restricted-areas`)
+  router.post("/lawyers/:caseId/specialist-areas/new/preferred-areas", async (req, res) => {
+    res.redirect(`/lawyers/${req.params.caseId}/specialist-areas/new/restricted-areas`)
   })
 
-  router.get("/lawyers/:id/specialist-areas/new/restricted-areas", async (req, res) => {
+  router.get("/lawyers/:caseId/specialist-areas/new/restricted-areas", async (req, res) => {
     const lawyer = await prisma.lawyer.findUnique({
-      where: { id: parseInt(req.params.id) }
+      where: { id: parseInt(req.params.caseId) }
     })
 
     const specialisms = await prisma.specialism.findMany()
@@ -73,13 +73,13 @@ module.exports = router => {
     })
   })
 
-  router.post("/lawyers/:id/specialist-areas/new/restricted-areas", async (req, res) => {
-    res.redirect(`/lawyers/${req.params.id}/specialist-areas/new/check`)
+  router.post("/lawyers/:caseId/specialist-areas/new/restricted-areas", async (req, res) => {
+    res.redirect(`/lawyers/${req.params.caseId}/specialist-areas/new/check`)
   })
 
-  router.get("/lawyers/:id/specialist-areas/new/check", async (req, res) => {
+  router.get("/lawyers/:caseId/specialist-areas/new/check", async (req, res) => {
     const lawyer = await prisma.lawyer.findUnique({
-      where: { id: parseInt(req.params.id) }
+      where: { id: parseInt(req.params.caseId) }
     })
 
     const specialismIds = req.session.data.addSpecialistArea?.specialisms?.map(Number) || []
@@ -99,13 +99,13 @@ module.exports = router => {
     })
   })
 
-  router.post("/lawyers/:id/specialist-areas/new/check", async (req, res) => {
+  router.post("/lawyers/:caseId/specialist-areas/new/check", async (req, res) => {
     const specialismIds = req.session.data.addSpecialistArea?.specialisms?.map(Number) || []
     const preferredIds = req.session.data.addSpecialistArea?.preferredAreas?.map(Number) || []
     const restrictedIds = req.session.data.addSpecialistArea?.restrictedAreas?.map(Number) || []
 
     await prisma.lawyer.update({
-      where: { id: parseInt(req.params.id) },
+      where: { id: parseInt(req.params.caseId) },
       data: {
         specialistAreas: {
           set: specialismIds.map(id => ({ id }))
@@ -121,7 +121,7 @@ module.exports = router => {
 
     req.flash('success', 'Specialist areas added')
 
-    res.redirect(`/lawyers/${req.params.id}`)
+    res.redirect(`/lawyers/${req.params.caseId}`)
   })
 
 }

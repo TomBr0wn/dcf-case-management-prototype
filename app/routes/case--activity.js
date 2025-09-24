@@ -3,9 +3,9 @@ const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 
 module.exports = router => {
-  router.get("/cases/:id/activity", async (req, res) => {
+  router.get("/cases/:caseId/activity", async (req, res) => {
     const _case = await prisma.case.findUnique({
-      where: { id: parseInt(req.params.id) },
+      where: { id: parseInt(req.params.caseId) },
       include: { 
         user: true, 
         witnesses: { include: { statements: true } }, 
