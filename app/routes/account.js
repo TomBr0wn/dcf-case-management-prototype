@@ -1,9 +1,10 @@
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
+const checkSignedIn = require('../middleware/checkSignedIn')
 
 module.exports = router => {
 
-  router.get('/account', (req, res) => {
+  router.get('/account', checkSignedIn, (req, res) => {
     res.render("account/index", { 
       user: req.session.data.user
     })
@@ -17,6 +18,10 @@ module.exports = router => {
   router.get('/account/sign-out', (req, res) => {
     req.session.data.user = null
     res.redirect('/account/sign-in')
+  })
+
+  router.get('/account/sign-in', (req, res) => {
+    res.render('/account/sign-in')
   })
 
 }
