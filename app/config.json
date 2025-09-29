@@ -1,5 +1,5 @@
 {
-  "serviceName": "Work Management",
+  "serviceName": "Manage pre-charge decisions",
   "plugins": {
     "govuk-frontend": {
       "rebrand": true
