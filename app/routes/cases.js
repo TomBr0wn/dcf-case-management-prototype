@@ -127,7 +127,7 @@ module.exports = router => {
       const reviewFilters = []
 
       if (selectedDgaFilters.includes('Needs review')) {
-        reviewFilters.push({ dga: { isNot: null } })
+        reviewFilters.push({ dga: { outcome: null } })
       }
 
       if (selectedDgaFilters.includes('Does not need review')) {

@@ -3,6 +3,7 @@ const router = govukPrototypeKit.requests.setupRouter()
 const fs = require('fs');
 const path = require('path');
 const exec = require('child_process').exec;
+const checkSignedIn = require('./middleware/checkSignedIn')
 
 const flash = require('connect-flash')
 router.use(flash())
@@ -57,6 +58,9 @@ router.get('/clear-data', function (req, res) {
 });
 
 require('./routes/account')(router)
+
+router.use(checkSignedIn)
+
 require('./routes/overview')(router)
 require('./routes/activity')(router)
 
@@ -64,6 +68,7 @@ require('./routes/cases')(router)
 require('./routes/cases--add-lawyer')(router)
 require('./routes/case--overview')(router)
 require('./routes/case--dga')(router)
+require('./routes/case--dga--new')(router)
 require('./routes/case--activity')(router)
 require('./routes/case--witnesses')(router)
 require('./routes/case--witness')(router)
