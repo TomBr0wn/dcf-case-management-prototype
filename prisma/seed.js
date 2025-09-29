@@ -271,18 +271,14 @@ async function main() {
       await prisma.dGA.create({
         data: {
           caseId: c.id,
-          outcome: faker.helpers.arrayElement([
-            "NOT_DISPUTED",
-            "DISPUTED_SUCCESSFULLY",
-            "DISPUTED_UNSUCCESSFULLY",
-          ]),
           reason: faker.lorem.sentence(),
+          // outcome omitted → will be NULL
         },
       });
     }
   }
 
-  console.log(`✅ Assigned ${DGA_TARGET} cases needing DGA review`);
+  console.log(`✅ Assigned ${DGA_TARGET} cases needing DGA review (no outcome set)`);
 
   // -------------------- Assign cases --------------------
   const unassignedCount = Math.min(UNASSIGNED_TARGET, createdCases.length);
