@@ -18,6 +18,38 @@
         href: '/account/sign-in'
       }) }}
 
+      {{ govukButton({
+        text: "A button"
+      }) }}
+
+      {{ govukTabs({
+        items: [
+          {
+            label: "Tab one",
+            id: "tab-1",
+            panel: {
+              html: tab1Html
+            }
+          },
+          {
+            label: "Tab two",
+            id: "tab-2",
+            panel: {
+              html: tab2Html
+            }
+          },
+          {
+            label: "Tab three",
+            id: "tab-3",
+            panel: {
+              html: tab3Html
+            }
+          }
+        ]
+      }) }}
+
+
+
     </div>
   </div>
 {% endblock %}

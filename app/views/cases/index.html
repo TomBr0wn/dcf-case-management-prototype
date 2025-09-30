@@ -6,9 +6,18 @@
 {% block content %}
   <h1 class="govuk-heading-l">{{pageName}}</h1>
 
-  {{ govukButton({
-    text: "Create case"
-  }) }}
+  <div class="govuk-button-group">
+    {{ govukButton({
+      text: "Create case"
+    }) }}
+
+    {{ govukButton({
+      text: "Export",
+      classes: 'govuk-button--secondary'
+    }) }}
+  </div>  
+
+  
 
   <div class="app-filter-layout">
     <div class="app-filter-layout__filter">

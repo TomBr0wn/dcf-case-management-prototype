@@ -36,6 +36,26 @@
                 </p>
               </div>
               <div class="app-activity-log__description">
+                {% if event.title == 'DGA recorded' %}
+                  <div class="app-activity-log__box">      
+                    {{ govukSummaryList({
+                      rows: [
+                        {
+                          key: {
+                            text: "Outcome"
+                          },
+                          value: {
+                            text: event.meta.outcome
+                          }
+                        }
+                      ]
+                    }) }}
+                  </div>
+                  <p class="app-log-card__note--link">
+                    <a class="govuk-link" href="/cases/{{ event.case.id }}/dga">View DGA outcome</a>
+                  </p>
+                {% endif %}
+
                 {% if event.title == 'Prosecutor assigned' %}
                   <div class="app-activity-log__box">      
                     {{ govukSummaryList({

@@ -2,6 +2,12 @@ const _ = require('lodash')
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 
+let outcomes = {
+  NOT_DISPUTED: "Not disputed",
+  DISPUTED_SUCCESSFULLY: "Disputed successfully",
+  DISPUTED_UNSUCCESSFULLY: "Disputed unsuccessfully",
+}
+
 module.exports = router => {
   router.get("/cases/:caseId/dga/new", async (req, res) => {
     const _case = await prisma.case.findUnique({
@@ -22,11 +28,7 @@ module.exports = router => {
       include: { user: true, lawyers: true, defendants: true, hearing: true, location: true, tasks: true, dga: true },
     })
 
-    let outcomes = {
-      NOT_DISPUTED: "Not disputed",
-      DISPUTED_SUCCESSFULLY: "Disputed successfully",
-      DISPUTED_UNSUCCESSFULLY: "Disputed unsuccessfully",
-    }
+    
 
     let outcome = outcomes[req.session.data.recordDGA.outcome]
 
@@ -34,15 +36,32 @@ module.exports = router => {
   })
 
   router.post("/cases/:caseId/dga/new/check", async (req, res) => {
+    let caseId = parseInt(req.params.caseId)
+    let outcome = req.session.data.recordDGA.outcome
+  
     await prisma.DGA.update({
-      where: { caseId: parseInt(req.params.caseId) },
-      data: { outcome: req.session.data.recordDGA.outcome }
+      where: { caseId },
+      data: { outcome }
     })
 
-    // const _case = await prisma.case.findUnique({
-    //   where: { id: parseInt(req.params.caseId) },
-    //   include: { user: true, lawyers: true, defendants: true, hearing: true, location: true, tasks: true, dga: true },
-    // })
+    const _case = await prisma.case.findUnique({
+      where: { id: caseId },
+      include: { user: true, lawyers: true, defendants: true, hearing: true, location: true, tasks: true, dga: true },
+    })
+
+    await prisma.activityLog.create({
+      data: {
+        userId: req.session.data.user.id,
+        model: 'Case',
+        recordId: caseId,
+        action: 'UPDATE',
+        title: 'DGA recorded',
+        caseId: caseId,
+        meta: { outcome: outcomes[outcome] }
+      }
+    })
+
+    req.flash('success', 'DGA recorded')
 
     res.redirect(`/cases/${req.params.caseId}`)
   })
