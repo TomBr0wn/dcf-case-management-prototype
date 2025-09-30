@@ -61,6 +61,8 @@ module.exports = router => {
       }
     })
 
+    delete req.session.data.recordDGA
+
     req.flash('success', 'DGA recorded')
 
     res.redirect(`/cases/${req.params.caseId}`)
