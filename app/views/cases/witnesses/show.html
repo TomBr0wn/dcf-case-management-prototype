@@ -8,7 +8,7 @@
   {{ govukBreadcrumbs({
     items: [
       {
-        text: defendantName,
+        text: _case.reference,
         href: "/cases/:caseId" | replace(':caseId', _case.id)
       },
       {

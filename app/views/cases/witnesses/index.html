@@ -35,7 +35,10 @@
                   }) if witness.keyWitness }}
 
                   {% if attendanceStatus %} {{ govukTag({ text: attendanceStatus, classes: 'govuk-!-margin-left-1' }) }}{% endif %}
+
+                  <a href="/cases/{{_case.id}}/witnesses/{{witness.id}}" style="text-decoration: none;">&nbsp;&nbsp;&nbsp;</a>
                 </h2>
+                
               </div>
               <div class="govuk-summary-card__content">
                 {% set statementsTab %}
