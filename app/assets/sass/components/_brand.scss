@@ -1,0 +1,15 @@
+.cps-logo {                 /* control size without distorting the SVG */
+  inline-size: 180px;       
+  block-size: auto;
+  display: inline-block;
+}
+
+/* Optional variants */
+.cps-logo--xsmall  { inline-size: 80px; }
+.cps-logo--small  { inline-size: 120px; }
+.cps-logo--large  { inline-size: 220px; }
+
+/* colour variants */
+.cps-logo--black { filter: brightness(0) saturate(100%); }  
+.cps-logo--white { filter: brightness(0) invert(1); }      
+

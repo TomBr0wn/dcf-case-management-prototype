@@ -1,3 +1,29 @@
+{% if not hideNav %}
+
+{% if data['state'] == "current" %}
+
+{{ govukServiceNavigation({
+    navigation: [
+      {
+        href: "/tasks",
+        text: "Tasks",
+        active: navId == 'tasks'
+      },
+      {
+        href: "/cases",
+        text: "Cases",
+        active: navId == 'cases'
+      },
+      {
+        href: "/offence-codes",
+        text: "Offence Codes",
+        active: navId == 'offenceCodes'
+      }
+    ]
+  }) }}
+
+{% else %}
+
 {{ govukServiceNavigation({
   navigation: [
     {
@@ -31,4 +57,9 @@
       active: navId == 'activity'
     }        
   ]
-}) if not hideNav }}
+}) }}
+
+{% endif %}
+
+{% endif %}
+

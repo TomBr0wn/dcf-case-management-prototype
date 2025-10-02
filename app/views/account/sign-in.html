@@ -1,9 +1,78 @@
-{% extends "layouts/main.html" %}
+<!-- for version reflecting live, there is no branding and different header for page-->
+  {% if data['state'] == "current" %}
+      {% extends "govuk-prototype-kit/layouts/unbranded.html" %}
+      {% set hideNav = true %}
+      {% set pageName = "LoginPageWMA" %}
 
-{% set hideNav = true %}
-{% set pageName = "Sign in" %}
+<!-- if not live, show this -->
+  {% else %}
+      {% extends "layouts/main.html" %}
+      {% set hideNav = true %}
+      {% set pageName = "Sign in" %}
+  {% endif %}
 
+      
 {% block content %}
+<!-- if version is reflecting live, show this -->
+{% if data['state'] == "current" %}
+<div style="min-height:100vh; display:grid; place-items:center; padding:0px;">
+  <div style="width:100%;">
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-one-half">
+      <img
+  src="/public/images/cps-logo.svg"
+  alt="Crown Prosecution Service"
+  class="cps-logo cps-logo--xsmall govuk-!-margin-bottom-6 cps-logo--black"
+/>
+
+
+      <h1 class="govuk-heading-l govuk-!-margin-0">Work Management App</h1>
+      <h1 class="govuk-heading-m">Sign in to your account</h1>
+      <form method="post" novalidate>
+
+        {{ govukInput({
+          id: "signIn[username]",
+          name: "signIn[username]",
+          classes: "govuk-!-width-three-quarters",
+          type: "username",
+          label: {
+            text: "Username",
+            classes: "govuk-label--s govuk-!-font-weight-regular govuk-!-width-three-quarters"
+          },
+          value: data.signIn.username
+        }) }}
+
+        {{ govukInput({
+          id: "signIn[password]",
+          name: "signIn[password]",
+          classes: "govuk-!-width-three-quarters",
+          type: "password",
+          label: {
+            text: "Password",
+            classes: "govuk-label--s govuk-!-font-weight-regular"
+          },
+          value: data.signIn.password
+        }) }}
+
+        {{ govukButton({
+          text: "Sign in"
+        }) }}
+
+
+      </form>
+
+    </div>
+        <div class="govuk-grid-column-one-half">
+          <div style="border:1px solid #b1b4b6; padding:12px;">
+<p class="govuk-!-font-weight-bold govuk-body-s">Information contained within CMS is processed in accordance with data protection legislation. CMS is classified to hold data up to and including OFFICIAL (SENSITIVE). You must have a legitimate business reason for accessing both the system and any specific case held on the system. All activity is monitored, and misuse or unauthorised use of the system or data therein may result in disciplinary action and/or prosecution.</p>
+<p class="govuk-!-font-weight-bold govuk-body-s">As a CMS user you have a responsibility to keep the vital data of victims, defendants and witnesses safe and confidential. If you are made aware of a data breach, you must report it immediately. For information on reporting a breach, go to the Incident Management & Reporting Policy on the Security & Information Assurance intranet hub. By signing into the system, you are agreeing to the Terms and Conditions of use as set out in the CMS, Crown Court Digital Case System (DCS) and Common Platform Security Policy. You can find the policy on the Security & Information Assurance intranet hub.</p>
+  </div>
+  </div>
+  </div>
+  </div>
+
+        <!-- if not live, show this --> 
+        {% else %}  
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
@@ -45,4 +114,6 @@
     </div>
   </div>
 
+
+  {% endif %} 
 {% endblock %}
