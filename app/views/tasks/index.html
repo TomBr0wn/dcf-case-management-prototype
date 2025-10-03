@@ -1,50 +1,81 @@
 {% extends "layouts/main.html" %}
 
 {% set navId = 'tasks' %}
-{% set pageName = "Tasks" %}
+{% set pageName = "Tasks (:total)" | replace(':total', totalTasks) %}
 
 {% block content %}
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
+    <h1 class="govuk-heading-l">
+      {{ pageName }}
+    </h1>
 
-      <h1 class="govuk-heading-l">
-        {{ pageName }}
-      </h1>
+    <div class="app-filter-layout">
+      <div class="app-filter-layout__filter">
+        {% include "_includes/task/filter-panel.njk" %}
+      </div>
+      <div class="app-filter-layout__content">
 
-      {% if tasks.length %}
-         <div class="app-list">
-          {% for task in tasks %}
-           <div class="app-list__item">
-              <h2 class="govuk-heading-s govuk-!-margin-bottom-1">                
-                <a href="/tasks/{{task.id}}" class="govuk-link--no-visited-state">{{task.name}}</a>
-              </h2>
-
-              {{ govukSummaryList({
-                classes: 'govuk-summary-list--no-border app-summary-list--compact app-summary-list--small-text',
-                rows: [
-                  {
-                    key: {
-                      html: 'Reference'
-                    },
-                    value: {
-                      html: task.case.reference
-                    }
-                  }              
-                ]
-              })}}
-
-
-            </div>
-          {% endfor %}
+        <div class="app-action-bar">
+          <div class="app-action-bar__filter"></div>
         </div>
-      {% else %}
-        <p>There are no results.</p>
-      {% endif %}
 
-      {% include "_includes/pagination.njk" %}
-    </div>
-  </div>
+        {% include "_includes/task/search-form.njk" %}
+        {% include "_includes/task/sort-controls.njk" %}
 
+        {% if tasks.length %}
+          <div class="app-list">
+            {% for task in tasks %}
+            <div class="app-list__item">
+                <h2 class="govuk-heading-s govuk-!-margin-bottom-1">                
+                  <a href="/tasks/{{task.id}}" class="govuk-link--no-visited-state">{{task.name}}</a>
+                </h2>
+
+                {% set defendantsValue %}
+                  {{task.case.defendants[0].firstName}} {{task.case.defendants[0].lastName}}
+                  {% if task.case.defendants.length > 1 %}
+                    and {{task.case.defendants.length - 1}} more
+                  {% endif %}
+                {% endset %}
+
+                {{ govukSummaryList({
+                  classes: 'govuk-summary-list--no-border app-summary-list--compact app-summary-list--small-text',
+                  rows: [
+                    {
+                      key: {
+                        html: 'Due date'
+                      },
+                      value: {
+                        html: task.dueDate | isoDateString | govukDateTime
+                      }
+                    },
+                    {
+                      key: {
+                        html: 'Case reference'
+                      },
+                      value: {
+                        html: task.case.reference
+                      }
+                    },
+                    {
+                      key: {
+                        html: 'Defendant'
+                      },
+                      value: {
+                        html: defendantsValue
+                      }
+                    }              
+                  ]
+                })}}
+
+
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p>There are no results.</p>
+        {% endif %}
+
+        {% include "_includes/pagination.njk" %}
+      </div>
     </div>
   </div>
 {% endblock %}

@@ -21,7 +21,7 @@
 
   <div class="app-filter-layout">
     <div class="app-filter-layout__filter">
-      {% include "_includes/filter-panel.njk" %}
+      {% include "_includes/case/filter-panel.njk" %}
     </div>
     <div class="app-filter-layout__content">
 
@@ -29,8 +29,8 @@
         <div class="app-action-bar__filter"></div>
       </div>
 
-      {% include "_includes/case-search-form.njk" %}
-      {% include "_includes/case-sort-controls.njk" %}
+      {% include "_includes/case/search-form.njk" %}
+      {% include "_includes/case/sort-controls.njk" %}
 
       {% if cases.length %}
          <div class="app-list">

@@ -1,0 +1,51 @@
+{% extends "layouts/main.html" %}
+{% set navId = 'cases' %}
+{% set secondaryNavId = 'tasks' %}
+{% set pageName = 'Tasks' %}
+
+{% block content %}
+  {% include "_includes/success-banner.njk" %}
+  {% include "_includes/case/header.njk" %}
+  {% include "_includes/case/navigation.njk" %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">{{pageName}}</h1>
+      
+      {% if _case.tasks.length %}
+        <div class="app-list">
+          {% for task in _case.tasks %}
+          <div class="app-list__item">
+              <h2 class="govuk-heading-s govuk-!-margin-bottom-1">                
+                <a href="/tasks/{{task.id}}" class="govuk-link--no-visited-state">{{task.name}}</a>
+              </h2>
+
+              {% set defendantsValue %}
+                {{task.case.defendants[0].firstName}} {{task.case.defendants[0].lastName}}
+                {% if task.case.defendants.length > 1 %}
+                  and {{task.case.defendants.length - 1}} more
+                {% endif %}
+              {% endset %}
+
+              {{ govukSummaryList({
+                classes: 'govuk-summary-list--no-border app-summary-list--compact app-summary-list--small-text',
+                rows: [
+                  {
+                    key: {
+                      html: 'Due date'
+                    },
+                    value: {
+                      html: task.dueDate | isoDateString | govukDateTime
+                    }
+                  }           
+                ]
+              })}}
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p>There are no tasks.</p>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

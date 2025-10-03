@@ -4,12 +4,12 @@
 {% set pageName = 'Overview' %}
 
 {% block beforeContent %}
-  {# {% include "_includes/case-identity-bar.njk" %} #}
+  {# {% include "_includes/case/identity-bar.njk" %} #}
 {% endblock %}
 
 {% block content %}
   {% include "_includes/success-banner.njk" %}
-  {% include "_includes/case-header.njk" %}
+  {% include "_includes/case/header.njk" %}
 
   {% if _case.dga and not _case.dga.outcome %}
     {% set inset %}
@@ -39,7 +39,7 @@
     text: "Do another thing"
   }) }}<br><br><br> #}
 
-  {% include "_includes/case-navigation.njk" %}
+  {% include "_includes/case/navigation.njk" %}
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">

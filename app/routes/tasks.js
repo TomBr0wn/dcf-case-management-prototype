@@ -14,17 +14,18 @@ module.exports = router => {
             defendants: true
           }
         }
-      },
-      orderBy: { dueDate: 'desc' }
+      }
     })
 
+    let totalTasks = tasks.length
     let pageSize = 25
     let pagination = new Pagination(tasks, req.query.page, pageSize)
     tasks = pagination.getData()
 
     res.render('tasks/index', {
       tasks,
-      pagination
+      pagination,
+      totalTasks
     })
   })
 
