@@ -61,6 +61,12 @@ router.get('/clear-data', function (req, res) {
 router.get('/', (req, res) => {
   res.render("index")
 })
+router.get('/500', (req, res) => {
+  res.render("500")
+})
+router.get('/403', (req, res) => {
+  res.render("403")
+})
 
 require('./routes/account')(router)
 
