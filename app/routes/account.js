@@ -4,10 +4,6 @@ const checkSignedIn = require('../middleware/checkSignedIn')
 
 module.exports = router => {
 
-  router.get('/', (req, res) => {
-    res.render("index")
-  })
-
   router.get('/account', checkSignedIn, (req, res) => {
     res.render("account/index", { 
       user: req.session.data.user

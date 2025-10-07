@@ -57,6 +57,11 @@ router.get('/clear-data', function (req, res) {
   });
 });
 
+// Need this to make sure you can get there without being signed in
+router.get('/', (req, res) => {
+  res.render("index")
+})
+
 require('./routes/account')(router)
 
 router.use(checkSignedIn)
