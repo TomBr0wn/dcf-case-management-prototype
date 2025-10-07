@@ -1,6 +1,6 @@
 App.TextExpander = function(params) {
 	this.container = params.container;
-	this.maxLength = params.maxLength || 40;
+	this.maxLength = params.maxLength || 60;
 	this.moreText = params.moreText || 'Show more';
 	this.lessText = params.lessText || 'Show less';
 
