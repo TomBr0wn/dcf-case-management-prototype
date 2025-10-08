@@ -1,0 +1,51 @@
+{% extends "layouts/main.html" %}
+{% set navId = 'cases' %}
+{% set secondaryNavId = 'tasks' %}
+{% set pageName = task.name %}
+
+{% block beforeContent %}
+  {{ govukBreadcrumbs({
+    items: [
+      {
+        text: _case.reference,
+        href: "/cases/:caseId" | replace(':caseId', _case.id)
+      },
+      {
+        text: "Tasks",
+        href: "/cases/:caseId/tasks" | replace(':caseId', _case.id)
+      }
+    ]
+  }) }}
+{% endblock beforeContent %}
+
+{% block content %}
+  {% include "_includes/success-banner.njk" %}
+  
+    <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">{{task.name}}</h1>
+
+      {{ govukSummaryList({
+        rows: [
+          {
+            key: {
+              text: 'Due date'
+            },
+            value: {
+              html: task.dueDate | isoDateString | govukDateTime
+            }
+          },
+          {
+            key: {
+              text: 'Case reference'
+            },
+            value: {
+              html: '<a href="/cases/' + _case.id + '">' + _case.reference + '</a>'
+            }
+          }
+        ]
+      })}}
+
+    </div>
+  </div>
+{% endblock %}

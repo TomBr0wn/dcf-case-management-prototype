@@ -16,8 +16,8 @@
         <div class="app-list">
           {% for task in _case.tasks %}
           <div class="app-list__item">
-              <h2 class="govuk-heading-s govuk-!-margin-bottom-1">                
-                <a href="/tasks/{{task.id}}" class="govuk-link--no-visited-state">{{task.name}}</a>
+              <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
+                <a href="/cases/{{_case.id}}/tasks/{{task.id}}" class="govuk-link--no-visited-state">{{task.name}}</a>
               </h2>
 
               {% set defendantsValue %}
