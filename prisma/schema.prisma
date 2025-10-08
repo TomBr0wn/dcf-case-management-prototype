@@ -92,8 +92,9 @@ model Case {
   hearing     Hearing?
   location    Location?
   tasks       Task[]
+  documents   Document[]
   dga         DGA?
-  activityLogs ActivityLog[] 
+  activityLogs ActivityLog[]
 }
 
 model DGA {
@@ -167,6 +168,15 @@ model Task {
   name     String
   type     String
   dueDate  DateTime
+  case     Case     @relation(fields: [caseId], references: [id])
+  caseId   Int
+}
+
+model Document {
+  id       Int      @id @default(autoincrement())
+  name     String
+  type     String
+  size     Int
   case     Case     @relation(fields: [caseId], references: [id])
   caseId   Int
 }

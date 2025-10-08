@@ -6,6 +6,7 @@ const firstNames = require("../app/data/first-names.js");
 const lastNames = require("../app/data/last-names.js");
 const types = require("../app/data/types.js");
 const taskTypes = require("../app/data/task-types.js");
+const documentTypes = require("../app/data/document-types.js");
 const specialisms = require("../app/data/specialisms.js");
 
 const prisma = new PrismaClient();
@@ -165,6 +166,25 @@ async function main() {
     "Confirm hearing date",
   ];
 
+  // Define a pool of possible document names
+  const documentNames = [
+    "Police report",
+    "Witness statement",
+    "Evidence photo",
+    "Forensic analysis",
+    "Medical records",
+    "Phone records",
+    "Bank statements",
+    "CCTV footage",
+    "Interview transcript",
+    "Expert report",
+    "Scene photographs",
+    "Custody record",
+    "Chain of custody",
+    "Lab results",
+    "Search warrant",
+  ];
+
   for (let i = 0; i < TOTAL_CASES; i++) {
     const assignedDefendants = faker.helpers.arrayElements(
       defendants,
@@ -186,6 +206,19 @@ async function main() {
       type: faker.helpers.arrayElement(taskTypes),
       dueDate: faker.date.future(),
     }));
+
+    // Pick between 5 and 15 documents
+    const numDocuments = faker.number.int({ min: 5, max: 15 });
+    const documentsData = [];
+    for (let d = 0; d < numDocuments; d++) {
+      const baseName = faker.helpers.arrayElement(documentNames);
+      const name = `${baseName} ${d + 1}`;
+      documentsData.push({
+        name,
+        type: faker.helpers.arrayElement(documentTypes),
+        size: faker.number.int({ min: 50, max: 5000 }),
+      });
+    }
 
     const createdCase = await prisma.case.create({
       data: {
@@ -214,6 +247,11 @@ async function main() {
         tasks: {
           createMany: {
             data: tasksData, // now unique per case
+          },
+        },
+        documents: {
+          createMany: {
+            data: documentsData,
           },
         },
       },

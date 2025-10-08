@@ -79,7 +79,8 @@ module.exports = router => {
   })
 
   router.get('/tasks/remove-type/:type', (req, res) => {
-    _.set(req, 'session.data.taskListFilters.taskTypes', _.pull(req.session.data.taskListFilters.taskTypes, req.params.type))
+    const currentFilters = _.get(req, 'session.data.taskListFilters.taskTypes', [])
+    _.set(req, 'session.data.taskListFilters.taskTypes', _.pull(currentFilters, req.params.type))
     res.redirect('/tasks')
   })
 

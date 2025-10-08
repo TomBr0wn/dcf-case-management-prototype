@@ -266,32 +266,38 @@ module.exports = router => {
   })
 
   router.get('/cases/remove-dga/:dga', (req, res) => {
-    _.set(req, 'session.data.caseListFilters.dga', _.pull(req.session.data.caseListFilters.dga, req.params.dga))
+    const currentFilters = _.get(req, 'session.data.caseListFilters.dga', [])
+    _.set(req, 'session.data.caseListFilters.dga', _.pull(currentFilters, req.params.dga))
     res.redirect('/cases')
   })
 
   router.get('/cases/remove-ctl/:ctl', (req, res) => {
-    _.set(req, 'session.data.caseListFilters.ctl', _.pull(req.session.data.caseListFilters.ctl, req.params.ctl))
+    const currentFilters = _.get(req, 'session.data.caseListFilters.ctl', [])
+    _.set(req, 'session.data.caseListFilters.ctl', _.pull(currentFilters, req.params.ctl))
     res.redirect('/cases')
   })
 
   router.get('/cases/remove-unit/:unit', (req, res) => {
-    _.set(req, 'session.data.caseListFilters.unit', _.pull(req.session.data.caseListFilters.unit, req.params.unit))
+    const currentFilters = _.get(req, 'session.data.caseListFilters.unit', [])
+    _.set(req, 'session.data.caseListFilters.unit', _.pull(currentFilters, req.params.unit))
     res.redirect('/cases')
   })
 
   router.get('/cases/remove-complexity/:complexity', (req, res) => {
-    _.set(req, 'session.data.caseListFilters.complexities', _.pull(req.session.data.caseListFilters.complexities, req.params.complexity))
+    const currentFilters = _.get(req, 'session.data.caseListFilters.complexities', [])
+    _.set(req, 'session.data.caseListFilters.complexities', _.pull(currentFilters, req.params.complexity))
     res.redirect('/cases')
   })
 
   router.get('/cases/remove-type/:type', (req, res) => {
-    _.set(req, 'session.data.caseListFilters.types', _.pull(req.session.data.caseListFilters.types, req.params.type))
+    const currentFilters = _.get(req, 'session.data.caseListFilters.types', [])
+    _.set(req, 'session.data.caseListFilters.types', _.pull(currentFilters, req.params.type))
     res.redirect('/cases')
   })
 
   router.get('/cases/remove-lawyer/:lawyer', (req, res) => {
-    _.set(req, 'session.data.caseListFilters.lawyers', _.pull(req.session.data.caseListFilters.lawyers, req.params.lawyer))
+    const currentFilters = _.get(req, 'session.data.caseListFilters.lawyers', [])
+    _.set(req, 'session.data.caseListFilters.lawyers', _.pull(currentFilters, req.params.lawyer))
     res.redirect('/cases')
   })
 
