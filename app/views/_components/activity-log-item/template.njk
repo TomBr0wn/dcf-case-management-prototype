@@ -1,0 +1,164 @@
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+
+<div class="app-activity-log__item">
+  <div class="app-activity-log__header">
+    <h2 class="app-activity-log__title govuk-heading-s govuk-!-margin-bottom-1">{{ params.eventTitle }}</h2>
+    <p class="app-activity-log__byline">
+      By
+      {% if params.event.user -%}
+        {{params.event.user.firstName}}
+        {{params.event.user.lastName}}
+      {%- else -%}
+        System
+      {%- endif %} on
+      <time datetime="{{ params.event.createdAt }}">
+        {{- params.event.createdAt | isoDateString | govukDateTime -}}
+      </time>
+    </p>
+  </div>
+  <div class="app-activity-log__description">
+    {% if params.event.title == 'DGA recorded' %}
+      <div class="app-activity-log__box">
+        {{ govukSummaryList({
+          rows: [
+            {
+              key: {
+                text: "Outcome"
+              },
+              value: {
+                text: params.event.meta.outcome
+              }
+            }
+          ]
+        }) }}
+      </div>
+      <p class="app-log-card__note--link">
+        <a class="govuk-link" href="/cases/{{ params.event.case.id }}/dga">View DGA outcome</a>
+      </p>
+    {% endif %}
+
+    {% if params.event.title == 'Prosecutor assigned' %}
+      <div class="app-activity-log__box">
+        {{ govukSummaryList({
+          rows: [
+            {
+              key: {
+                text: "Prosecutor"
+              },
+              value: {
+                text: params.event.meta.lawyer.firstName + ' ' + params.event.meta.lawyer.lastName
+              }
+            }
+          ]
+        }) }}
+      </div>
+      <p class="app-log-card__note--link">
+        <a class="govuk-link" href="/cases/{{ params.event.case.id }}">View case</a>
+      </p>
+    {% endif %}
+
+    {% if params.event.title == 'Witness marked as appearing in court' %}
+      <div class="app-activity-log__box">
+        {{ govukSummaryList({
+          rows: [
+            {
+              key: {
+                text: "Witness"
+              },
+              value: {
+                text: params.event.meta.witness.firstName + ' ' + params.event.meta.witness.lastName
+              }
+            }
+          ]
+        }) }}
+      </div>
+      <p class="app-log-card__note--link">
+        <a class="govuk-link" href="/cases/{{ params.event.case.id }}/witnesses">View witness</a>
+      </p>
+    {% endif %}
+
+    {% if params.event.title == 'Witness marked as not appearing in court' %}
+      <div class="app-activity-log__box">
+        {{ govukSummaryList({
+          rows: [
+            {
+              key: {
+                text: "Witness"
+              },
+              value: {
+                text: params.event.meta.witness.firstName + ' ' + params.event.meta.witness.lastName
+              }
+            },
+            {
+              key: {
+                text: "Reason for marking the witness as not attending court"
+              },
+              value: {
+                text: params.event.meta.witness.reasonForNotAppearingInCourt
+              }
+            }
+          ]
+        }) }}
+      </div>
+      <p class="app-log-card__note--link">
+        <a class="govuk-link" href="/cases/{{ params.event.case.id }}/witnesses">View witness</a>
+      </p>
+    {% endif %}
+
+    {% if params.event.title == 'Witness statement marked as Section 9' %}
+      <div class="app-activity-log__box">
+        {{ govukSummaryList({
+          rows: [
+            {
+              key: {
+                text: "Witness"
+              },
+              value: {
+                text: params.event.meta.witness.firstName + ' ' + params.event.meta.witness.lastName
+              }
+            },
+            {
+              key: {
+                text: "Statement number"
+              },
+              value: {
+                text: params.event.meta.witnessStatement.number
+              }
+            }
+          ]
+        })  }}
+      </div>
+      <p class="app-log-card__note--link">
+        <a class="govuk-link" href="/cases/{{ params.event.case.id }}/witnesses">View statement</a>
+      </p>
+    {% endif %}
+
+    {% if params.event.title == 'Witness statement unmarked as Section 9' %}
+      <div class="app-activity-log__box">
+        {{ govukSummaryList({
+          rows: [
+            {
+              key: {
+                text: "Witness"
+              },
+              value: {
+                text: params.event.meta.witness.firstName + ' ' + params.event.meta.witness.lastName
+              }
+            },
+            {
+              key: {
+                text: "Statement number"
+              },
+              value: {
+                text: params.event.meta.witnessStatement.number
+              }
+            }
+          ]
+        })  }}
+      </div>
+      <p class="app-log-card__note--link">
+        <a class="govuk-link" href="/cases/{{ params.event.case.id }}/witnesses">View statement</a>
+      </p>
+    {% endif %}
+  </div>
+</div>
