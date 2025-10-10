@@ -365,6 +365,171 @@ async function main() {
     `✅ Assigned ${assignableCases.length} cases to exactly one lawyer, left ${unassignedCount} unassigned`
   );
 
+  // -------------------- Activity Logs --------------------
+  const eventTypes = [
+    'DGA recorded',
+    'Prosecutor assigned',
+    'Witness marked as appearing in court',
+    'Witness marked as not appearing in court',
+    'Witness statement marked as Section 9',
+    'Witness statement unmarked as Section 9'
+  ];
+
+  const dgaOutcomes = {
+    NOT_DISPUTED: "Not disputed",
+    DISPUTED_SUCCESSFULLY: "Disputed successfully",
+    DISPUTED_UNSUCCESSFULLY: "Disputed unsuccessfully"
+  };
+
+  // Select ~50% of cases to have activity logs
+  const casesForActivity = faker.helpers.arrayElements(
+    createdCases,
+    Math.floor(createdCases.length * 0.5)
+  );
+
+  let totalActivityLogs = 0;
+
+  for (const caseRef of casesForActivity) {
+    // Fetch the full case with relations
+    const fullCase = await prisma.case.findUnique({
+      where: { id: caseRef.id },
+      include: {
+        lawyers: true,
+        dga: true,
+        witnesses: {
+          include: {
+            statements: true
+          }
+        }
+      }
+    });
+
+    // Generate 1-6 events per case
+    const numEvents = faker.number.int({ min: 1, max: 6 });
+    const eventsToCreate = [];
+
+    // Generate base dates for this case (over the last 6 months)
+    const baseDates = [];
+    for (let i = 0; i < numEvents; i++) {
+      baseDates.push(faker.date.past({ years: 0.5 }));
+    }
+    // Sort chronologically
+    baseDates.sort((a, b) => a - b);
+
+    for (let i = 0; i < numEvents; i++) {
+      const randomUser = faker.helpers.arrayElement(users);
+      const eventDate = baseDates[i];
+
+      // Decide which event type to create based on what exists
+      const possibleEvents = [];
+
+      // Prosecutor assigned - if case has lawyers
+      if (fullCase.lawyers && fullCase.lawyers.length > 0) {
+        possibleEvents.push('Prosecutor assigned');
+      }
+
+      // DGA recorded - if case has a DGA
+      if (fullCase.dga) {
+        possibleEvents.push('DGA recorded');
+      }
+
+      // Witness events - if case has witnesses
+      if (fullCase.witnesses && fullCase.witnesses.length > 0) {
+        possibleEvents.push('Witness marked as appearing in court');
+        possibleEvents.push('Witness marked as not appearing in court');
+      }
+
+      // Witness statement events - if case has witness statements
+      const witnessesWithStatements = fullCase.witnesses?.filter(w => w.statements.length > 0) || [];
+      if (witnessesWithStatements.length > 0) {
+        possibleEvents.push('Witness statement marked as Section 9');
+        possibleEvents.push('Witness statement unmarked as Section 9');
+      }
+
+      // If no possible events, skip
+      if (possibleEvents.length === 0) continue;
+
+      const eventType = faker.helpers.arrayElement(possibleEvents);
+      let activityData = {
+        userId: randomUser.id,
+        caseId: fullCase.id,
+        action: 'UPDATE',
+        title: eventType,
+        createdAt: eventDate
+      };
+
+      // Add specific metadata based on event type
+      switch (eventType) {
+        case 'Prosecutor assigned':
+          const lawyer = faker.helpers.arrayElement(fullCase.lawyers);
+          activityData.model = 'Case';
+          activityData.recordId = fullCase.id;
+          activityData.meta = {
+            lawyer: {
+              id: lawyer.id,
+              firstName: lawyer.firstName,
+              lastName: lawyer.lastName
+            }
+          };
+          break;
+
+        case 'DGA recorded':
+          const outcomeKey = faker.helpers.arrayElement(['NOT_DISPUTED', 'DISPUTED_SUCCESSFULLY', 'DISPUTED_UNSUCCESSFULLY']);
+          activityData.model = 'Case';
+          activityData.recordId = fullCase.id;
+          activityData.meta = {
+            outcome: dgaOutcomes[outcomeKey]
+          };
+          break;
+
+        case 'Witness marked as appearing in court':
+        case 'Witness marked as not appearing in court':
+          const witness = faker.helpers.arrayElement(fullCase.witnesses);
+          activityData.model = 'Witness';
+          activityData.recordId = witness.id;
+          activityData.meta = {
+            witness: {
+              id: witness.id,
+              firstName: witness.firstName,
+              lastName: witness.lastName
+            }
+          };
+          break;
+
+        case 'Witness statement marked as Section 9':
+        case 'Witness statement unmarked as Section 9':
+          const witnessWithStatement = faker.helpers.arrayElement(witnessesWithStatements);
+          const statement = faker.helpers.arrayElement(witnessWithStatement.statements);
+          activityData.model = 'WitnessStatement';
+          activityData.recordId = statement.id;
+          activityData.meta = {
+            witnessStatement: {
+              id: statement.id,
+              number: statement.number
+            },
+            witness: {
+              id: witnessWithStatement.id,
+              firstName: witnessWithStatement.firstName,
+              lastName: witnessWithStatement.lastName
+            }
+          };
+          break;
+      }
+
+      eventsToCreate.push(activityData);
+    }
+
+    // Create all events for this case
+    for (const eventData of eventsToCreate) {
+      await prisma.activityLog.create({
+        data: eventData
+      });
+      totalActivityLogs++;
+    }
+  }
+
+  console.log(`✅ Created ${totalActivityLogs} activity log entries across ${casesForActivity.length} cases`);
+
   console.log("🌱 Seed finished.");
 }
 

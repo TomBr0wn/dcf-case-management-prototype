@@ -25,6 +25,16 @@
     <div class="govuk-grid-column-two-thirds">
       <h1 class="govuk-heading-l">{{task.name}}</h1>
 
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Mark as complete"
+        }) }}
+        {{ govukButton({
+          text: "Defer",
+          classes: 'govuk-button--secondary'
+        }) }}
+      </div>
+
       {{ govukSummaryList({
         rows: [
           {
