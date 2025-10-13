@@ -68,6 +68,10 @@ router.get('/403-case', (req, res) => {
   res.render("403-case")
 })
 
+router.get('/show-more', (req, res) => {
+  res.render("show-more")
+})
+
 require('./routes/account')(router)
 
 router.use(checkSignedIn)
