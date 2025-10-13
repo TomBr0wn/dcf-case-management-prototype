@@ -33,9 +33,10 @@
               {% for document in documents %}
               <div class="app-list__item">
                   <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
-                    {{document.name}}
+                    <a href="/cases/{{_case.id}}/material/{{document.id}}/show" class="govuk-link--no-visited-state">{{document.name}}</a>
                   </h2>
 
+                  
                   {{ govukSummaryList({
                     classes: 'govuk-summary-list--no-border app-summary-list--compact app-summary-list--small-text',
                     rows: [
