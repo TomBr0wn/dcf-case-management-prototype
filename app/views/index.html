@@ -4,44 +4,26 @@
 
 {% set pageName = "Prototype" %}
 
+<!-- show this CTA for the version that reflects live -->
+{% if data['state'] == "current" %}
+  {% set buttonText = "Start prototype that reflects live" %}
+<!-- if not live, show this CTA -->
+{% else %}
+  {% set buttonText = "Start prototype" %}
+{% endif %}
+
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full-width">
-
       <h1 class="govuk-heading-l">
         {{ pageName }}
       </h1>
-
-      <!-- show this CTA for the version that reflects live -->
-        {% if data['state'] == "current" %}
-          {% set buttonText = "Start prototype that reflects live" %}
-      <!-- if not live, show this CTA -->
-        {% else %}
-          {% set buttonText = "Start prototype" %}
-        {% endif %}
-
-
-      <h2 class="govuk-heading-m">Main prototype</h2>
 
       {{ govukButton({
         text: buttonText,
         isStartButton: true,
         href: '/account/sign-in'
       }) }}
-
-      <h2 class="govuk-heading-m">Static pages</h2>
-
-      <ul class="govuk-list govuk-list--bullet">
-        <li>
-          <a href="/403-case" class="govuk-link">403 - lack of permissions to view a case</a>
-        </li>
-        <li>
-          <a href="/500" class="govuk-link">500</a>
-        </li>
-        <li>
-          <a href="/show-more" class="govuk-link">Show more</a>
-        </li>
-      </ul>
     </div>
   </div>
 {% endblock %}
