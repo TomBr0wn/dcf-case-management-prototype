@@ -1,5 +1,5 @@
 {
-  "serviceName": "Make a charging decision",
+  "serviceName": "Case management",
   "plugins": {
     "govuk-frontend": {
       "rebrand": true
