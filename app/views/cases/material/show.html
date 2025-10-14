@@ -4,7 +4,7 @@
 {% set pageName = document.name %}
 
 {% block beforeContent %}
-  {% include "_includes/case/identity-bar.njk" %}
+  {# {% include "_includes/case/identity-bar.njk" %} #}
   {{ govukBreadcrumbs({
     items: [
       {
@@ -13,7 +13,7 @@
       },
       {
         text: "Material",
-        href: "/cases/:caseId/documents" | replace(':caseId', _case.id)
+        href: "/cases/:caseId/material" | replace(':caseId', _case.id)
       }
     ]
   }) }} 
