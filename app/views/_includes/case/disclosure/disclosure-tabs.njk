@@ -1,0 +1,58 @@
+{# Police disclosure ////////////////////////////////////////// #}
+
+{% set policeDisclosureHtml %}
+
+
+
+
+{% endset -%}
+
+
+
+{# Disclosure assessment ////////////////////////////////////////// #}
+
+{% set disclosureAssessmentHtml %}
+
+
+
+
+{% endset -%}
+
+
+
+{# Disclosure schedule ////////////////////////////////////////// #}
+
+{% set disclosureScheduleHtml %}
+
+
+
+
+{% endset -%}
+
+
+{# Tabs component ////////////////////////////////////////// #}
+{{ govukTabs({
+  items: [
+    {
+      label: "Police disclosure certificate",
+      id: "police-disclosure-certificate",
+      panel: {
+        html: policeDisclosureHtml
+      }
+    },
+    {
+      label: "Disclosure assessment",
+      id: "disclosure-assessment",
+      panel: {
+        html: disclosureAssessmentHtml
+      }
+    },
+    {
+      label: "Disclosure schedule",
+      id: "disclosure-schedule",
+      panel: {
+        html: disclosureScheduleHtml
+      }
+    }
+  ]
+}) }}
