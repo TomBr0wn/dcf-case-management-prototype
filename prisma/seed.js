@@ -280,7 +280,7 @@ async function main() {
           ]),
           previousTransgressions: faker.helpers.arrayElement([
             null,
-            faker.lorem.words(5),
+            faker.lorem.sentence(),
           ]),
           warned: faker.datatype.boolean(),
           dateOfBirth: faker.date.birthdate({ min: 18, max: 90, mode: "age" }),
