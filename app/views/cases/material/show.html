@@ -4,7 +4,7 @@
 {% set pageName = document.name %}
 
 {% block beforeContent %}
-  {# {% include "_includes/case/identity-bar.njk" %} #}
+  
   {{ govukBreadcrumbs({
     items: [
       {
@@ -14,6 +14,9 @@
       {
         text: "Material",
         href: "/cases/:caseId/material" | replace(':caseId', _case.id)
+      },
+      {
+        html: document.name
       }
     ]
   }) }} 
