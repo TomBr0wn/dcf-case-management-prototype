@@ -4,17 +4,53 @@
 {% set pageName = 'Disclosure' %}
 
 {% block beforeContent %}
-  {% include "_includes/case/identity-bar.njk" %}
-{% endblock %}
+  
+  {{ govukBreadcrumbs({
+    items: [
+      {
+        text: _case.reference,
+        href: "/cases/:caseId" | replace(':caseId', _case.id)
+      },
+      {
+        text: "Material",
+        href: "/cases/:caseId/material" | replace(':caseId', _case.id)
+      },
+      {
+        html: "Disclosure"
+      }
+    ]
+  }) }} 
+{% endblock beforeContent %}
+
 
 {% block content %}
   {% include "_includes/success-banner.njk" %}
   {# {% include "_includes/case/header.njk" %} #}
-  {% include "_includes/case/material/navigation.njk" %}
+  {# {% include "_includes/case/material/navigation.njk" %} #}
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
       <h1 class="govuk-heading-l">{{pageName}}</h1>
+
+      <div class="govuk-button-group">
+        <a class="govuk-link" href="#">Disclosure certificate</a>
+        <a class="govuk-link" href="#">Disclosure schedule</a>
+      </div>
+
+
+      {{ mojPageHeaderActions({
+        heading: {
+          text: "Unused materials",
+          classes: "govuk-heading-m govuk-!-margin-0"
+        },
+        items: [{
+          text: "Upload new",
+          classes: "govuk-button--secondary"
+        }, {
+          text: "Share collection",
+          classes: "govuk-button--secondary"
+        }]
+      }) }}
 
       {% include "_includes/case/disclosure/disclosure-table.njk" %}
       
