@@ -1,0 +1,46 @@
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+{# expects: document, _case #}
+{% set material = document or {} %}
+{% set defendants = _case.defendants | default([]) %}
+{% set primary = defendants[0] | default(null) %}
+{% set primaryFullName = ((primary and primary.firstName) | default('')) ~ ' ' ~ ((primary and primary.lastName) | default('')) | trim %}
+
+{# Build the combined "Related defendant" cell: link + inline tags #}
+{% set relatedHtml %}
+  {% if primaryFullName %}
+    <a class="govuk-link govuk-link--no-visited-state"
+       href="/cases/{{ _case.id }}/defendants/{{ primary and primary.id }}">
+      {{ primaryFullName }}
+    </a>
+  {% else %}
+    —
+  {% endif %}
+
+  {% if material.tags and (material.tags | length) %}
+    {% for t in material.tags %}
+      <span class="govuk-!-margin-left-2">
+        {{ govukTag({ text: t }) }}
+      </span>
+    {% endfor %}
+  {% endif %}
+{% endset %}
+
+{{ govukSummaryList({
+  classes: "govuk-!-margin-bottom-6",
+  rows: [
+    {
+      key: { text: "Description" },
+      value: { text: material.description | default("—") }
+    },
+    {
+      key: { text: "Related defendant" },
+      value: { html: relatedHtml | trim }
+    },
+    {
+      key: { text: "Police classification" },
+      value: { text: material.policeClassification | default("—") }
+    }
+  ]
+}) }}

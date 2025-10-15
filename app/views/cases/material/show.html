@@ -28,6 +28,20 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
       <h1 class="govuk-heading-l">{{document.name}}</h1>
+      
+      {% include "_includes/case/material/document-summary.njk" %}
+
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Reclassify as unused"
+        }) }}
+
+        {{ govukButton({
+          text: "Secondary action",
+          classes: "govuk-button--secondary"
+        }) }}
+      </div>
+
 
       <iframe
         src="/public/files/MCLOVEMG3.pdf"
