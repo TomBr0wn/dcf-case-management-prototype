@@ -18,7 +18,7 @@ module.exports = router => {
       }
     })
 
-    res.render("cases/witnesses/index-simple", { _case })
+    res.render("cases/witnesses/index", { _case })
   })
 
 }

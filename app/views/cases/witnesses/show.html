@@ -26,7 +26,10 @@
 {% endblock %}
 
 {% block content %}
-  {% include "_includes/success-banner.njk" %}
+  {{ govukNotificationBanner({
+    type: "success",
+    text: flash
+  }) if flash.length }}
   {# {% include "_includes/witness/navigation.njk" %} #}
 
   <div class="govuk-grid-row">
@@ -42,6 +45,8 @@
       {% else %}
         <p><a class="govuk-link--no-visited-state" href="/cases/{{_case.id}}/witnesses/{{witness.id}}/mark-as-attending-court">Mark as attending court</a></p>
       {% endif %}
+
+      <h2 class="govuk-heading-m govuk-!-margin-top-7">Details</h2>
 
       {{ govukSummaryList({
         rows: [
