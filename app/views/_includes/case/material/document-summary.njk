@@ -8,22 +8,18 @@
 {% set primaryFullName = ((primary and primary.firstName) | default('')) ~ ' ' ~ ((primary and primary.lastName) | default('')) | trim %}
 
 {# Build the combined "Related defendant" cell: link + inline tags #}
-{% set relatedHtml %}
-  {% if primaryFullName %}
-    <a class="govuk-link govuk-link--no-visited-state"
-       href="/cases/{{ _case.id }}/defendants/{{ primary and primary.id }}">
-      {{ primaryFullName }}
-    </a>
-  {% else %}
-    —
-  {% endif %}
-
-  {% if material.tags and (material.tags | length) %}
-    {% for t in material.tags %}
-      <span class="govuk-!-margin-left-2">
-        {{ govukTag({ text: t }) }}
-      </span>
+ {% set relatedDefendants %}
+  {% set hasOthers = _case.defendants and _case.defendants.length > 1 %}
+  {% if hasOthers %}
+    {% for defendant in _case.defendants %}
+      {% if not loop.first %}
+        <a href="/cases/{{ _case.id }}/defendants/{{ defendant.id }}" class="govuk-link--no-visited-state">
+          {{ defendant.firstName }} {{ defendant.lastName }}
+        </a>{% if not loop.last %}, {% endif %}
+      {% endif %}
     {% endfor %}
+  {% else %}
+    <span class="govuk-hint govuk-!-display-inline">No co-defendants</span>
   {% endif %}
 {% endset %}
 
@@ -36,7 +32,7 @@
     },
     {
       key: { text: "Related defendant" },
-      value: { html: relatedHtml | trim }
+      value: { html: relatedDefendants | trim }
     },
     {
       key: { text: "Police classification" },
