@@ -1,0 +1,39 @@
+{% extends "layouts/main.html" %}
+{% set navId = 'cases' %}
+{% set secondaryNavId = 'material' %}
+{% set pageName = 'Disclosure schedule' %}
+
+{% block beforeContent %}
+  
+  {{ govukBreadcrumbs({
+    items: [
+      {
+        text: _case.reference,
+        href: "/cases/:caseId" | replace(':caseId', _case.id)
+      },
+      {
+        text: "Material",
+        href: "/cases/:caseId/material" | replace(':caseId', _case.id)
+      },
+      {
+        html: "Disclosure"
+      }
+    ]
+  }) }} 
+{% endblock beforeContent %}
+
+
+{% block content %}
+  {% include "_includes/success-banner.njk" %}
+  {# {% include "_includes/case/header.njk" %} #}
+  {# {% include "_includes/case/material/navigation.njk" %} #}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-l">{{pageName}}</h1>
+
+      Stuff here
+      
+    </div>
+  </div>
+{% endblock %}

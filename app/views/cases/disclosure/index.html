@@ -1,6 +1,6 @@
 {% extends "layouts/main.html" %}
 {% set navId = 'cases' %}
-{% set secondaryNavId = 'disclosure' %}
+{% set secondaryNavId = 'material' %}
 {% set pageName = 'Disclosure' %}
 
 {% block beforeContent %}
@@ -33,24 +33,35 @@
       <h1 class="govuk-heading-l">{{pageName}}</h1>
 
       <div class="govuk-button-group">
-        <a class="govuk-link" href="#">Disclosure certificate</a>
-        <a class="govuk-link" href="#">Disclosure schedule</a>
+       
       </div>
 
+      <div class="govuk-button-group">
+         {{ mojButtonMenu({
+            button: {
+              text: "Actions"
+            },
+            items: [
+              {
+                text: "Assess as disclosable"
+              },
+              {
+                text: "Assess as disclosable by inspection"
+              },
+              {
+                text: "Assess as clearly not disclosable"
+              },
+              {
+                text: "Assess as notdisclosable"
+              }
+            ]
+          }) }}
 
-      {{ mojPageHeaderActions({
-        heading: {
-          text: "Unused materials",
-          classes: "govuk-heading-m govuk-!-margin-0"
-        },
-        items: [{
-          text: "Upload new",
-          classes: "govuk-button--secondary"
-        }, {
-          text: "Share collection",
-          classes: "govuk-button--secondary"
-        }]
-      }) }}
+        <a class="govuk-link" href="/disclosure/certificate">Certificate</a>
+        <a class="govuk-link" href="/disclosure/schedule">Schedule</a>
+      </div>
+
+     
 
       {% include "_includes/case/disclosure/disclosure-table.njk" %}
       
