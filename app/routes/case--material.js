@@ -3,8 +3,24 @@ const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 const documentTypes = require('../data/document-types')
 
+const path = require('path')
+const fs = require('fs').promises
+
 function resetFilters(req) {
   _.set(req, 'session.data.documentListFilters.documentTypes', null)
+}
+
+async function listFilesIn(dir) {
+  try {
+    const entries = await fs.readdir(dir, { withFileTypes: true })
+    return entries
+      .filter(e => e.isFile())
+      .map(e => e.name)
+      .sort((a, b) => a.localeCompare(b))
+  } catch (e) {
+    console.warn('Could not read files from', dir, e.message)
+    return []
+  }
 }
 
 //////////////////////////////////////////////////////////////////
@@ -76,11 +92,23 @@ module.exports = router => {
       value: docType
     }))
 
+    // Files under app/assets/files (served at /public/files/* by the kit)
+    const assetsFilesDir = path.join(__dirname, '..', 'assets', 'files')
+    const assetFiles = await listFilesIn(assetsFilesDir)
+
+    const assetFileLinks = assetFiles.map(name => ({
+      name,
+      href: `/public/files/${name}`
+    }))
+
+
     res.render("cases/material/index", {
       _case,
       documents,
       documentTypeItems,
-      selectedFilters
+      selectedFilters,
+      assetFiles,        // just names
+      assetFileLinks     // [{name, href}]
     })
   })
 

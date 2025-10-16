@@ -2,6 +2,7 @@
 {% set navId = 'cases' %}
 {% set secondaryNavId = 'material' %}
 {% set pageName = 'Material' %}
+{# {% set pageName = "Material (:total)" | replace(':total', _case.materials.length) %} #}
 
 {% block beforeContent %}
   {% include "_includes/case/identity-bar.njk" %}
@@ -20,6 +21,8 @@
       <a href="/cases/{{_case.id}}/disclosure" class="govuk-link">View disclosure list</a>
      </p>
 
+     {{ _case.defendants | log }}
+
       <div class="app-filter-layout">
         <div class="app-filter-layout__filter">
           {# {% include "_includes/document/filter-panel.njk" %} #}
@@ -34,10 +37,12 @@
 
           {% if documents.length %}
             <div class="app-list">
-              {% for document in documents %}
+
+              {% for f in assetFileLinks %}
+
               <div class="app-list__item">
                   <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
-                    <a href="/cases/{{_case.id}}/material/{{document.id}}/show" class="govuk-link--no-visited-state">{{document.name}} </a>&nbsp;&nbsp;
+                    <a href="{{ f.href }}" class="govuk-link govuk-link--no-visited-state">{{ f.name }}</a>
                   </h2>
 
                   
