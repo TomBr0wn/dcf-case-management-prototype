@@ -122,6 +122,59 @@ module.exports = router => {
     })
   })
 
+  ////////////////////////////////////////////////// --------------------------------------
+  // CERTIFICATE: /cases/:caseId/disclosure/certificate
+  router.get('/cases/:caseId/disclosure/certificate', async (req, res) => {
+    const caseId = Number(req.params.caseId)
+
+    const _case = await prisma.case.findUnique({
+      where: { id: caseId },
+      include: {
+        user: true,
+        witnesses: { include: { statements: true } },
+        lawyers: true,
+        defendants: true,
+        hearing: true,
+        location: true,
+        tasks: true,
+        dga: true
+      }
+    })
+    if (!_case) return res.status(404).render('not-found')
+
+    return res.render('cases/disclosure/certificate', {
+      _case,
+      secondaryNavId: 'disclosure'
+    })
+  })
+
+  ////////////////////////////////////////////////// --------------------------------------
+  // SCHEDULE: /cases/:caseId/disclosure/schedule
+  router.get('/cases/:caseId/disclosure/schedule', async (req, res) => {
+    const caseId = Number(req.params.caseId)
+
+    const _case = await prisma.case.findUnique({
+      where: { id: caseId },
+      include: {
+        user: true,
+        witnesses: { include: { statements: true } },
+        lawyers: true,
+        defendants: true,
+        hearing: true,
+        location: true,
+        tasks: true,
+        dga: true
+      }
+    })
+    if (!_case) return res.status(404).render('not-found')
+
+    return res.render('cases/disclosure/schedule', {
+      _case,
+      secondaryNavId: 'disclosure'
+    })
+  })
+
+
 
   router.get('/cases/:caseId/disclosure/remove-type/:type', (req, res) => {
     _.set(req, 'session.data.documentListFilters.documentTypes', _.pull(req.session.data.documentListFilters.documentTypes, req.params.type))
