@@ -91,7 +91,7 @@
             {% endif %}
           </ul>
         {% else %}
-          None
+          Not entered
         {% endif %}
       {% endset %}
 
@@ -104,7 +104,7 @@
               text: "Title"
             },
             value: {
-              text: witness.title or "Not provided"
+              text: witness.title or "Not entered"
             },
             actions: {
               items: [
@@ -155,7 +155,7 @@
               text: "Date of birth"
             },
             value: {
-              text: witness.dateOfBirth | isoDateString | govukDate if witness.dateOfBirth else "Not provided"
+              text: witness.dateOfBirth | isoDateString | govukDate if witness.dateOfBirth else "Not entered"
             },
             actions: {
               items: [
@@ -172,7 +172,7 @@
               text: "Gender"
             },
             value: {
-              text: witness.gender or "Not provided"
+              text: witness.gender or "Not entered"
             },
             actions: {
               items: [
@@ -189,7 +189,7 @@
               text: "Ethnicity"
             },
             value: {
-              text: witness.ethnicity | replace("_", " ") if witness.ethnicity else "Not provided"
+              text: witness.ethnicity | replace("_", " ") if witness.ethnicity else "Not entered"
             },
             actions: {
               items: [
@@ -240,7 +240,7 @@
               text: "Address"
             },
             value: {
-              html: ([witness.addressLine1, witness.addressLine2, witness.addressTown, witness.addressPostcode] | reject("equalto", none) | reject("equalto", "") | join("<br>")) if witness.addressLine1 else "Not provided"
+              html: ([witness.addressLine1, witness.addressLine2, witness.addressTown, witness.addressPostcode] | reject("equalto", none) | reject("equalto", "") | join("<br>")) if witness.addressLine1 else "Not entered"
             },
             actions: {
               items: [
@@ -257,7 +257,7 @@
               text: "Mobile number"
             },
             value: {
-              text: witness.mobileNumber or "Not provided"
+              text: witness.mobileNumber or "Not entered"
             },
             actions: {
               items: [
@@ -274,7 +274,7 @@
               text: "Email address"
             },
             value: {
-              text: witness.emailAddress or "Not provided"
+              text: witness.emailAddress or "Not entered"
             },
             actions: {
               items: [

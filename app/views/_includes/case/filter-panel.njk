@@ -1,6 +1,6 @@
 {% set filterOptionsHtml %}
 
-  {{ govukCheckboxes({
+  {# {{ govukCheckboxes({
     idPrefix: "caseListFilters[dga]",
     name: "caseListFilters[dga]",
     classes: "govuk-checkboxes--small",
@@ -12,7 +12,7 @@
     },
     items: dgaItems,
     values: data.caseListFilters.dga
-  }) }}
+  }) }} #}
 
   {{ govukCheckboxes({
     idPrefix: "caseListFilters[isCTL]",
