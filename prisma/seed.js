@@ -215,6 +215,7 @@ async function main() {
       const name = `${baseName} ${d + 1}`;
       documentsData.push({
         name,
+        description: faker.helpers.arrayElement(['This is a random description', 'This is another random description', faker.lorem.sentence()]),
         type: faker.helpers.arrayElement(documentTypes),
         size: faker.number.int({ min: 50, max: 5000 }),
       });
