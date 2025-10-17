@@ -33,7 +33,8 @@
             <div class="app-action-bar__filter"></div>
           </div>
 
-          {# {% include "_includes/document/search-form.njk" %} #}
+          {% include "_includes/document/search-form.njk" %}
+          {% include "_includes/case/material/sort-controls.njk" %}
 
           {% if documents.length %}
             <div class="app-list">
