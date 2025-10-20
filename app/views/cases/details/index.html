@@ -1,7 +1,7 @@
 {% extends "layouts/main.html" %}
 {% set navId = 'cases' %}
-{% set secondaryNavId = 'outline' %}
-{% set pageName = 'Outline' %}
+{% set secondaryNavId = 'details' %}
+{% set pageName = 'Details' %}
 
 {% block beforeContent %}
   {% include "_includes/case/identity-bar.njk" %}
@@ -15,9 +15,49 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-three-quarters">
       <h1 class="govuk-heading-l">{{pageName}}</h1>
-      {# <h2 class="govuk-heading-m">Case outline</h2> #}
-      {% include "_includes/case/details/details-tabs.njk" %}
-      
+      {# <h2 class="govuk-heading-m">Case outline</h2> #}    
+    </div>
+  
+
+    <div class="govuk-grid-column-full">
+      {% include "_includes/case/details/main-tabs.njk" %}
     </div>
   </div>
+{% endblock %}
+
+{% block pageScripts %}
+  {# ---------- Tiny progressive enhancement JS ---------- #}
+  <script>
+    (function () {
+      function setActiveFromHash() {
+        var hash = window.location.hash || '#factual-summary';
+        var panels = document.querySelectorAll('.js-case-section');
+        panels.forEach(function (p) { p.hidden = ('#' + p.id) !== hash; });
+
+        // Update nav active state
+        document.querySelectorAll('.moj-side-navigation a').forEach(function (a) {
+          var active = a.getAttribute('href') === hash;
+          if (active) {
+            a.setAttribute('aria-current', 'location');
+            a.parentElement.classList.add('moj-side-navigation__item--active');
+          } else {
+            a.removeAttribute('aria-current');
+            a.parentElement.classList.remove('moj-side-navigation__item--active');
+          }
+        });
+      }
+
+      // Handle clicks (no jump), and back/forward
+      document.addEventListener('click', function (e) {
+        var link = e.target.closest('.moj-side-navigation a[href^="#"]');
+        if (!link) return;
+        e.preventDefault();
+        var target = link.getAttribute('href');
+        if (target && target !== window.location.hash) history.pushState(null, '', target);
+        setActiveFromHash();
+      });
+      window.addEventListener('hashchange', setActiveFromHash);
+      document.addEventListener('DOMContentLoaded', setActiveFromHash);
+    })();
+  </script>
 {% endblock %}

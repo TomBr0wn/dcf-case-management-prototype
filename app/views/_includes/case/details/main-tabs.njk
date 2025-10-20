@@ -1,0 +1,88 @@
+{# CASE OUTLINE ////////////////////////////////////////// #}
+
+{% set caseOutlineHtml %}
+
+{% include "_includes/case/details/side-navigation.njk" %}
+
+{% endset -%}
+
+
+
+{# DEFENDANTS ////////////////////////////////////////// #}
+
+{% set defendantsInformationHtml %}
+
+
+{% endset -%}
+
+
+
+{# WITNESSES ////////////////////////////////////////// #}
+
+{% set witnessessInformationHtml %}
+
+
+
+{% endset -%}
+
+
+{# MATERIALS ////////////////////////////////////////// #}
+
+{% set witnessessInformationHtml %}
+
+
+
+{% endset -%}
+
+
+{# DISCLOSURE ////////////////////////////////////////// #}
+
+{% set disclosureInformationHtml %}
+
+
+
+{% endset -%}
+
+
+
+{# TAB STRUCTURE ////////////////////////////////////////// #}
+
+{{ govukTabs({
+  items: [
+    {
+      label: "Case Outline",
+      id: "case-outline",
+      panel: {
+        html: caseOutlineHtml
+      }
+    },
+    {
+      label: "Defendants",
+      id: "defendants",
+      panel: {
+        html: defendantsInformationHtml
+      }
+    },
+    {
+      label: "Witnesses",
+      id: "witnesses",
+      panel: {
+        html: witnessessInformationHtml
+      }
+    },
+    {
+      label: "Materials",
+      id: "materials",
+      panel: {
+        html: materialsInformationHtml
+      }
+    },
+    {
+      label: "Disclosure",
+      id: "disclosure",
+      panel: {
+        html: materialsInformationHtml
+      }
+    }
+  ]
+}) }}
