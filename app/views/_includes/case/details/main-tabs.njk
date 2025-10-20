@@ -2,7 +2,8 @@
 
 {% set caseOutlineHtml %}
 
-{% include "_includes/case/details/side-navigation.njk" %}
+  <h3 class="govuk-heading-m">Case outline</h3>
+  {% include "_includes/case/details/side-navigation.njk" %}
 
 {% endset -%}
 
@@ -10,8 +11,8 @@
 
 {# DEFENDANTS ////////////////////////////////////////// #}
 
-{% set defendantsInformationHtml %}
-
+{% set defendantsHtml %}
+<h3 class="govuk-heading-m">Defendants</h3>
 
 {% endset -%}
 
@@ -19,8 +20,8 @@
 
 {# WITNESSES ////////////////////////////////////////// #}
 
-{% set witnessessInformationHtml %}
-
+{% set witnessessHtml %}
+<h3 class="govuk-heading-m">Witnesses</h3>
 
 
 {% endset -%}
@@ -28,8 +29,8 @@
 
 {# MATERIALS ////////////////////////////////////////// #}
 
-{% set witnessessInformationHtml %}
-
+{% set materialsHtml %}
+<h3 class="govuk-heading-m">Materials</h3>
 
 
 {% endset -%}
@@ -37,8 +38,8 @@
 
 {# DISCLOSURE ////////////////////////////////////////// #}
 
-{% set disclosureInformationHtml %}
-
+{% set disclosureHtml %}
+<h3 class="govuk-heading-m">Disclosure</h3>
 
 
 {% endset -%}
@@ -60,28 +61,28 @@
       label: "Defendants",
       id: "defendants",
       panel: {
-        html: defendantsInformationHtml
+        html: defendantsHtml
       }
     },
     {
       label: "Witnesses",
       id: "witnesses",
       panel: {
-        html: witnessessInformationHtml
+        html: witnessessHtml
       }
     },
     {
       label: "Materials",
       id: "materials",
       panel: {
-        html: materialsInformationHtml
+        html: materialsHtml
       }
     },
     {
       label: "Disclosure",
       id: "disclosure",
       panel: {
-        html: materialsInformationHtml
+        html: disclosureHtml
       }
     }
   ]
