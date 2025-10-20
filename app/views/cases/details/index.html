@@ -9,7 +9,6 @@
 
 {% block content %}
   {% include "_includes/success-banner.njk" %}
-  {# {% include "_includes/case/header.njk" %} #}
   {% include "_includes/case/material/navigation.njk" %}
 
   <div class="govuk-grid-row">
@@ -24,54 +23,5 @@
   </div>
 {% endblock %}
 
-{% block pageScripts %}
-  {# ---------- Tiny progressive enhancement JS ---------- #}
-  <script>
-    (function () {
-      // IDs of the *inner* side-nav sections we control
-      var sectionIds = ['#factual-summary', '#cip', '#certifications']
-      var defaultHash = '#factual-summary'
 
-      function resolveHash() {
-        var h = window.location.hash
-        // Only react to our own hashes otherwise default
-        if (sectionIds.indexOf(h) === -1) return defaultHash
-        return h || defaultHash
-      }
 
-      function setActiveFromHash() {
-        var hash = resolveHash()
-        var panels = document.querySelectorAll('.js-case-section')
-        panels.forEach(function (p) {
-          p.hidden = ('#' + p.id) !== hash
-        })
-
-        // Update side nav active styling/accessibility
-        document.querySelectorAll('.moj-side-navigation a[href^="#"]').forEach(function (a) {
-          var active = a.getAttribute('href') === hash
-          if (active) {
-            a.setAttribute('aria-current', 'location')
-            a.parentElement.classList.add('moj-side-navigation__item--active')
-          } else {
-            a.removeAttribute('aria-current')
-            a.parentElement.classList.remove('moj-side-navigation__item--active')
-          }
-        })
-      }
-
-      // Enhance hash clicks (no jump) and support back/forward
-      document.addEventListener('click', function (e) {
-        var link = e.target.closest('.moj-side-navigation a[href^="#"]')
-        if (!link) return
-        e.preventDefault()
-        var target = link.getAttribute('href')
-        if (target && target !== window.location.hash) history.pushState(null, '', target)
-        setActiveFromHash()
-      })
-
-      window.addEventListener('hashchange', setActiveFromHash)
-      document.addEventListener('DOMContentLoaded', setActiveFromHash)
-    })()
-  </script>
-
-{% endblock %}
