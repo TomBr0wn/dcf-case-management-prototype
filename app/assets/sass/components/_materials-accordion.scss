@@ -1,0 +1,41 @@
+/* materials-accordion.scss */
+
+/* Keep all text inside specific accordions at 16px */
+.dcf-accordion {
+  font-size: 16px;
+  line-height: 1.45;
+
+  .govuk-accordion__section-button,
+  .govuk-accordion__section-heading,
+  .govuk-accordion__section-summary,
+  .govuk-accordion__section-toggle-text,
+  .govuk-accordion__section-content,
+  .govuk-accordion__controls,
+  .govuk-body,
+  .govuk-hint,
+  .govuk-list,
+  .govuk-link,
+  p, li {
+    font-size: 16px;
+    line-height: 1.45;
+  }
+}
+
+/* Section sub-headers inside the open panel (e.g. DEFENDANT / PC BLAYNEE) */
+.dcf-materials-subhead {
+  display: block;
+  padding: 10px 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+  color: #0b0c0c;
+  background: #fff;
+  border-top: 1px solid #b1b4b6;
+  border-bottom: 1px solid #b1b4b6;
+}
+
+.dcf-materials-subhead--sticky {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
