@@ -8,7 +8,7 @@ function resetFilters(req) {
 }
 
 module.exports = router => {
-  router.get("/cases/:caseId/outline", async (req, res) => {
+  router.get("/cases/:caseId/details", async (req, res) => {
     const caseId = parseInt(req.params.caseId)
 
     let selectedDocumentTypeFilters = _.get(req.session.data.documentListFilters, 'documentTypes', [])
@@ -74,7 +74,7 @@ module.exports = router => {
       value: docType
     }))
 
-    res.render("cases/outline/index", {
+    res.render("cases/details/index", {
       _case,
       documents,
       documentTypeItems,
@@ -85,7 +85,7 @@ module.exports = router => {
 
   /////////////////////////////////////////////////////////////////////
 
-    router.get("/cases/:caseId/outline/show", async (req, res) => {
+    router.get("/cases/:caseId/details/show", async (req, res) => {
     const caseId = parseInt(req.params.caseId)
 
     let selectedDocumentTypeFilters = _.get(req.session.data.documentListFilters, 'documentTypes', [])
@@ -151,7 +151,7 @@ module.exports = router => {
       value: docType
     }))
 
-    res.render("cases/outline/show", {
+    res.render("cases/details/show", {
       _case,
       documents,
       documentTypeItems,
@@ -159,19 +159,19 @@ module.exports = router => {
     })
   })
 
-  router.get('/cases/:caseId/outline/remove-type/:type', (req, res) => {
+  router.get('/cases/:caseId/details/remove-type/:type', (req, res) => {
     _.set(req, 'session.data.documentListFilters.documentTypes', _.pull(req.session.data.documentListFilters.documentTypes, req.params.type))
-    res.redirect(`/cases/${req.params.caseId}/outline`)
+    res.redirect(`/cases/${req.params.caseId}/details`)
   })
 
-  router.get('/cases/:caseId/outline/clear-filters', (req, res) => {
+  router.get('/cases/:caseId/details/clear-filters', (req, res) => {
     resetFilters(req)
-    res.redirect(`/cases/${req.params.caseId}/outline`)
+    res.redirect(`/cases/${req.params.caseId}/details`)
   })
 
-  router.get('/cases/:caseId/outline/clear-search', (req, res) => {
+  router.get('/cases/:caseId/details/clear-search', (req, res) => {
     _.set(req, 'session.data.documentSearch.keywords', '')
-    res.redirect(`/cases/${req.params.caseId}/outline`)
+    res.redirect(`/cases/${req.params.caseId}/details`)
   })
 
 }

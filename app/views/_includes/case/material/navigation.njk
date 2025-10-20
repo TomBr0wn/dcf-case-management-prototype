@@ -6,37 +6,16 @@
     href: "/cases/:caseId" | replace(':caseId', _case.id),
     current: secondaryNavId == 'overview'
   }, {
-    text: "Outline",
-    href: "/cases/:caseId/outline" | replace(':caseId', _case.id),
-    current: secondaryNavId == 'outline'
-  },{
-    text: "Tasks",
-    href: "/cases/:caseId/tasks" | replace(':caseId', _case.id),
-    current: secondaryNavId == 'tasks'
+    text: "Details",
+    href: "/cases/:caseId/details" | replace(':caseId', _case.id),
+    current: secondaryNavId == 'details'
   }, {
-    text: "Defendants",
-    href: "/cases/:caseId/defendants" | replace(':caseId', _case.id),
-    current: secondaryNavId == 'defendants'
+    text: "Communications",
+    href: "/cases/:caseId/communications" | replace(':caseId', _case.id),
+    current: secondaryNavId == 'communications'
   }, {
-    text: "Witnesses",
-    href: "/cases/:caseId/witnesses" | replace(':caseId', _case.id),
-    current: secondaryNavId == 'witnesses'
-  }, {
-    href: "/cases/:caseId/material" | replace(':caseId', _case.id),
-    text: "Material",
-    current: secondaryNavId == 'material'
-  }, {
-    href: "/cases/:caseId/actions" | replace(':caseId', _case.id),
-    text: "Action plan",
-    current: secondaryNavId == 'actions'
-  },{
-    text: "DGA",
-    href: "/cases/:caseId/dga" | replace(':caseId', _case.id),
-    current: secondaryNavId == 'dga'
-  } if _case.dga and 1==2,
-  {
-    text: "Activity",
-    href: "/cases/:caseId/activity" | replace(':caseId', _case.id),
-    current: secondaryNavId == 'activity'
+    text: "Reviews",
+    href: "/cases/:caseId/reviews" | replace(':caseId', _case.id),
+    current: secondaryNavId == 'reviews'
   }]
 })}}
