@@ -1,7 +1,42 @@
-/* materials-accordion.scss */
+/* Outer panel that draws the single border around BOTH header + accordion */
+.dcf-materials-panel {
+  box-sizing: border-box;
+  border: 1px solid #b1b4b6;
+  background: #fff;
+  padding: 12px;            /* inside padding for breathing room */
+}
 
-/* Keep all text inside specific accordions at 16px */
+/* Header spacing now that it sits inside the bordered panel */
+.dcf-materials-header {
+  margin: 0 0 12px 0;       /* space between header and accordion */
+  padding: 0;               /* you removed the grey background already */
+  border: 0;                /* no inner border; outer panel provides it */
+}
+
+.dcf-materials-header__title {
+  margin: 0 0 8px 0;
+}
+
+/* Search input group (from earlier), kept square and 16px */
+.dcf-input-group {
+  display: flex; align-items: stretch; max-width: 100%;
+}
+.dcf-input-group__input {
+  flex: 1 1 auto; font-size: 16px; line-height: 1.45;
+  border: 2px solid #0b0c0c; border-right: 0; border-radius: 0;
+}
+.dcf-input-group__button {
+  flex: 0 0 auto; min-width: 44px; padding: 0 12px;
+  background: #1d70b8; color: #fff;
+  border: 2px solid #0b0c0c; border-left: 0; border-radius: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  &:hover { background: #003078; }
+  &:focus { outline: 3px solid transparent; box-shadow: 0 0 0 3px #fd0, 0 0 0 6px #0b0c0c; }
+}
+
+/* Keep the whole accordion at 16px and remove outer margin so it fits panel tightly */
 .dcf-accordion {
+  margin: 0;                /* remove default bottom margin outside panel */
   font-size: 16px;
   line-height: 1.45;
 
@@ -11,31 +46,16 @@
   .govuk-accordion__section-toggle-text,
   .govuk-accordion__section-content,
   .govuk-accordion__controls,
-  .govuk-body,
-  .govuk-hint,
-  .govuk-list,
-  .govuk-link,
-  p, li {
+  .govuk-body, .govuk-hint, .govuk-list, .govuk-link, p, li {
     font-size: 16px;
     line-height: 1.45;
   }
+
+  /* optional: tighten the gap between header and first section */
+  .govuk-accordion__controls { margin-bottom: 8px; }
 }
 
-/* Section sub-headers inside the open panel (e.g. DEFENDANT / PC BLAYNEE) */
-.dcf-materials-subhead {
-  display: block;
-  padding: 10px 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .02em;
-  color: #0b0c0c;
-  background: #fff;
-  border-top: 1px solid #b1b4b6;
-  border-bottom: 1px solid #b1b4b6;
-}
-
-.dcf-materials-subhead--sticky {
-  position: sticky;
-  top: 0;
-  z-index: 1;
+/* Optional: add a little inner padding so headings don't touch panel edge */
+.dcf-materials-panel .govuk-accordion__section-button {
+  padding-left: 0; /* default is fine; uncomment if you add custom spacing */
 }

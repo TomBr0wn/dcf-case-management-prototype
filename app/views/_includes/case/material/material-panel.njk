@@ -1,0 +1,65 @@
+{% set accordionItem %}
+<ul class="dcf-material-list">
+  <li>
+    <article class="dcf-material-card">
+      <div class="dcf-material-card__main">
+        <span class="dcf-material-card__badge">New</span>
+        <h3 class="dcf-material-card__title"><a href="/materials/123">PRE CONS D</a></h3>
+        <p class="dcf-material-card__meta">Date: 02/06/2020</p>
+      </div>
+      <div class="dcf-material-card__comment is-unread">
+        {# <img src="/public/images/comment-bubble.svg" alt="" aria-hidden="true"> #}
+      </div>
+    </article>
+  </li>
+</ul>
+
+{% endset%}
+
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-one-third">  
+
+        {# Materials header + search #}
+       <div class="dcf-materials-panel"> 
+        <div class="dcf-materials-header">
+          
+          <form class="dcf-materials-search" action="/materials/search" method="get" role="search">
+            <label class="govuk-label" for="materials-search">Search materials</label>
+
+            <div class="dcf-input-group">
+              <input
+                class="govuk-input dcf-input-group__input"
+                id="materials-search"
+                name="q"
+                type="search">
+              <button class="dcf-input-group__button" type="submit" aria-label="Search">
+                <!-- Magnifying glass icon -->
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" width="20" height="20">
+                  <path fill="currentColor" d="M21 20.3l-4.8-4.8c.9-1.2 1.4-2.7 1.4-4.2C17.6 7 14.6 4 11 4S4.4 7 4.4 11s3 7 6.6 7c1.6 0 3.1-.5 4.2-1.4l4.8 4.8 1-1.1zM6 11c0-2.8 2.2-5 5-5s5 2.2 5 5-2.2 5-5 5-5-2.2-5-5z"/>
+                </svg>
+              </button>
+            </div>
+          </form>
+        </div>
+
+          {{ _case.defendants | log }}
+
+       	{{ govukAccordion({
+					id: "materials",
+					classes: "dcf-accordion",
+					items: [
+						{ heading: { text: "Statements" }, content: { html: accordionItem } },
+						{ heading: { text: "Exhibits" },   content: { html: accordionItem } },
+						{ heading: { text: "MG forms" },   content: { html: accordionItem } },
+						{ heading: { text: "Other stuff" },content: { html: accordionItem } }
+					]
+				}) }}
+
+    
+        </div>
+       </div>
+
+   
+    
+</div>
