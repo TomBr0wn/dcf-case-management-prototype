@@ -1,5 +1,6 @@
 [
     {
+      "myFileUrl": "/public/files/STMT-WIT-A-Prepared-v1.pdf",
       "ItemId": "MAT-01001",
       "Type": "Statement",
       "Material": {
@@ -21,8 +22,8 @@
       "DigitalRepresentation": {
         "FileName": "STMT-WIT-A-Prepared-v1.pdf",
         "Document": "",
-        "ExternalFileLocation": "SharePoint:/Casefiles/48321/Statements/",
-        "ExternalFileURL": "https://example.org/casefiles/48321/statements/STMT-WIT-A-Prepared-v1.pdf",
+        "ExternalFileLocation": "/app/assets/files/",
+        "ExternalFileURL": "/public/files/STMT-WIT-A-Prepared-v1.pdf",
         "DigitalSignature": "2f9c1c3c4a5b6789d012e34f56a78bc9de01fa23b45c6789d012efab34567890"
       },
       "PoliceMaterial": {
@@ -44,6 +45,7 @@
       }
     },
     {
+      "myFileUrl": "/public/files/CCTV_Still_Till_20-41-00.jpg",
       "ItemId": "MAT-01002",
       "Type": "Exhibit",
       "Material": {
@@ -65,8 +67,8 @@
       "DigitalRepresentation": {
         "FileName": "CCTV_Still_Till_20-41-00.jpg",
         "Document": "",
-        "ExternalFileLocation": "SharePoint:/Casefiles/48321/Exhibits/CCTV/",
-        "ExternalFileURL": "https://example.org/casefiles/48321/exhibits/CCTV_Still_Till_20-41-00.jpg",
+        "ExternalFileLocation": "/app/assets/files/",
+        "ExternalFileURL": "/public/files/CCTV_Still_Till_20-41-00.jpg",
         "DigitalSignature": "b1a2c3d4e5f60718293a4b5c6d7e8f9012ab34cd56ef7890ab12cd34ef56a7b8"
       },
       "PoliceMaterial": {
@@ -88,6 +90,7 @@
       }
     },
     {
+      "myFileUrl": "/public/files/MG11_Store_Manager_Signed.pdf",
       "ItemId": "MAT-01003",
       "Type": "MG Form",
       "Material": {
@@ -109,8 +112,8 @@
       "DigitalRepresentation": {
         "FileName": "MG11_Store_Manager_Signed.pdf",
         "Document": "",
-        "ExternalFileLocation": "SharePoint:/Casefiles/48321/MG-Forms/",
-        "ExternalFileURL": "https://example.org/casefiles/48321/mgforms/MG11_Store_Manager_Signed.pdf",
+        "ExternalFileLocation": "/app/assets/files/",
+        "ExternalFileURL": "/public/files/MG11_Store_Manager_Signed.pdf",
         "DigitalSignature": "f0d1c2b3a4958675e4d3c2b1a0f9e8d7c6b5a4d3c2b1a0f9876543210abcdef12"
       },
       "PoliceMaterial": {
@@ -132,6 +135,7 @@
       }
     },
     {
+      "myFileUrl": "/public/files/BWV_Arrest_Clip_2112-2124.mp4",
       "ItemId": "MAT-01004",
       "Type": "Other Material",
       "Material": {
@@ -153,8 +157,8 @@
       "DigitalRepresentation": {
         "FileName": "BWV_Arrest_Clip_2112-2124.mp4",
         "Document": "",
-        "ExternalFileLocation": "MSTeams:/Ops/Units/Unit12/BWV/",
-        "ExternalFileURL": "https://example.org/media/BWV_Arrest_Clip_2112-2124.mp4",
+        "ExternalFileLocation": "/app/assets/files/",
+        "ExternalFileURL": "/public/files/BWV_Arrest_Clip_2112-2124.mp4",
         "DigitalSignature": "ab34cd56ef7890ab12cd34ef56a7b8c91d2e3f405162738495a6b7c8d9e0f1a2"
       },
       "PoliceMaterial": {
@@ -181,6 +185,7 @@
       }
     },
     {
+      "myFileUrl": "/public/files/Stock_Recon_2025-09-16.xlsx",
       "ItemId": "MAT-01005",
       "Type": "Unused Non-Sensitive",
       "Material": {
@@ -202,8 +207,8 @@
       "DigitalRepresentation": {
         "FileName": "Stock_Recon_2025-09-16.xlsx",
         "Document": "",
-        "ExternalFileLocation": "SharePoint:/Casefiles/48321/BusinessDocs/",
-        "ExternalFileURL": "https://example.org/casefiles/48321/docs/Stock_Recon_2025-09-16.xlsx",
+        "ExternalFileLocation": "/app/assets/files/",
+        "ExternalFileURL": "/public/files/Stock_Recon_2025-09-16.xlsx",
         "DigitalSignature": "10b2c3d4e5f60718293a4b5c6d7e8f9012ab34cd56ef7890ab12cd34ef56a7b9"
       },
       "PoliceMaterial": {
@@ -225,6 +230,7 @@
       }
     },
     {
+      "myFileUrl": "/public/files/ThirdParty_Medical_Note.pdf",
       "ItemId": "MAT-01006",
       "Type": "Unused Sensitive",
       "Material": {
@@ -246,8 +252,8 @@
       "DigitalRepresentation": {
         "FileName": "ThirdParty_Medical_Note.pdf",
         "Document": "",
-        "ExternalFileLocation": "SharePoint:/Casefiles/48321/Sensitive/",
-        "ExternalFileURL": "https://example.org/casefiles/48321/sensitive/ThirdParty_Medical_Note.pdf",
+        "ExternalFileLocation": "/app/assets/files/",
+        "ExternalFileURL": "/public/files/ThirdParty_Medical_Note.pdf",
         "DigitalSignature": "9f8e7d6c5b4a32100123ab45cd67ef8901ab23cd45ef6789ab12cd34ef56a7c0"
       },
       "PoliceMaterial": {
