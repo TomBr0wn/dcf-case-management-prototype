@@ -1,0 +1,25 @@
+.dcf-material-card--active {
+  outline: 3px solid #1d70b8; // GOV.UK blue
+  outline-offset: 2px;
+}
+
+.dcf-viewer__toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.dcf-viewer__frame {
+  width: 100%;
+  //height: calc(100vh - 220px); // adjust for header/toolbar/spacing
+  height: 100vh;
+  border: 0;
+}
+
+/* Optional: keep the viewer visible while the left column scrolls */
+@media (min-width: 769px) {
+  #material-viewer {
+    position: sticky;
+    top: 16px; // leave room from top
+  }
+}

@@ -1,12 +1,12 @@
 [
     {
-      "myFileUrl": "/public/files/STMT-WIT-A-Prepared-v1.pdf",
+      "myFileUrl": "/public/files/PRE_CONS_D.pdf",
       "ItemId": "MAT-01001",
       "Type": "Statement",
       "date": "07/01/2025",
       "Status": "New",
       "Material": {
-        "Title": "Prepared statement of Witness A",
+        "Title": "PRE CONS D",
         "Reference": "STMT-2025-09-14-CA48321-WIT-A",
         "ProducedbyWitnessId": "WIT-0021",
         "MaterialClassification": "Document",
@@ -24,10 +24,10 @@
         "RelationshipType": ""
       },
       "DigitalRepresentation": {
-        "FileName": "STMT-WIT-A-Prepared-v1.pdf",
+        "FileName": "PRE_CONS_D.pdf",
         "Document": "",
-        "ExternalFileLocation": "/app/assets/files/",
-        "ExternalFileURL": "/public/files/STMT-WIT-A-Prepared-v1.pdf",
+        "ExternalFileLocation": "#",
+        "ExternalFileURL": "#",
         "DigitalSignature": "2f9c1c3c4a5b6789d012e34f56a78bc9de01fa23b45c6789d012efab34567890"
       },
       "PoliceMaterial": {
@@ -43,7 +43,56 @@
         "Exceptions": []
       },
       "CPSMaterial": {
+        "DisclosureStatus": "Unused",
+        "RationaleForDisclosureDecision": "Core prosecution evidence describing offence and suspect actions.",
+        "SensitivityDispute": "None."
+      }
+    },
+    {
+      "myFileUrl": "/public/files/stmt_BLAYNEE_2034_1_JUNE_mg11.pdf",
+      "ItemId": "MAT-01002",
+      "Type": "Statement",
+      "date": "18/10/2025",
+      "Status": "Reviewed",
+      "Material": {
+        "Title": "stmt BLAYNEE 2034 1 JUNE mg11.pdf",
+        "Reference": "STMT-2025-10-18-CA59742-WIT-B",
+        "ProducedbyWitnessId": "WIT-0034",
+        "MaterialClassification": "Document",
+        "MaterialType": "MG11 Statement",
+        "SentExternally": "Secure Upload",
+        "RelatedParticipantId": "WIT-0034",
+        "Incident": "Altercation at the car park outside Greenway Shopping Centre",
+        "Location": "Greenway Shopping Centre, Sheffield S11 8QF",
+        "PeriodFrom": "2025-10-17T19:45:00Z",
+        "PeriodTo": "2025-10-17T20:10:00Z"
+      },
+       "RelatedMaterials": {
+        "RelatesToItem": "CCTV footage",
+        "RelatedItemId": "MAT-00984",
+        "RelationshipType": "Supports"
+      },
+      "DigitalRepresentation": {
+        "FileName": "stmt_BLAYNEE_2034_1_JUNE_mg11.pdf",
+        "Document": "",
+        "ExternalFileLocation": "#",
+        "ExternalFileURL": "#",
+        "DigitalSignature": "fa5d9b23a7c84b19d2036a51e479d2bc9f01a47c56e7d98f3021bda9485f6712"
+      },
+      "PoliceMaterial": {
         "DisclosureStatus": "Evidence",
+        "RationaleForDisclosureDecision": "Statement corroborates CCTV footage and other witness accounts.",
+        "Rebuttable": "No",
+        "SensitivityRationale": "Contains minor PII and location data; redactions applied for public release.",
+        "Inspection": {
+          "DateOfInspection": "2025-10-18T09:30:00Z",
+          "InspectedBy": "DC Morgan"
+        },
+        "Description": "Formal statement given by Witness B describing events following a disturbance in the car park.",
+        "Exceptions": []
+      },
+      "CPSMaterial": {
+        "DisclosureStatus": "Used",
         "RationaleForDisclosureDecision": "Core prosecution evidence describing offence and suspect actions.",
         "SensitivityDispute": "None."
       }

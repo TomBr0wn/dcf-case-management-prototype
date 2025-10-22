@@ -24,7 +24,7 @@ $dcf-muted:        #505a5f;
   border: 1px solid $dcf-card-border;
   padding: 12px 16px;
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto; // instead of 1fr auto
   column-gap: 12px;
   font-size: 16px; line-height: 1.45;
 
@@ -70,6 +70,8 @@ $dcf-muted:        #505a5f;
     &:hover { text-decoration-thickness: 2px; }
   }
 }
+
+
 
 .dcf-material-card__meta {
   margin: 0;
