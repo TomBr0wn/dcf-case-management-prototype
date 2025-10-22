@@ -38,7 +38,7 @@
 .dcf-accordion {
   margin: 0;                /* remove default bottom margin outside panel */
   font-size: 16px;
-  line-height: 1.45;
+  line-height: 1.4;
 
   .govuk-accordion__section-button,
   .govuk-accordion__section-heading,
@@ -48,14 +48,62 @@
   .govuk-accordion__controls,
   .govuk-body, .govuk-hint, .govuk-list, .govuk-link, p, li {
     font-size: 16px;
-    line-height: 1.45;
+    line-height: 1.4;
   }
 
   /* optional: tighten the gap between header and first section */
-  .govuk-accordion__controls { margin-bottom: 8px; }
+  .govuk-accordion__controls { margin-bottom: 4px; }
 }
 
 /* Optional: add a little inner padding so headings don't touch panel edge */
 .dcf-materials-panel .govuk-accordion__section-button {
-  padding-left: 0; /* default is fine; uncomment if you add custom spacing */
+  padding-left: 0;
+  padding-bottom: 0; /* default is fine; uncomment if you add custom spacing */
 }
+
+
+
+/* ---- Spacing tighten (append to end of _materials-accordion.scss) ---- */
+
+.dcf-materials-panel {
+  /* tiny spacing scale used only in this panel */
+  --space-xxs: 4px;
+  --space-xs:  6px;
+  --space-s:   0px;
+  --space-m:   12px;
+
+  /* Headings inside the panel (e.g. “Exhibits”, “MG forms”) */
+  .govuk-heading-s,
+  .govuk-heading-m {
+    margin: var(--space-s) 0 var(--space-xs);
+  }
+
+  /* Optional horizontal rule or custom divider in the panel */
+  hr, .dcf-divider {
+    margin: var(--space-m) 0;
+  }
+}
+
+/* Accordion section padding is generous by default – trim it in our panel */
+.dcf-accordion .govuk-accordion__section-content {
+  padding-top:  var(--space-s, 4px);
+  padding-bottom: var(--space-s, 4px);
+}
+
+/* Bring the Show/Hide row (section headers) a little tighter */
+.dcf-accordion .govuk-accordion__section-header {
+  padding-top: 3px;
+  padding-bottom: 0px;
+}
+
+/* Tighten “Show all sections / Hide all sections” control gap */
+.dcf-accordion .govuk-accordion__controls {
+  margin-bottom: 3px;
+}
+
+
+
+.govuk-frontend-supported .govuk-accordion__section--expanded .govuk-accordion__section-button{
+  padding-bottom: 0px;
+}
+

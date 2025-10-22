@@ -13,13 +13,15 @@
         "MaterialType": "Prepared Statement",
         "SentExternally": "Email",
         "RelatedParticipantId": "WIT-0021",
-        "RelatesToItem": "",
-        "RelatedItemId": "",
-        "RelationshipType": "",
         "Incident": "Theft and common assault at High Street Store",
         "Location": "22 Larkspur Road, Leeds LS7 3QD",
         "PeriodFrom": "2025-09-14T09:10:00Z",
         "PeriodTo": "2025-09-14T09:25:00Z"
+      },
+      "RelatedMaterials": {
+        "RelatesToItem": "",
+        "RelatedItemId": "",
+        "RelationshipType": ""
       },
       "DigitalRepresentation": {
         "FileName": "STMT-WIT-A-Prepared-v1.pdf",
@@ -60,13 +62,15 @@
         "MaterialType": "Physical Object",
         "SentExternally": "Hardcopy",
         "RelatedParticipantId": "SUS-0003",
-        "RelatesToItem": "",
-        "RelatedItemId": "",
-        "RelationshipType": "",
         "Incident": "Theft and common assault at High Street Store",
         "Location": "15 Rowan Close, Manchester M14 5PT",
         "PeriodFrom": "2025-09-14T20:41:00Z",
         "PeriodTo": "2025-09-14T20:41:00Z"
+      },
+      "RelatedMaterials": {
+        "RelatesToItem": "",
+        "RelatedItemId": "",
+        "RelationshipType": ""
       },
       "DigitalRepresentation": {
         "FileName": "CCTV_Still_Till_20-41-00.jpg",
@@ -84,12 +88,12 @@
           "DateOfInspection": "2025-09-16T08:30:00Z",
           "InspectedBy": "PC L Singh"
         },
-        "Description": "Exhibit ref EXH/01 — CCTV still extracted from store system. Time-stamped and exhibited.",
+        "Description": "Exhibit ref EXH/01 \u2014 CCTV still extracted from store system. Time-stamped and exhibited.",
         "Exceptions": []
       },
       "CPSMaterial": {
         "DisclosureStatus": "Evidence",
-        "RationaleForDisclosureDecision": "Visual identification evidence — probative and relevant.",
+        "RationaleForDisclosureDecision": "Visual identification evidence \u2014 probative and relevant.",
         "SensitivityDispute": "None."
       }
     },
@@ -107,13 +111,15 @@
         "MaterialType": "Other",
         "SentExternally": "Email",
         "RelatedParticipantId": "WIT-0007",
-        "RelatesToItem": "MAT-01002",
-        "RelatedItemId": "MAT-01002",
-        "RelationshipType": "Transcript Of",
         "Incident": "Theft and common assault at High Street Store",
         "Location": "4 Kingfisher Way, Bristol BS3 2HD",
         "PeriodFrom": "2025-09-15T13:00:00Z",
         "PeriodTo": "2025-09-15T13:45:00Z"
+      },
+      "RelatedMaterials": {
+        "RelatesToItem": "MAT-01002",
+        "RelatedItemId": "MAT-01002",
+        "RelationshipType": "Transcript Of"
       },
       "DigitalRepresentation": {
         "FileName": "MG11_Store_Manager_Signed.pdf",
@@ -154,13 +160,15 @@
         "MaterialType": "Other",
         "SentExternally": "none",
         "RelatedParticipantId": "SUS-0003",
-        "RelatesToItem": "",
-        "RelatedItemId": "",
-        "RelationshipType": "Clipped Version",
         "Incident": "Arrest following store incident",
         "Location": "38 Elmhurst Street, Birmingham B12 9XN",
         "PeriodFrom": "2025-09-14T21:12:00Z",
         "PeriodTo": "2025-09-14T21:24:00Z"
+      },
+      "RelatedMaterials": {
+        "RelatesToItem": "",
+        "RelatedItemId": "",
+        "RelationshipType": "Clipped Version"
       },
       "DigitalRepresentation": {
         "FileName": "BWV_Arrest_Clip_2112-2124.mp4",
@@ -206,13 +214,15 @@
         "MaterialType": "Other",
         "SentExternally": "Email",
         "RelatedParticipantId": "VIC-0012",
-        "RelatesToItem": "",
-        "RelatedItemId": "",
-        "RelationshipType": "",
         "Incident": "Post-incident inventory checks",
         "Location": "12 Hawthorn Avenue, Sheffield S7 2PL",
         "PeriodFrom": "2025-09-16T08:00:00Z",
         "PeriodTo": "2025-09-16T10:30:00Z"
+      },
+      "RelatedMaterials": {
+        "RelatesToItem": "",
+        "RelatedItemId": "",
+        "RelationshipType": ""
       },
       "DigitalRepresentation": {
         "FileName": "Stock_Recon_2025-09-16.xlsx",
@@ -253,13 +263,15 @@
         "MaterialType": "Other",
         "SentExternally": "none",
         "RelatedParticipantId": "VIC-0012",
-        "RelatesToItem": "",
-        "RelatedItemId": "",
-        "RelationshipType": "",
         "Incident": "Customer distress reported post-incident",
         "Location": "5 Beechfield Road, Norwich NR1 4DP",
         "PeriodFrom": "2025-09-17T14:00:00Z",
         "PeriodTo": "2025-09-17T14:10:00Z"
+      },
+      "RelatedMaterials": {
+        "RelatesToItem": "",
+        "RelatedItemId": "",
+        "RelationshipType": ""
       },
       "DigitalRepresentation": {
         "FileName": "ThirdParty_Medical_Note.pdf",

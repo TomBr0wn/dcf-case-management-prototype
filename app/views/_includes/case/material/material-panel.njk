@@ -1,17 +1,15 @@
-{# ----- Simple capture + loop version (no macros) ----- #}
-
 {# Statements #}
 {% set statementsHtml %}
   {% set hasAny = false %}
-  <ul class="dcf-material-list">
+  <ul class="dcf-material-list govuk-!-margin-top-1 govuk-!-margin-bottom-1">
     {% for m in (data.caseMaterials or []) %}
       {% if (m.Type | lower) == 'statement' %}
         {% set hasAny = true %}
-        <li>
+        <li class="govuk-!-margin-bottom-2">
           <article class="dcf-material-card">
             <div class="dcf-material-card__main">
               {% if m.Status %}<span class="dcf-material-card__badge">{{ m.Status }}</span>{% endif %}
-              <h3 class="dcf-material-card__title">
+              <h3 class="dcf-material-card__title govuk-!-margin-bottom-1">
                 {% set linkText = m.Material.Title or m.DigitalRepresentation.FileName %}
                 {% if m.myFileUrl %}
                   <a href="{{ m.myFileUrl }}" class="govuk-link" target="_blank" rel="noreferrer">{{ linkText }}</a>
@@ -19,9 +17,9 @@
                   {{ linkText }}
                 {% endif %}
               </h3>
-              {% if m.date %}<p class="dcf-material-card__meta">Date: {{ m.date }}</p>{% endif %}
+              {% if m.date %}<p class="dcf-material-card__meta govuk-!-margin-bottom-0">Date: {{ m.date }}</p>{% endif %}
             </div>
-            <div class="dcf-material-card__comment is-unread"></div>
+            <div class="dcf-material-card__comment is-unread govuk-!-margin-bottom-0"></div>
           </article>
         </li>
       {% endif %}
@@ -29,6 +27,7 @@
   </ul>
   {% if not hasAny %}<p class="govuk-hint">No items yet.</p>{% endif %}
 {% endset %}
+
 
 {# Exhibits #}
 {% set exhibitsHtml %}

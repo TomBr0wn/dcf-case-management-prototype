@@ -96,6 +96,42 @@ $dcf-muted:        #505a5f;
   }
 }
 
+/* ---- Card & list tightening (append to end of _materials-accordion-card.scss) ---- */
+
+
+/* Gap between cards */
+.dcf-materials-panel .dcf-material-list > li {
+  margin: 12px 0;      /* was likely larger */
+}
+
+/* Card body padding kept compact */
+.dcf-materials-panel .dcf-material-card {
+  margin: 0;           /* li controls spacing between cards */
+  padding: 10px 10px 10px 20px;      /* trim inner padding */
+  border-radius: 0px;  /* optional, keep if you had it */
+}
+
+/* Badge and text spacing inside card */
+.dcf-materials-panel .dcf-material-card__badge {
+  display: inline-block;
+  margin: 0 0 4px 0;
+}
+
+.dcf-materials-panel .dcf-material-card__title {
+  margin: 0 0 2px 0;   /* kill heading bottom margin */
+  line-height: 1.2;
+}
+
+.dcf-materials-panel .dcf-material-card__meta {
+  margin: 0;           /* kill paragraph margin */
+}
+
+/* If you render a comment bubble container, keep it tight too */
+.dcf-materials-panel .dcf-material-card__comment {
+  margin: 0;
+}
+
+
 @media (max-width: 360px) {
   .dcf-material-card { padding: 10px 12px; grid-template-columns: 1fr 20px; }
 }
