@@ -3,6 +3,8 @@
       "myFileUrl": "/public/files/STMT-WIT-A-Prepared-v1.pdf",
       "ItemId": "MAT-01001",
       "Type": "Statement",
+      "date": "07/01/2025",
+      "Status": "New",
       "Material": {
         "Title": "Prepared statement of Witness A",
         "Reference": "STMT-2025-09-14-CA48321-WIT-A",
@@ -48,6 +50,8 @@
       "myFileUrl": "/public/files/CCTV_Still_Till_20-41-00.jpg",
       "ItemId": "MAT-01002",
       "Type": "Exhibit",
+      "date": "19/02/2025",
+      "Status": "New",
       "Material": {
         "Title": "CCTV still of suspect at till area",
         "Reference": "EXH-2025-09-14-CA48321-CCTV-01",
@@ -93,6 +97,8 @@
       "myFileUrl": "/public/files/MG11_Store_Manager_Signed.pdf",
       "ItemId": "MAT-01003",
       "Type": "MG Form",
+      "date": "28/03/2025",
+      "Status": "New",
       "Material": {
         "Title": "MG11 witness statement (Store Manager)",
         "Reference": "MG11-2025-09-15-CA48321-MGR",
@@ -138,6 +144,8 @@
       "myFileUrl": "/public/files/BWV_Arrest_Clip_2112-2124.mp4",
       "ItemId": "MAT-01004",
       "Type": "Other Material",
+      "date": "15/05/2025",
+      "Status": "New",
       "Material": {
         "Title": "Body-worn video of arrest",
         "Reference": "BWV-2025-09-14-CA48321-ARREST-01",
@@ -188,6 +196,8 @@
       "myFileUrl": "/public/files/Stock_Recon_2025-09-16.xlsx",
       "ItemId": "MAT-01005",
       "Type": "Unused Non-Sensitive",
+      "date": "30/06/2025",
+      "Status": "New",
       "Material": {
         "Title": "Stock reconciliation spreadsheet",
         "Reference": "DOC-2025-09-16-CA48321-STOCK-REC",
@@ -233,6 +243,8 @@
       "myFileUrl": "/public/files/ThirdParty_Medical_Note.pdf",
       "ItemId": "MAT-01006",
       "Type": "Unused Sensitive",
+      "date": "20/08/2025",
+      "Status": "New",
       "Material": {
         "Title": "Third-party medical note (uninvolved customer)",
         "Reference": "DOC-2025-09-17-CA48321-MED-THIRD-PARTY",

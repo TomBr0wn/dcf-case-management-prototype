@@ -1,19 +1,186 @@
-{# _includes/case/material/material-panel.njk #}
-{% set accordionItem %}
-<ul class="dcf-material-list">
-  <li>
-    <article class="dcf-material-card">
-      <div class="dcf-material-card__main">
-        <span class="dcf-material-card__badge">New</span>
-        <h3 class="dcf-material-card__title"><a href="/materials/123">PRE CONS D</a></h3>
-        <p class="dcf-material-card__meta">Date: 02/06/2020</p>
-      </div>
-      <div class="dcf-material-card__comment is-unread"></div>
-    </article>
-  </li>
-</ul>
+{# ----- Simple capture + loop version (no macros) ----- #}
+
+{# Statements #}
+{% set statementsHtml %}
+  {% set hasAny = false %}
+  <ul class="dcf-material-list">
+    {% for m in (data.caseMaterials or []) %}
+      {% if (m.Type | lower) == 'statement' %}
+        {% set hasAny = true %}
+        <li>
+          <article class="dcf-material-card">
+            <div class="dcf-material-card__main">
+              {% if m.Status %}<span class="dcf-material-card__badge">{{ m.Status }}</span>{% endif %}
+              <h3 class="dcf-material-card__title">
+                {% set linkText = m.Material.Title or m.DigitalRepresentation.FileName %}
+                {% if m.myFileUrl %}
+                  <a href="{{ m.myFileUrl }}" class="govuk-link" target="_blank" rel="noreferrer">{{ linkText }}</a>
+                {% else %}
+                  {{ linkText }}
+                {% endif %}
+              </h3>
+              {% if m.date %}<p class="dcf-material-card__meta">Date: {{ m.date }}</p>{% endif %}
+            </div>
+            <div class="dcf-material-card__comment is-unread"></div>
+          </article>
+        </li>
+      {% endif %}
+    {% endfor %}
+  </ul>
+  {% if not hasAny %}<p class="govuk-hint">No items yet.</p>{% endif %}
 {% endset %}
 
+{# Exhibits #}
+{% set exhibitsHtml %}
+  {% set hasAny = false %}
+  <ul class="dcf-material-list">
+    {% for m in (data.caseMaterials or []) %}
+      {% if (m.Type | lower) == 'exhibit' %}
+        {% set hasAny = true %}
+        <li>
+          <article class="dcf-material-card">
+            <div class="dcf-material-card__main">
+              {% if m.Status %}<span class="dcf-material-card__badge">{{ m.Status }}</span>{% endif %}
+              <h3 class="dcf-material-card__title">
+                {% set linkText = m.Material.Title or m.DigitalRepresentation.FileName %}
+                {% if m.myFileUrl %}
+                  <a href="{{ m.myFileUrl }}" class="govuk-link" target="_blank" rel="noreferrer">{{ linkText }}</a>
+                {% else %}
+                  {{ linkText }}
+                {% endif %}
+              </h3>
+              {% if m.date %}<p class="dcf-material-card__meta">Date: {{ m.date }}</p>{% endif %}
+            </div>
+            <div class="dcf-material-card__comment is-unread"></div>
+          </article>
+        </li>
+      {% endif %}
+    {% endfor %}
+  </ul>
+  {% if not hasAny %}<p class="govuk-hint">No items yet.</p>{% endif %}
+{% endset %}
+
+{# MG forms #}
+{% set mgFormsHtml %}
+  {% set hasAny = false %}
+  <ul class="dcf-material-list">
+    {% for m in (data.caseMaterials or []) %}
+      {% if (m.Type | lower) == 'mg form' %}
+        {% set hasAny = true %}
+        <li>
+          <article class="dcf-material-card">
+            <div class="dcf-material-card__main">
+              {% if m.Status %}<span class="dcf-material-card__badge">{{ m.Status }}</span>{% endif %}
+              <h3 class="dcf-material-card__title">
+                {% set linkText = m.Material.Title or m.DigitalRepresentation.FileName %}
+                {% if m.myFileUrl %}
+                  <a href="{{ m.myFileUrl }}" class="govuk-link" target="_blank" rel="noreferrer">{{ linkText }}</a>
+                {% else %}
+                  {{ linkText }}
+                {% endif %}
+              </h3>
+              {% if m.date %}<p class="dcf-material-card__meta">Date: {{ m.date }}</p>{% endif %}
+            </div>
+            <div class="dcf-material-card__comment is-unread"></div>
+          </article>
+        </li>
+      {% endif %}
+    {% endfor %}
+  </ul>
+  {% if not hasAny %}<p class="govuk-hint">No items yet.</p>{% endif %}
+{% endset %}
+
+{# Other material #}
+{% set otherMaterialHtml %}
+  {% set hasAny = false %}
+  <ul class="dcf-material-list">
+    {% for m in (data.caseMaterials or []) %}
+      {% if (m.Type | lower) == 'other material' %}
+        {% set hasAny = true %}
+        <li>
+          <article class="dcf-material-card">
+            <div class="dcf-material-card__main">
+              {% if m.Status %}<span class="dcf-material-card__badge">{{ m.Status }}</span>{% endif %}
+              <h3 class="dcf-material-card__title">
+                {% set linkText = m.Material.Title or m.DigitalRepresentation.FileName %}
+                {% if m.myFileUrl %}
+                  <a href="{{ m.myFileUrl }}" class="govuk-link" target="_blank" rel="noreferrer">{{ linkText }}</a>
+                {% else %}
+                  {{ linkText }}
+                {% endif %}
+              </h3>
+              {% if m.date %}<p class="dcf-material-card__meta">Date: {{ m.date }}</p>{% endif %}
+            </div>
+            <div class="dcf-material-card__comment is-unread"></div>
+          </article>
+        </li>
+      {% endif %}
+    {% endfor %}
+  </ul>
+  {% if not hasAny %}<p class="govuk-hint">No items yet.</p>{% endif %}
+{% endset %}
+
+{# Unused non-sensitive #}
+{% set unsNonSensitiveHtml %}
+  {% set hasAny = false %}
+  <ul class="dcf-material-list">
+    {% for m in (data.caseMaterials or []) %}
+      {% if (m.Type | lower) == 'unused non-sensitive' %}
+        {% set hasAny = true %}
+        <li>
+          <article class="dcf-material-card">
+            <div class="dcf-material-card__main">
+              {% if m.Status %}<span class="dcf-material-card__badge">{{ m.Status }}</span>{% endif %}
+              <h3 class="dcf-material-card__title">
+                {% set linkText = m.Material.Title or m.DigitalRepresentation.FileName %}
+                {% if m.myFileUrl %}
+                  <a href="{{ m.myFileUrl }}" class="govuk-link" target="_blank" rel="noreferrer">{{ linkText }}</a>
+                {% else %}
+                  {{ linkText }}
+                {% endif %}
+              </h3>
+              {% if m.date %}<p class="dcf-material-card__meta">Date: {{ m.date }}</p>{% endif %}
+            </div>
+            <div class="dcf-material-card__comment is-unread"></div>
+          </article>
+        </li>
+      {% endif %}
+    {% endfor %}
+  </ul>
+  {% if not hasAny %}<p class="govuk-hint">No items yet.</p>{% endif %}
+{% endset %}
+
+{# Unused sensitive #}
+{% set unsSensitiveHtml %}
+  {% set hasAny = false %}
+  <ul class="dcf-material-list">
+    {% for m in (data.caseMaterials or []) %}
+      {% if (m.Type | lower) == 'unused sensitive' %}
+        {% set hasAny = true %}
+        <li>
+          <article class="dcf-material-card">
+            <div class="dcf-material-card__main">
+              {% if m.Status %}<span class="dcf-material-card__badge">{{ m.Status }}</span>{% endif %}
+              <h3 class="dcf-material-card__title">
+                {% set linkText = m.Material.Title or m.DigitalRepresentation.FileName %}
+                {% if m.myFileUrl %}
+                  <a href="{{ m.myFileUrl }}" class="govuk-link" target="_blank" rel="noreferrer">{{ linkText }}</a>
+                {% else %}
+                  {{ linkText }}
+                {% endif %}
+              </h3>
+              {% if m.date %}<p class="dcf-material-card__meta">Date: {{ m.date }}</p>{% endif %}
+            </div>
+            <div class="dcf-material-card__comment is-unread"></div>
+          </article>
+        </li>
+      {% endif %}
+    {% endfor %}
+  </ul>
+  {% if not hasAny %}<p class="govuk-hint">No items yet.</p>{% endif %}
+{% endset %}
+
+{# ----- Your existing layout, with captured HTML plugged in ----- #}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-one-third">
     <div class="dcf-materials-panel">
@@ -23,28 +190,28 @@
           <div class="dcf-input-group">
             <input class="govuk-input dcf-input-group__input" id="materials-search" name="q" type="search">
             <button class="dcf-input-group__button" type="submit" aria-label="Search">
-              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" width="20" height="20">
-                <path fill="currentColor" d="M21 20.3l-4.8-4.8c.9-1.2 1.4-2.7 1.4-4.2C17.6 7 14.6 4 11 4S4.4 7 4.4 11s3 7 6.6 7c1.6 0 3.1-.5 4.2-1.4l4.8 4.8 1-1.1zM6 11c0-2.8 2.2-5 5-5s5 2.2 5 5-2.2 5-5 5-5-2.2-5-5z"/>
-              </svg>
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" width="20" height="20"><path fill="currentColor" d="M21 20.3l-4.8-4.8c.9-1.2 1.4-2.7 1.4-4.2C17.6 7 14.6 4 11 4S4.4 7 4.4 11s3 7 6.6 7c1.6 0 3.1-.5 4.2-1.4l4.8 4.8 1-1.1zM6 11c0-2.8 2.2-5 5-5s5 2.2 5 5-2.2 5-5 5-5-2.2-5-5z"/></svg>
             </button>
           </div>
         </form>
       </div>
 
       {{ govukAccordion({
-        id: "materials-accordion",   
+        id: "materials-accordion",
         classes: "dcf-accordion",
         items: [
-          { heading: { text: "Statements" }, content: { html: accordionItem } },
-          { heading: { text: "Exhibits" },   content: { html: accordionItem } },
-          { heading: { text: "MG forms" },   content: { html: accordionItem } },
-          { heading: { text: "Other stuff" },content: { html: accordionItem } }
+          { heading: { text: "Statements" },           content: { html: statementsHtml    } },
+          { heading: { text: "Exhibits" },             content: { html: exhibitsHtml      } },
+          { heading: { text: "MG forms" },             content: { html: mgFormsHtml       } },
+          { heading: { text: "Other material" },       content: { html: otherMaterialHtml } },
+          { heading: { text: "Unused non-sensitive" }, content: { html: unsNonSensitiveHtml } },
+          { heading: { text: "Unused sensitive" },     content: { html: unsSensitiveHtml  } }
         ]
       }) }}
     </div>
   </div>
 
   <div class="govuk-grid-column-two-thirds">
-    {# {% include "_includes/document/search-form.njk" %} #}
+    {# optional right column #}
   </div>
 </div>
