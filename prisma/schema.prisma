@@ -55,6 +55,11 @@ model Witness {
   addressPostcode             String?
   mobileNumber                String?
   emailAddress                String?
+  preferredContactMethod      String?
+  faxNumber                   String?
+  homeNumber                  String?
+  workNumber                  String?
+  otherNumber                 String?
   isVictim                    Boolean            @default(false)
   isKeyWitness                Boolean            @default(false)
   isChild                     Boolean            @default(false)
