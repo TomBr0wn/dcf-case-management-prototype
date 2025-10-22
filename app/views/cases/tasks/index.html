@@ -1,7 +1,7 @@
 {% extends "layouts/main.html" %}
 {% set navId = 'cases' %}
 {% set secondaryNavId = 'tasks' %}
-{% set pageName = 'Tasks' %}
+{% set pageName = "Tasks (:total)" | replace(':total', _case.tasks.length) %}
 
 {% block beforeContent %}
   {% include "_includes/case/identity-bar.njk" %}
@@ -41,7 +41,15 @@
                     value: {
                       html: task.dueDate | isoDateString | govukDateTime
                     }
-                  }           
+                  },
+                  {
+                    key: {
+                      html: 'Type'
+                    },
+                    value: {
+                      html: task.type
+                    }
+                  }
                 ]
               })}}
             </div>

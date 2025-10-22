@@ -1,4 +1,5 @@
 {% set identityTitle %}
+  
   <span class="govuk-!-margin-right-1">{{_case.reference}}</span>
   <b class="govuk-!-margin-right-1">
     {{_case.defendants[0].firstName}} {{_case.defendants[0].lastName}} 
@@ -7,7 +8,7 @@
     {% endif %}
   </b>
 
-  {% if _case.ctl %}
+  {% if _case.isCTL %}
     {{ govukTag({ text: 'CTL', classes: 'govuk-tag--red' })}}
   {% endif %}
 {% endset %}

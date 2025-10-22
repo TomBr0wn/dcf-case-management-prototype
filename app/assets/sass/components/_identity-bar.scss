@@ -27,9 +27,31 @@
 }
 
 .app-identity-bar__title {
-  @include govuk-font(19);
+  @include govuk-font(16);
   display: inline-block;
   vertical-align: top;
+
+  .govuk-tag {
+    @include govuk-font(16);
+  }
+
+  .govuk-breadcrumbs {
+    display: inline-block;
+    margin-right: 10px;
+    vertical-align: top;
+
+    ol {
+      // display: inline-block;
+    }
+
+    li {
+      margin-bottom: 0;
+
+      &:last-child {
+        font-weight: bold;
+      }
+    }
+  }
 }
 
 .app-identity-bar__details {

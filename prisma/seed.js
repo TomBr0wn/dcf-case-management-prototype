@@ -215,6 +215,7 @@ async function main() {
       const name = `${baseName} ${d + 1}`;
       documentsData.push({
         name,
+        description: faker.helpers.arrayElement(['This is a random description', 'This is another random description', faker.lorem.sentence()]),
         type: faker.helpers.arrayElement(documentTypes),
         size: faker.number.int({ min: 50, max: 5000 }),
       });
@@ -229,7 +230,7 @@ async function main() {
             id: faker.helpers.arrayElement([users[0].id, users[1].id]),
           },
         },
-        ctl: faker.datatype.boolean(),
+        isCTL: faker.datatype.boolean(),
         complexity: faker.helpers.arrayElement(complexities),
         unit: { connect: { id: caseUnitId } },
         defendants: { connect: assignedDefendants.map((d) => ({ id: d.id })) },
@@ -260,43 +261,100 @@ async function main() {
     // -------------------- Witnesses --------------------
     const numWitnesses = faker.number.int({ min: 1, max: 7 });
     for (let w = 0; w < numWitnesses; w++) {
+      // Generate witness types with realistic distribution (most have 0-3 types)
+      const allTypes = [
+        "isVictim",
+        "isKeyWitness",
+        "isChild",
+        "isExpert",
+        "isInterpreter",
+        "isPolice",
+        "isProfessional",
+        "isPrisoner",
+        "isVulnerable",
+        "isIntimidated"
+      ];
+
+      // Weighted selection for number of types (most witnesses have 0-3)
+      const numTypesWeighted = faker.helpers.weightedArrayElement([
+        { weight: 30, value: 0 },
+        { weight: 30, value: 1 },
+        { weight: 25, value: 2 },
+        { weight: 10, value: 3 },
+        { weight: 4, value: 4 },
+        { weight: 1, value: 5 }
+      ]);
+
+      // Select random types
+      const selectedTypes = faker.helpers.arrayElements(allTypes, numTypesWeighted);
+
+      // Build witness type object (all false by default, then set selected to true)
+      const witnessTypes = {
+        isVictim: selectedTypes.includes("isVictim"),
+        isKeyWitness: selectedTypes.includes("isKeyWitness"),
+        isChild: selectedTypes.includes("isChild"),
+        isExpert: selectedTypes.includes("isExpert"),
+        isInterpreter: selectedTypes.includes("isInterpreter"),
+        isPolice: selectedTypes.includes("isPolice"),
+        isProfessional: selectedTypes.includes("isProfessional"),
+        isPrisoner: selectedTypes.includes("isPrisoner"),
+        isVulnerable: selectedTypes.includes("isVulnerable"),
+        isIntimidated: selectedTypes.includes("isIntimidated")
+      };
+
+      // Randomly assign dcf (50/50 split between new and old architecture)
+      const isDcf = faker.datatype.boolean();
+
       const createdWitness = await prisma.witness.create({
         data: {
+          title: faker.helpers.arrayElement([null, "Mr", "Mrs", "Ms", "Dr", "Prof"]),
           firstName: faker.helpers.arrayElement(firstNames),
           lastName: faker.helpers.arrayElement(lastNames),
-          appearingInCourt: faker.helpers.arrayElement([false, null]),
-          caseId: createdCase.id,
-          relevant: faker.datatype.boolean(),
-          keyWitness: faker.datatype.boolean(),
-          type: faker.helpers.arrayElement([
-            "Expert",
-            "Character",
-            "Eye witness",
+          dateOfBirth: faker.date.birthdate({ min: 18, max: 90, mode: "age" }),
+          gender: faker.helpers.arrayElement(["Male", "Female", "Unknown"]),
+          ethnicity: faker.helpers.arrayElement([
+            null,
+            "White",
+            "Asian_or_Asian_British",
+            "Black_or_Black_British",
+            "Mixed",
             "Other",
+            "Prefer_not_to_say"
           ]),
+          preferredLanguage: faker.helpers.arrayElement(["English", "Welsh"]),
+          isCpsContactAllowed: faker.datatype.boolean(),
+          addressLine1: faker.helpers.arrayElement([null, faker.location.streetAddress()]),
+          addressLine2: faker.helpers.arrayElement([null, faker.location.secondaryAddress()]),
+          addressTown: faker.helpers.arrayElement([null, faker.location.city()]),
+          addressPostcode: faker.helpers.arrayElement([null, faker.location.zipCode("WD# #SF")]),
+          mobileNumber: faker.helpers.arrayElement([null, faker.phone.number()]),
+          emailAddress: faker.helpers.arrayElement([null, faker.internet.email()]),
+          ...witnessTypes,
+          isAppearingInCourt: faker.helpers.arrayElement([false, null]),
+          isRelevant: faker.datatype.boolean(),
           attendanceIssues: faker.helpers.arrayElement([
             null,
             faker.lorem.sentence(),
           ]),
           previousTransgressions: faker.helpers.arrayElement([
             null,
-            faker.lorem.words(5),
-          ]),
-          warned: faker.datatype.boolean(),
-          dateOfBirth: faker.date.birthdate({ min: 18, max: 90, mode: "age" }),
-          emailAddress: faker.internet.email(),
-          phoneNumber: faker.phone.number(),
-          courtAvailabilityStartDate: faker.date.future(),
-          courtAvailabilityEndDate: faker.date.future(),
-          courtSpecialMeasures: faker.helpers.arrayElement([
-            null,
             faker.lorem.sentence(),
           ]),
-          courtNeeds: faker.helpers.arrayElement([
+          wasWarned: faker.datatype.boolean(),
+          dcf: isDcf,
+          // Only set availability and special measures fields if dcf = true (new architecture)
+          courtAvailabilityStartDate: isDcf ? faker.date.future() : null,
+          courtAvailabilityEndDate: isDcf ? faker.date.future() : null,
+          courtSpecialMeasures: isDcf ? faker.helpers.arrayElement([
             null,
             faker.lorem.sentence(),
-          ]),
-          requiresMeeting: faker.datatype.boolean(),
+          ]) : null,
+          courtNeeds: isDcf ? faker.helpers.arrayElement([
+            null,
+            faker.lorem.sentence(),
+          ]) : null,
+          requiresMeeting: isDcf ? faker.datatype.boolean() : null,
+          caseId: createdCase.id,
         },
       });
 
@@ -307,8 +365,8 @@ async function main() {
             witnessId: createdWitness.id,
             number: s + 1,
             receivedDate: faker.date.past(),
-            useAsEvidence: faker.helpers.arrayElement([true, false, null]),
-            serveSection9: faker.helpers.arrayElement([true, false, null]),
+            isUsedAsEvidence: faker.helpers.arrayElement([true, false, null]),
+            isMarkedAsSection9: faker.helpers.arrayElement([true, false, null]),
           },
         });
       }

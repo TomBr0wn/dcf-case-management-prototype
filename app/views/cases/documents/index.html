@@ -1,7 +1,7 @@
 {% extends "layouts/main.html" %}
 {% set navId = 'cases' %}
 {% set secondaryNavId = 'material' %}
-{% set pageName = 'Material' %}
+{% set pageName = "Material (:total)" | replace(':total', documents.length) %}
 
 {% block beforeContent %}
   {% include "_includes/case/identity-bar.njk" %}
@@ -39,6 +39,14 @@
                   {{ govukSummaryList({
                     classes: 'govuk-summary-list--no-border app-summary-list--compact app-summary-list--small-text',
                     rows: [
+                      {
+                        key: {
+                          html: 'Description'
+                        },
+                        value: {
+                          html: document.description
+                        }
+                      },
                       {
                         key: {
                           html: 'Type'

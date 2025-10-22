@@ -30,7 +30,7 @@
       </div>
 
       {% include "_includes/case/search-form.njk" %}
-      {% include "_includes/case/sort-controls.njk" %}
+      {# {% include "_includes/case/sort-controls.njk" %} #}
 
       {% if cases.length %}
          <div class="app-list">
@@ -47,7 +47,7 @@
               <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
                 <a href="/cases/{{_case.id}}" class="govuk-link--no-visited-state">{{defendantsValue}}</a>
                 <div class="app-list__tag">
-                  {% if _case.ctl %}
+                  {% if _case.isCTL %}
                     {{ govukTag({ text: 'CTL', classes: 'govuk-tag--red' })}}
                   {% endif %}
                 </div>

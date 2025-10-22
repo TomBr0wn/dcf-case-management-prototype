@@ -27,10 +27,14 @@
 
       <div class="govuk-button-group">
         {{ govukButton({
-          text: "Mark as complete"
+          text: "Start task"
         }) }}
         {{ govukButton({
           text: "Defer",
+          classes: 'govuk-button--secondary'
+        }) }}
+        {{ govukButton({
+          text: "Reassign",
           classes: 'govuk-button--secondary'
         }) }}
       </div>
@@ -47,10 +51,10 @@
           },
           {
             key: {
-              text: 'Case reference'
+              text: 'Type'
             },
             value: {
-              html: '<a href="/cases/' + _case.id + '">' + _case.reference + '</a>'
+              html: task.type
             }
           }
         ]
