@@ -52,7 +52,14 @@
   }
 
   /* optional: tighten the gap between header and first section */
-  .govuk-accordion__controls { margin-bottom: 4px; }
+  .govuk-accordion__controls { 
+    margin-bottom: 4px; 
+  }
+}
+
+/* hide the top "Show all sections" control just for your accordion */
+.dcf-accordion .govuk-accordion__controls {
+  display: none;
 }
 
 /* Optional: add a little inner padding so headings don't touch panel edge */
