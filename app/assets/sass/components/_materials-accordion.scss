@@ -9,7 +9,7 @@
 /* Header spacing now that it sits inside the bordered panel */
 .dcf-materials-header {
   margin: 0 0 12px 0;       /* space between header and accordion */
-  padding: 0;               /* you removed the grey background already */
+  padding: 0;               /* remove the grey background */
   border: 0;                /* no inner border; outer panel provides it */
 }
 
@@ -37,11 +37,10 @@
 /* Keep the whole accordion at 16px and remove outer margin so it fits panel tightly */
 .dcf-accordion {
   margin: 0;                /* remove default bottom margin outside panel */
-  font-size: 16px;
+  font-size: 19px;
   line-height: 1.4;
 
   .govuk-accordion__section-button,
-  .govuk-accordion__section-heading,
   .govuk-accordion__section-summary,
   .govuk-accordion__section-toggle-text,
   .govuk-accordion__section-content,
@@ -51,11 +50,18 @@
     line-height: 1.4;
   }
 
+  
+
   /* optional: tighten the gap between header and first section */
   .govuk-accordion__controls { 
     margin-bottom: 4px; 
   }
 }
+
+ .govuk-accordion__section-heading-text-focus{
+    font-size: 19px;
+    line-height: 1.4;
+  }
 
 /* hide the top "Show all sections" control just for your accordion */
 .dcf-accordion .govuk-accordion__controls {
