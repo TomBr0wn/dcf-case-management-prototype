@@ -59,12 +59,6 @@
 
         {% if hasTypes %}
           <ul class="govuk-list govuk-list--bullet">
-            {% if witness.isVictim %}
-              <li>Victim</li>
-            {% endif %}
-            {% if witness.isKeyWitness %}
-              <li>Key witness</li>
-            {% endif %}
             {% if witness.isChild %}
               <li>Child</li>
             {% endif %}
@@ -220,6 +214,31 @@
           },
           {
             key: {
+              text: "Type"
+            },
+            value: {
+              html: witnessTypeValue
+            },
+            actions: {
+              items: [
+                {
+                  href: "#",
+                  text: "Change",
+                  visuallyHiddenText: "type"
+                }
+              ]
+            }
+          }
+        ]
+      }) }}
+
+      <h2 class="govuk-heading-m">Contact details</h2>
+
+
+      {{ govukSummaryList({
+        rows: [
+          {
+            key: {
               text: "CPS contact allowed"
             },
             value: {
@@ -235,7 +254,7 @@
               ]
             }
           },
-          {
+           {
             key: {
               text: "Address"
             },
@@ -248,6 +267,23 @@
                   href: "#",
                   text: "Change",
                   visuallyHiddenText: "address"
+                }
+              ]
+            }
+          },
+          {
+            key: {
+              text: "Preferred contact method"
+            },
+            value: {
+              text: witness.preferredContactMethod or "Not entered"
+            },
+            actions: {
+              items: [
+                {
+                  href: "#",
+                  text: "Change",
+                  visuallyHiddenText: "preferred contact method"
                 }
               ]
             }
@@ -271,6 +307,74 @@
           },
           {
             key: {
+              text: "Home number"
+            },
+            value: {
+              text: witness.homeNumber or "Not entered"
+            },
+            actions: {
+              items: [
+                {
+                  href: "#",
+                  text: "Change",
+                  visuallyHiddenText: "home number"
+                }
+              ]
+            }
+          },
+          {
+            key: {
+              text: "Work number"
+            },
+            value: {
+              text: witness.workNumber or "Not entered"
+            },
+            actions: {
+              items: [
+                {
+                  href: "#",
+                  text: "Change",
+                  visuallyHiddenText: "work number"
+                }
+              ]
+            }
+          },
+          {
+            key: {
+              text: "Fax number"
+            },
+            value: {
+              text: witness.faxNumber or "Not entered"
+            },
+            actions: {
+              items: [
+                {
+                  href: "#",
+                  text: "Change",
+                  visuallyHiddenText: "fax number"
+                }
+              ]
+            }
+          },
+          {
+            key: {
+              text: "Other number"
+            },
+            value: {
+              text: witness.otherNumber or "Not entered"
+            },
+            actions: {
+              items: [
+                {
+                  href: "#",
+                  text: "Change",
+                  visuallyHiddenText: "other number"
+                }
+              ]
+            }
+          },
+          {
+            key: {
               text: "Email address"
             },
             value: {
@@ -282,23 +386,6 @@
                   href: "#",
                   text: "Change",
                   visuallyHiddenText: "email address"
-                }
-              ]
-            }
-          },
-          {
-            key: {
-              text: "Type"
-            },
-            value: {
-              html: witnessTypeValue
-            },
-            actions: {
-              items: [
-                {
-                  href: "#",
-                  text: "Change",
-                  visuallyHiddenText: "type"
                 }
               ]
             }
