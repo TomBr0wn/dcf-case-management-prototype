@@ -11,25 +11,118 @@
 {% block content %}
   {% include "_includes/success-banner.njk" %}
   {% include "_includes/case/dcf-navigation.njk" %}
-  
-
- 
-
-
 
 
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-full">
-        <h1 class="govuk-heading-l">{{pageName}}</h1>
+        {{ mojPageHeaderActions({
+          heading: {
+            text: pageName,
+            classes: "govuk-heading-l"
+          },
+          items: [{
+            text: "Complete triage",
+            classes: "govuk-button--primary"
+          }, {
+            text: "Case material actions",
+            classes: "govuk-button--secondary"
+          }]
+        }) }}
+        {# <h1 class="govuk-heading-l">{{pageName}}</h1> #}
+        {% include "_includes/case/material/main-tabs.njk" %}
          
       </div>
     </div>
 
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-full">
-        {% include "_includes/case/material/material-panel.njk" %}
+        
       </div>
     </div>
 
 
 {% endblock %}
+
+{% block pageScripts %}
+<script>
+(function () {
+  // Grab viewer and layout once
+  var viewer = document.getElementById('material-viewer');
+  var layout = document.querySelector('.dcf-materials-layout');
+  if (!viewer) return;
+
+  // Utility: mark the clicked card as active
+  function setActiveCard(linkEl) {
+    document.querySelectorAll('.dcf-material-card--active')
+      .forEach(function (el) { el.classList.remove('dcf-material-card--active'); });
+    var card = linkEl.closest('.dcf-material-card');
+    if (card) card.classList.add('dcf-material-card--active');
+  }
+
+  // Open in inline viewer (intercept any link with data-file-url)
+  document.addEventListener('click', function (e) {
+    var link = e.target.closest('a[data-file-url]');
+    if (!link) return;
+
+    e.preventDefault();
+
+    var url   = link.getAttribute('data-file-url') || link.href;
+    var title = (link.textContent || '').trim() || 'Selected file';
+    var isPDF = /\.pdf(\?|#|$)/i.test(url);
+
+    viewer.hidden = false;
+    viewer.setAttribute('tabindex', '-1');
+
+    viewer.innerHTML = '\
+      <div class="dcf-viewer__toolbar govuk-!-margin-bottom-4">\
+        <a href="#" class="govuk-link" data-action="close-viewer">Close preview</a>\
+        <span aria-hidden="true" class="govuk-!-margin-horizontal-2"> &nbsp; | &nbsp; </span>\
+        <a href="#" class="govuk-link" data-action="toggle-full" aria-pressed="false">View full width</a>\
+        <span aria-hidden="true" class="govuk-!-margin-horizontal-2"> &nbsp; | &nbsp; </span>\
+        <a href="' + url + '" target="_blank" rel="noreferrer" class="govuk-link">Open in a new tab</a>\
+        <span class="govuk-!-margin-left-3">' + title + '</span>\
+      </div>' +
+      (isPDF
+        ? '<iframe class="dcf-viewer__frame" src="' + url + '" title="Preview of ' + title + '" loading="lazy" referrerpolicy="no-referrer"></iframe>'
+        : '<div class="govuk-inset-text govuk-!-margin-bottom-2">\
+             This file type may not preview inline. You can \
+             <a class="govuk-link" href="' + url + '" target="_blank" rel="noreferrer">open it in a new tab</a>.\
+           </div>\
+           <iframe class="dcf-viewer__frame" src="' + url + '" title="Preview of ' + title + '" loading="lazy" referrerpolicy="no-referrer"></iframe>'
+      );
+
+    setActiveCard(link);
+    viewer.focus({ preventScroll: false });
+  }, false);
+
+  // Delegate toolbar link actions (close / toggle full width)
+  viewer.addEventListener('click', function (e) {
+    var actionLink = e.target.closest('a[data-action]');
+    if (!actionLink) return;
+
+    e.preventDefault();
+    var action = actionLink.getAttribute('data-action');
+
+    if (action === 'close-viewer') {
+      viewer.innerHTML = '<p class="govuk-hint govuk-!-margin-bottom-3">Select a material from the list to preview it here.</p>';
+      viewer.hidden = true;
+      if (layout) layout.classList.remove('is-full');
+      document.querySelectorAll('.dcf-material-card--active')
+        .forEach(function (el) { el.classList.remove('dcf-material-card--active'); });
+      return;
+    }
+
+    if (action === 'toggle-full') {
+      if (!layout) return;
+      var isFull = layout.classList.toggle('is-full');
+      actionLink.textContent = isFull ? 'Exit full width' : 'View full width';
+      actionLink.setAttribute('aria-pressed', String(isFull));
+      viewer.focus({ preventScroll: true });
+      return;
+    }
+  }, false);
+})();
+</script>
+
+{% endblock %}
+

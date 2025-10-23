@@ -190,7 +190,7 @@
 {% endset %}
 
 {# ----- Your existing layout, with captured HTML plugged in ----- #}
-<div class="govuk-grid-row">
+<div class="govuk-grid-row dcf-materials-layout"> {# <-- added class here #}
   <div class="govuk-grid-column-one-third">
     <div class="dcf-materials-panel">
       <div class="dcf-materials-header">
@@ -221,100 +221,12 @@
   </div>
 
   <div class="govuk-grid-column-two-thirds">
-      {# {% include "_includes/case/material/search-form.njk" %} #}
-      {# Optional summary / count... #}
-      {# <p class="govuk-body">Statements matched: {{ count }}</p> #}
-
-      <div id="material-viewer" class="dcf-viewer" hidden aria-live="polite">
-        <p class="govuk-body govuk-!-margin-bottom-3">
-          Select a material from the list to preview it here.
-        </p>
-      </div>
+    <div id="material-viewer" class="dcf-viewer" hidden aria-live="polite">
+      <p class="govuk-body govuk-!-margin-bottom-3">
+        Select a material from the list to preview it here.
+      </p>
+    </div>
   </div>
-
 </div>
 
 
-{% block pageScripts %}
-  <script>
-    (function () {
-      const viewer = document.getElementById('material-viewer');
-      if (!viewer) return;
-
-      // Optional: highlight the active card
-      function setActiveCard(linkEl) {
-        document.querySelectorAll('.dcf-material-card--active').forEach(el => {
-          el.classList.remove('dcf-material-card--active');
-        });
-        const card = linkEl.closest('.dcf-material-card');
-        if (card) card.classList.add('dcf-material-card--active');
-      }
-
-      // Close button handler
-      function wireClose() {
-        const btn = viewer.querySelector('[data-action="close-viewer"]');
-        if (!btn) return;
-        btn.addEventListener('click', () => {
-          viewer.innerHTML = '<p class="govuk-hint govuk-!-margin-bottom-3">Select a material from the list to preview it here.</p>';
-          viewer.hidden = true;
-          document.querySelectorAll('.dcf-material-card--active').forEach(el => {
-            el.classList.remove('dcf-material-card--active');
-          });
-        });
-      }
-
-      // Intercept clicks on any link with data-file-url
-      document.addEventListener('click', function (e) {
-        const link = e.target.closest('a[data-file-url]');
-        if (!link) return;
-
-        // JS-enhanced: show in viewer instead of opening a new tab
-        e.preventDefault();
-
-        const url = link.getAttribute('data-file-url') || link.href;
-        const title = link.textContent?.trim() || 'Selected file';
-
-        // Very simple file-type check to change messaging for non-PDFs
-        const isPDF = /\.pdf(\?|#|$)/i.test(url);
-
-        viewer.hidden = false;
-        viewer.setAttribute('tabindex', '-1'); // allow focus for screenreaders
-        viewer.innerHTML = `
-          <div class="govuk-button-group govuk-!-margin-bottom-2">
-            <button class="govuk-button govuk-button--secondary" data-action="close-viewer" type="button">
-              Close preview
-            </button>
-            <a href="${url}" target="_blank" rel="noreferrer" class="govuk-link govuk-!-margin-left-3">
-              Open in a new tab
-            </a>
-            <span class="govuk-hint govuk-!-margin-left-3">${title}</span>
-          </div>
-
-          ${isPDF
-            ? `<iframe
-                  class="dcf-viewer__frame"
-                  src="${url}"
-                  title="Preview of ${title}"
-                  loading="lazy"
-                  referrerpolicy="no-referrer"
-                ></iframe>`
-            : `<div class="govuk-inset-text govuk-!-margin-bottom-2">
-                This file type may not preview inline. You can <a class="govuk-link" href="${url}" target="_blank" rel="noreferrer">open it in a new tab</a>.
-              </div>
-              <iframe
-                class="dcf-viewer__frame"
-                src="${url}"
-                title="Preview of ${title}"
-                loading="lazy"
-                referrerpolicy="no-referrer"
-              ></iframe>`
-          }
-        `;
-
-        setActiveCard(link);
-        wireClose();
-        viewer.focus({ preventScroll: false }); // move attention to the preview
-      }, false);
-    })();
-  </script>
-{% endblock %}

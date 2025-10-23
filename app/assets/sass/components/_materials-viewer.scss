@@ -23,3 +23,20 @@
     top: 16px; // leave room from top
   }
 }
+
+/* Full-width viewer mode */
+.dcf-materials-layout.is-full {
+  .govuk-grid-column-one-third { display: none; }
+  .govuk-grid-column-two-thirds {
+    flex: 0 0 100%;
+    max-width: 100%;
+    width: 100%;
+  }
+}
+
+/* Optional: make the iframe fill the space nicely */
+.dcf-viewer__frame {
+  width: 100%;
+  height: calc(100vh - 220px); /* adjust to taste */
+  border: 0;
+}
