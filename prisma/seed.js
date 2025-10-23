@@ -347,18 +347,13 @@ async function main() {
           ]),
           wasWarned: faker.datatype.boolean(),
           dcf: isDcf,
-          // Only set availability and special measures fields if dcf = true (new architecture)
+          // Only set availability fields if dcf = true (new architecture)
           courtAvailabilityStartDate: isDcf ? faker.date.future() : null,
           courtAvailabilityEndDate: isDcf ? faker.date.future() : null,
-          courtSpecialMeasures: isDcf ? faker.helpers.arrayElement([
-            null,
-            faker.lorem.sentence(),
-          ]) : null,
-          courtNeeds: isDcf ? faker.helpers.arrayElement([
-            null,
-            faker.lorem.sentence(),
-          ]) : null,
-          requiresMeeting: isDcf ? faker.datatype.boolean() : null,
+          // Only set victim fields if witness is a victim
+          victimCode: witnessTypes.isVictim ? "Learning disabilities" : null,
+          victimExplained: witnessTypes.isVictim ? faker.datatype.boolean() : null,
+          victimOfferResponse: witnessTypes.isVictim ? faker.helpers.arrayElement(["Not offered", "Declined", "Accepted"]) : null,
           caseId: createdCase.id,
         },
       });
@@ -374,6 +369,51 @@ async function main() {
             isMarkedAsSection9: faker.helpers.arrayElement([true, false, null]),
           },
         });
+      }
+
+      // Create special measures if dcf = true (65% get 1, 10% get 2, 25% get 0)
+      if (isDcf) {
+        const numSpecialMeasures = faker.helpers.weightedArrayElement([
+          { weight: 65, value: 1 },
+          { weight: 10, value: 2 },
+          { weight: 25, value: 0 }
+        ]);
+
+        const specialMeasureTypes = [
+          "Screen Witness",
+          "Pre-recorded Cross-examination (s.28)",
+          "Evidence by Live Link",
+          "Evidence in Private",
+          "Removal of Wigs and Gowns",
+          "Visually Recorded Interview",
+          "Intermediary",
+          "Aids to Communication"
+        ];
+
+        const meetingUrls = [
+          "https://teams.microsoft.com/l/meetup-join/19%3ameeting_example123",
+          "https://zoom.us/j/1234567890",
+          "https://meet.google.com/abc-defg-hij"
+        ];
+
+        // Select unique types for this witness
+        const selectedTypes = faker.helpers.arrayElements(specialMeasureTypes, numSpecialMeasures);
+
+        for (let sm = 0; sm < numSpecialMeasures; sm++) {
+          const requiresMeeting = faker.datatype.boolean();
+
+          await prisma.specialMeasure.create({
+            data: {
+              witnessId: createdWitness.id,
+              type: selectedTypes[sm],
+              details: faker.helpers.arrayElement([null, faker.lorem.sentence()]),
+              needs: faker.helpers.arrayElement([null, faker.lorem.sentence()]),
+              requiresMeeting: requiresMeeting,
+              meetingUrl: requiresMeeting ? faker.helpers.arrayElement(meetingUrls) : null,
+              hasAppliedForReportingRestrictions: faker.datatype.boolean(),
+            },
+          });
+        }
       }
     }
 

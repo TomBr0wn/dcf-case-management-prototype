@@ -12,7 +12,7 @@ module.exports = router => {
 
     const witness = await prisma.witness.findUnique({
       where: { id: parseInt(req.params.witnessId) },
-      include: { statements: true }
+      include: { statements: true, specialMeasures: true }
     })
 
     res.render("cases/witnesses/show", {
@@ -29,7 +29,7 @@ module.exports = router => {
 
     const witness = await prisma.witness.findUnique({
       where: { id: parseInt(req.params.witnessId) },
-      include: { statements: true }
+      include: { statements: true, specialMeasures: true }
     })
 
     res.render("cases/witnesses/statements", {
@@ -46,7 +46,7 @@ module.exports = router => {
 
     const witness = await prisma.witness.findUnique({
       where: { id: parseInt(req.params.witnessId) },
-      include: { statements: true }
+      include: { statements: true, specialMeasures: true }
     })
 
     // Redirect to details page if witness doesn't support availability (old architecture)
@@ -68,7 +68,7 @@ module.exports = router => {
 
     const witness = await prisma.witness.findUnique({
       where: { id: parseInt(req.params.witnessId) },
-      include: { statements: true }
+      include: { statements: true, specialMeasures: true }
     })
 
     // Redirect to details page if witness doesn't support special measures (old architecture)

@@ -75,16 +75,18 @@ model Witness {
   isRelevant                  Boolean?
   attendanceIssues            String?
   previousTransgressions      String?
+  acroConvictions             Boolean            @default(true)
   wasWarned                   Boolean?
   dcf                         Boolean
   courtAvailabilityStartDate  DateTime?
   courtAvailabilityEndDate    DateTime?
-  courtSpecialMeasures        String?
-  courtNeeds                  String?
-  requiresMeeting             Boolean?
+  victimCode                  String?
+  victimExplained             Boolean?
+  victimOfferResponse         String?
   caseId                      Int
   case                        Case               @relation(fields: [caseId], references: [id])
   statements                  WitnessStatement[]
+  specialMeasures             SpecialMeasure[]
 }
 
 model WitnessStatement {
@@ -96,6 +98,18 @@ model WitnessStatement {
   isUsedAsEvidence      Boolean?
   receivedDate          DateTime
   @@unique([witnessId, number]) // enforce uniqueness per witness
+}
+
+model SpecialMeasure {
+  id                                Int      @id @default(autoincrement())
+  type                              String
+  details                           String?
+  needs                             String?
+  requiresMeeting                   Boolean  @default(false)
+  meetingUrl                        String?
+  hasAppliedForReportingRestrictions Boolean  @default(false)
+  witnessId                         Int
+  witness                           Witness  @relation(fields: [witnessId], references: [id])
 }
 
 model Case {

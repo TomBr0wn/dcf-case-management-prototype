@@ -214,6 +214,47 @@
           },
           {
             key: {
+              text: "Witness relevant"
+            },
+            value: {
+              text: "Yes" if witness.isRelevant == true else "No"
+            },
+            actions: {
+              items: [
+                {
+                  href: "#",
+                  text: "Change",
+                  visuallyHiddenText: "witness relevant"
+                }
+              ]
+            }
+          },
+          {
+            key: {
+              text: "Attendance at court issues"
+            },
+            value: {
+              text: witness.attendanceIssues or "None"
+            }
+          },
+          {
+            key: {
+              text: "Previous transgressions"
+            },
+            value: {
+              text: witness.previousTransgressions or "None"
+            }
+          },
+          {
+            key: {
+              text: "ACRO convictions"
+            },
+            value: {
+              text: "Yes" if witness.acroConvictions == true else "No"
+            }
+          },
+          {
+            key: {
               text: "Type"
             },
             value: {
@@ -231,6 +272,43 @@
           }
         ]
       }) }}
+
+      {% if witness.isVictim %}
+        <h2 class="govuk-heading-m govuk-!-margin-top-7">Victim information</h2>
+
+        {% set victimPersonalStatementValue %}
+          {% if witness.victimExplained != null and witness.victimOfferResponse %}
+            {% if witness.victimExplained == true %}
+              Explained - {{ witness.victimOfferResponse }}
+            {% else %}
+              Not explained - {{ witness.victimOfferResponse }}
+            {% endif %}
+          {% else %}
+            Not entered
+          {% endif %}
+        {% endset %}
+
+        {{ govukSummaryList({
+          rows: [
+            {
+              key: {
+                text: "Victim code"
+              },
+              value: {
+                text: witness.victimCode or "Not entered"
+              }
+            },
+            {
+              key: {
+                text: "Victim personal statement"
+              },
+              value: {
+                text: victimPersonalStatementValue | trim
+              }
+            }
+          ]
+        }) }}
+      {% endif %}
 
       <h2 class="govuk-heading-m">Contact details</h2>
 
@@ -393,48 +471,6 @@
         ]
       }) }}
 
-
-      {# <h2 class="govuk-heading-m govuk-!-margin-top-7">Other information</h2>
-
-      {{ govukSummaryList({
-        rows: [
-          {
-            key: {
-              text: "Warned by police"
-            },
-            value: {
-              text: "Yes" if witness.wasWarned == true else "No"
-            },
-            actions: {
-              items: [
-                {
-                  href: "#",
-                  text: "Change",
-                  visuallyHiddenText: "warned by police"
-                }
-              ]
-            }
-          },
-          {
-            key: {
-              text: "Previous transgressions"
-            },
-            value: {
-              text: witness.previousTransgressions or "None"
-            },
-            actions: {
-              items: [
-                {
-                  href: "#",
-                  text: "Change",
-                  visuallyHiddenText: "previous transgressions"
-                }
-              ]
-            }
-          }
-        ]
-      }) }} #}
-
       <h2 class="govuk-heading-m govuk-!-margin-top-7">Statements</h2>
 
       {% if witness.statements.length > 0 %}
@@ -533,34 +569,65 @@
 
         <h2 class="govuk-heading-m govuk-!-margin-top-7">Special measures</h2>
 
-        {{ govukSummaryList({
-          rows: [
-            {
+        {% if witness.specialMeasures.length > 0 %}
+          {% for specialMeasure in witness.specialMeasures %}
+            <h3 class="govuk-heading-s">{{ specialMeasure.type }}</h3>
+
+            {% set specialMeasureRows = [
+              {
+                key: {
+                  text: "Details"
+                },
+                value: {
+                  text: specialMeasure.details or "None"
+                }
+              },
+              {
+                key: {
+                  text: "Needs"
+                },
+                value: {
+                  text: specialMeasure.needs or "None"
+                }
+              },
+              {
+                key: {
+                  text: "Is a meeting required?"
+                },
+                value: {
+                  text: "Yes" if specialMeasure.requiresMeeting == true else "No"
+                }
+              }
+            ] %}
+
+            {% if specialMeasure.requiresMeeting %}
+              {% set specialMeasureRows = (specialMeasureRows.push({
+                key: {
+                  text: "Meeting URL"
+                },
+                value: {
+                  text: specialMeasure.meetingUrl or "None"
+                }
+              }), specialMeasureRows) %}
+            {% endif %}
+
+            {% set specialMeasureRows = (specialMeasureRows.push({
               key: {
-                text: "Special measures"
+                text: "Apply for reporting restrictions?"
               },
               value: {
-                text: witness.courtSpecialMeasures or "None"
+                text: "Yes" if specialMeasure.hasAppliedForReportingRestrictions == true else "No"
               }
-            },
-            {
-              key: {
-                text: "Needs"
-              },
-              value: {
-                text: witness.courtNeeds or "None"
-              }
-            },
-            {
-              key: {
-                text: "Is a meeting required?"
-              },
-              value: {
-                text: "Yes" if witness.isKeyWitness == true else "No"
-              }
-            }
-          ]
-        }) }}
+            }), specialMeasureRows) %}
+
+            {{ govukSummaryList({
+              classes: "govuk-!-margin-bottom-7",
+              rows: specialMeasureRows
+            }) }}
+          {% endfor %}
+        {% else %}
+          <p class="govuk-body">No special measures.</p>
+        {% endif %}
       {% endif %}
     </div>
   </div>
