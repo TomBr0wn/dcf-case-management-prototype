@@ -8,7 +8,14 @@
 
 {% set defendantsHtml %}<h3 class="govuk-heading-m">Defendants</h3>{% endset -%}
 {% set witnessesHtml  %}<h3 class="govuk-heading-m">Witnesses</h3>{% endset -%}
-{% set contactsHtml %}<h3 class="govuk-heading-m">Contacts</h3>{% endset -%}
+
+{% set materialsHtml %}
+  <h3 class="govuk-heading-m">Materials</h3>
+  {# <p class="govuk-hint">[materials tab reached]</p> #}
+  {% include "_includes/case/material/material-panel.njk" %}
+{% endset -%}
+
+{% set disclosureHtml %}<h3 class="govuk-heading-m">Disclosure</h3>{% endset -%}
 
 {{ govukTabs({
   id: "case-tabs",
@@ -17,6 +24,7 @@
     { label: "Outline", id: "case-outline", panel: { html: caseOutlineHtml } },
     { label: "Defendants",   id: "defendants",   panel: { html: defendantsHtml } },
     { label: "Witnesses",    id: "witnesses",    panel: { html: witnessesHtml } },
-    { label: "Contacts",   id: "contacts",   panel: { html: contactsHtml } }
+    { label: "Materials",    id: "materials",    panel: { html: materialsHtml } },
+    { label: "Disclosure",   id: "disclosure",   panel: { html: disclosureHtml } }
   ]
 }) }}

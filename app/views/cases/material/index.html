@@ -1,7 +1,7 @@
 {% extends "layouts/main.html" %}
 {% set navId = 'cases' %}
-{% set secondaryNavId = 'material' %}
-{% set pageName = 'Material' %}
+{% set secondaryNavId = 'materials' %}
+{% set pageName = 'Materials' %}
 {# {% set pageName = "Material (:total)" | replace(':total', _case.materials.length) %} #}
 
 {% block beforeContent %}
@@ -10,7 +10,7 @@
 
 {% block content %}
   {% include "_includes/success-banner.njk" %}
-  {# {% include "_includes/case/header.njk" %} #}
+  {% include "_includes/case/dcf-navigation.njk" %}
   
 
  
@@ -21,61 +21,13 @@
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-full">
         <h1 class="govuk-heading-l">{{pageName}}</h1>
-         <p class="govuk-body govuk-!-margin-bottom-6">
-          <a href="/cases/{{_case.id}}/disclosure" class="govuk-link">View disclosure list</a>
-        </p>
+         
       </div>
     </div>
 
     <div class="govuk-grid-row">
-      <div class="govuk-grid-column-one-third">  
-
-        {{ _case.defendants | log }}
-
-              {{ govukAccordion({
-                id: "accordion-default",
-                items: [
-                  {
-                    heading: {
-                      text: "Statements"
-                    },
-                    content: {
-                      html: '<p class="govuk-body">This is the content for Statements.</p>'
-                    }
-                  },
-                  {
-                    heading: {
-                      text: "Exhibits"
-                    },
-                    content: {
-                      html: '<p class="govuk-body">This is the content for Exhibits.</p>'
-                    }
-                  },
-                  {
-                    heading: {
-                      text: "MG forms"
-                    },
-                    content: {
-                      html: '<p class="govuk-body">This is the content for MG forms.</p>'
-                    }
-                  },
-                  {
-                    heading: {
-                      text: "Other stuff"
-                    },
-                    content: {
-                      html: '<p class="govuk-body">This is the content for Other stuff.</p>'
-                    }
-                  }
-                ]
-              }) }}
-      
-      </div>
-
-      <div class="govuk-grid-column-two-thirds">
- 
-         {% include "_includes/document/search-form.njk" %}
-       
+      <div class="govuk-grid-column-full">
+        {% include "_includes/case/material/material-panel.njk" %}
       </div>
     </div>
 

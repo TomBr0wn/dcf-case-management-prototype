@@ -45,7 +45,9 @@
               {% endset %}
 
               <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
-                <a href="/cases/{{_case.id}}" class="govuk-link--no-visited-state">{{defendantsValue}}</a>
+                <a href="/cases/{{_case.id}}/details" class="govuk-link--no-visited-state">{{defendantsValue}}</a>
+                {# Reinstate the line below & delete the line above to get rid of DCF tabby nonsense #}
+                {# <a href="/cases/{{_case.id}}" class="govuk-link--no-visited-state">{{defendantsValue}}</a> #}
                 <div class="app-list__tag">
                   {% if _case.isCTL %}
                     {{ govukTag({ text: 'CTL', classes: 'govuk-tag--red' })}}
