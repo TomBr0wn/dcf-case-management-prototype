@@ -1,7 +1,7 @@
 {% extends "layouts/main.html" %}
 
 {% set navId = 'cases' %}
-{% set pageName = "Add note" %}
+{% set pageName = "Note" %}
 
 {% block beforeContent %}
   {{ govukBackLink({
@@ -23,9 +23,6 @@
             text: pageName,
             isPageHeading: true,
             classes: "govuk-label--l"
-          },
-          hint: {
-            text: "Add any relevant information about this case"
           },
           value: data.addNote.content
         }) }}
