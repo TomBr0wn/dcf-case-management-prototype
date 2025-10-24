@@ -1,16 +1,6 @@
 {% extends "layouts/main.html" %}
-
 {% set hideNav = true %}
-
 {% set pageName = "Prototype" %}
-
-<!-- show this CTA for the version that reflects live -->
-{% if data['state'] == "current" %}
-  {% set buttonText = "Start prototype that reflects live" %}
-<!-- if not live, show this CTA -->
-{% else %}
-  {% set buttonText = "Start prototype" %}
-{% endif %}
 
 {% block content %}
   <div class="govuk-grid-row">
@@ -20,7 +10,7 @@
       </h1>
 
       {{ govukButton({
-        text: buttonText,
+        text: "Start prototype",
         isStartButton: true,
         href: '/account/sign-in'
       }) }}
