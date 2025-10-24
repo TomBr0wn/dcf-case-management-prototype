@@ -160,5 +160,25 @@
         <a class="govuk-link" href="/cases/{{ params.event.case.id }}/witnesses">View statement</a>
       </p>
     {% endif %}
+
+    {% if params.event.title == 'Note added' %}
+      <div class="app-activity-log__box">
+        {{ govukSummaryList({
+          rows: [
+            {
+              key: {
+                text: "Note"
+              },
+              value: {
+                text: params.event.meta.content
+              }
+            }
+          ]
+        }) }}
+      </div>
+      <p class="app-log-card__note--link">
+        <a class="govuk-link" href="/cases/{{ params.event.case.id }}/notes/{{ params.event.recordId }}">View note</a>
+      </p>
+    {% endif %}
   </div>
 </div>
