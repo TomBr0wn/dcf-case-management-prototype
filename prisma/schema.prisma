@@ -15,6 +15,7 @@ model User {
   lastName  String
   role     String
   cases    Case[]
+  notes    Note[]
   activityLogs ActivityLog[]
 }
 
@@ -131,6 +132,7 @@ model Case {
   tasks       Task[]
   documents   Document[]
   dga         DGA?
+  notes       Note[]
   activityLogs ActivityLog[]
 }
 
@@ -237,4 +239,15 @@ model Document {
   size         Int
   case         Case     @relation(fields: [caseId], references: [id])
   caseId       Int
+}
+
+model Note {
+  id        Int      @id @default(autoincrement())
+  content   String
+  caseId    Int
+  case      Case     @relation(fields: [caseId], references: [id])
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

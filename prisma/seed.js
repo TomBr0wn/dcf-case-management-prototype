@@ -454,6 +454,37 @@ async function main() {
       }
     }
 
+    // -------------------- Notes --------------------
+    // Add 0-3 notes to each case
+    const numNotes = faker.number.int({ min: 0, max: 3 });
+    for (let n = 0; n < numNotes; n++) {
+      const noteContent = faker.helpers.arrayElement([
+        "Spoke with the defendant's solicitor today. They are requesting additional time to review the evidence.",
+        "Witness availability confirmed for the trial dates. All key witnesses will be present.",
+        "Discussed the case with senior prosecutor. Agreed to pursue the more serious charge given the strength of evidence.",
+        "Received updated forensic report. Results support our case significantly.",
+        "Defense has indicated they may be willing to accept a plea deal. Awaiting formal proposal.",
+        "Victim personal statement received and added to case file. Very compelling account.",
+        "Court liaison confirmed hearing room availability. No conflicts with trial dates.",
+        "Expert witness has reviewed the materials and confirmed availability to testify.",
+        "Defense disclosure received today. Need to review carefully before next hearing.",
+        "Case complexity assessment completed. Recommend upgrading to Level 4.",
+        "Brief prepared for counsel. All materials compiled and sent electronically.",
+        "Spoke with investigating officer. Additional evidence may be available from digital forensics.",
+        "Victim expressed concerns about giving evidence in open court. Discussing special measures options.",
+        "Received confirmation that all exhibits are properly logged and secured.",
+        "Case conference scheduled for next week to discuss trial strategy with team."
+      ]);
+
+      await prisma.note.create({
+        data: {
+          content: noteContent,
+          caseId: createdCase.id,
+          userId: faker.helpers.arrayElement([users[0].id, users[1].id])
+        }
+      });
+    }
+
     createdCases.push({ id: createdCase.id });
   }
 
