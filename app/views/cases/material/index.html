@@ -67,7 +67,6 @@
   }
 
   function rowsHTML(obj, mapping) {
-    // mapping: [{key:'Field', label:'Nice label', render:(v)=>string?}]
     return mapping.map(function (m) {
       var v = (m.get ? m.get(obj) : obj && obj[m.key]);
       if (v == null || v === '' || (Array.isArray(v) && v.length === 0)) return '';
@@ -85,18 +84,13 @@
     if (!rows) return '';
     return (
       '<h3 class="govuk-heading-s govuk-!-margin-top-3 govuk-!-margin-bottom-1">' + esc(title) + '</h3>' +
-      '<div class="govuk-summary-list govuk-!-margin-bottom-2">' + rows + '</div>'
+      '<dl class="govuk-summary-list govuk-!-margin-bottom-2">' + rows + '</dl>'
     );
   }
 
   function buildMetaPanel(meta) {
-    // Top line chips/badges
-    var topChips = [];
-    if (meta.Status) topChips.push('<span class="dcf-chip">' + esc(meta.Status) + '</span>');
-    if (meta.Type)   topChips.push('<span class="dcf-chip">' + esc(meta.Type)   + '</span>');
-    if (meta.date)   topChips.push('<span class="dcf-chip">' + esc(meta.date)   + '</span>');
-    if (meta.ItemId) topChips.push('<span class="dcf-chip">' + esc(meta.ItemId) + '</span>');
-    var chips = topChips.length ? '<div class="dcf-chiplist" role="list" aria-label="Attributes">' + topChips.join(' ') + '</div>' : '';
+    // Unique id for collapsible body
+    var bodyId = 'meta-' + esc((meta.ItemId || meta.Material && meta.Material.Reference || Date.now()).toString()).replace(/[^a-zA-Z0-9_-]/g,'-');
 
     // Sections
     var mat = meta.Material || {};
@@ -121,53 +115,64 @@
     ]);
 
     var relatedRows = rowsHTML(rel, [
-      { key:'RelatesToItem', label:'Relates to item' },
-      { key:'RelatedItemId', label:'Related item id' },
-      { key:'RelationshipType', label:'Relationship type' }
+      { key:'RelatesToItem',   label:'Relates to item' },
+      { key:'RelatedItemId',   label:'Related item id' },
+      { key:'RelationshipType',label:'Relationship type' }
     ]);
 
     var digitalRows = rowsHTML(dig, [
-      { key:'FileName',               label:'File name' },
-      { key:'Document',               label:'Document' },
-      { key:'ExternalFileLocation',   label:'External file location' },
-      { key:'ExternalFileURL',        label:'External file URL', render: function (v) {
+      { key:'FileName',             label:'File name' },
+      { key:'Document',             label:'Document' },
+      { key:'ExternalFileLocation', label:'External file location' },
+      { key:'ExternalFileURL',      label:'External file URL', render: function (v) {
           if (v === '#' || v === '') return '—';
           return '<a class="govuk-link" href="' + esc(v) + '" target="_blank" rel="noreferrer">' + esc(v) + '</a>';
-        } },
-      { key:'DigitalSignature',       label:'Digital signature' }
+        }},
+      { key:'DigitalSignature',     label:'Digital signature' }
     ]);
 
     var policeRows = rowsHTML(pol, [
-      { key:'DisclosureStatus',              label:'Disclosure status' },
-      { key:'RationaleForDisclosureDecision',label:'Rationale for disclosure decision' },
-      { key:'Rebuttable',                    label:'Rebuttable' },
-      { key:'SensitivityRationale',          label:'Sensitivity rationale' },
-      { key:'Description',                   label:'Description' },
-      { key:'Exceptions',                    label:'Exceptions', render: function (arr) {
+      { key:'DisclosureStatus',               label:'Disclosure status' },
+      { key:'RationaleForDisclosureDecision', label:'Rationale for disclosure decision' },
+      { key:'Rebuttable',                     label:'Rebuttable' },
+      { key:'SensitivityRationale',           label:'Sensitivity rationale' },
+      { key:'Description',                    label:'Description' },
+      { key:'Exceptions',                     label:'Exceptions', render: function (arr) {
           if (!Array.isArray(arr) || !arr.length) return '—';
           return '<ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">' +
-            arr.map(function (x){ return '<li>' + esc(x) + '</li>'; }).join('') +
-            '</ul>';
-        } },
+                   arr.map(function (x){ return '<li>' + esc(x) + '</li>'; }).join('') +
+                 '</ul>';
+        }},
       { label:'Inspection date', get: function(){ return insp.DateOfInspection; } },
       { label:'Inspected by',   get: function(){ return insp.InspectedBy; } }
     ]);
 
     var cpsRows = rowsHTML(cps, [
-      { key:'DisclosureStatus',              label:'Disclosure status' },
-      { key:'RationaleForDisclosureDecision',label:'Rationale for disclosure decision' },
-      { key:'SensitivityDispute',            label:'Sensitivity dispute' }
+      { key:'DisclosureStatus',               label:'Disclosure status' },
+      { key:'RationaleForDisclosureDecision', label:'Rationale for disclosure decision' },
+      { key:'SensitivityDispute',             label:'Sensitivity dispute' }
     ]);
 
-    return '\
-      <div class="dcf-viewer__meta">\
-        ' + chips + '\
-        ' + sectionHTML('Material',              materialRows) + '\
-        ' + sectionHTML('Related materials',     relatedRows)  + '\
-        ' + sectionHTML('Digital representation',digitalRows)  + '\
-        ' + sectionHTML('Police material',       policeRows)   + '\
-        ' + sectionHTML('CPS material',          cpsRows)      + '\
-      </div>';
+    // Meta bar with actions (no chips)
+    var metaBar =
+      '<div class="dcf-viewer__meta-bar">' +
+        '<div class="dcf-meta-actions">' +
+          '<a href="#" class="govuk-link js-meta-toggle" data-action="toggle-meta" aria-expanded="true" aria-controls="' + bodyId + '">Hide details <i class="fa-sharp fa-solid fa-chevron-down"></i></a>' +
+          '<a href="#" class="govuk-button govuk-button--secondary dcf-meta-secondary" data-action="reclassify">Reclassify</a>' +
+        '</div>' +
+      '</div>';
+
+    return '' +
+      '<div class="dcf-viewer__meta">' +
+        metaBar +
+        '<div id="' + bodyId + '" class="dcf-viewer__meta-body">' +
+          sectionHTML('Material',               materialRows) +
+          sectionHTML('Related materials',      relatedRows)  +
+          sectionHTML('Digital representation', digitalRows)  +
+          sectionHTML('Police material',        policeRows)   +
+          sectionHTML('CPS material',           cpsRows)      +
+        '</div>' +
+      '</div>';
   }
 
   function setActiveCard(linkEl) {
@@ -185,20 +190,18 @@
 
     e.preventDefault();
 
-    var meta = getMaterialJSONFromLink(link) || {};
+    var meta  = getMaterialJSONFromLink(link) || {};
     var url   = link.getAttribute('data-file-url') || link.href;
     var title = link.getAttribute('data-title') || (link.textContent || '').trim() || 'Selected file';
     var isPDF = /\.pdf(\?|#|$)/i.test(url);
 
     var toolbar =
-      ' <div class="dcf-viewer__toolbar govuk-!-margin-bottom-4">\
-        <a href="#" class="govuk-link" data-action="close-viewer">Close preview</a>\
-        <span aria-hidden="true" class="govuk-!-margin-horizontal-2"> &nbsp; | &nbsp; </span>\
-        <a href="#" class="govuk-link" data-action="toggle-full" aria-pressed="false">View full width</a>\
-        <span aria-hidden="true" class="govuk-!-margin-horizontal-2"> &nbsp; | &nbsp; </span>\
-        <a href="' + url + '" target="_blank" rel="noreferrer" class="govuk-link">Open in a new tab</a>\
-        <span class="govuk-!-margin-left-3">' + title + '</span>\
-      </div>';
+      '<div class="dcf-viewer__toolbar govuk-!-margin-bottom-4">' +
+        '<a href="#" class="govuk-link" data-action="close-viewer">Close preview</a>' +
+        '<span aria-hidden="true" class="govuk-!-margin-horizontal-2">&nbsp;|&nbsp;</span>' +
+        '<a href="#" class="govuk-link" data-action="toggle-full" aria-pressed="false">View full width</a>' +
+        '<span class="govuk-!-margin-left-3">' + esc(title) + '</span>' +
+      '</div>';
 
     var metaBar = buildMetaPanel(meta);
 
@@ -217,7 +220,7 @@
     viewer.focus({ preventScroll: false });
   }, false);
 
-  /* ---------- toolbar actions ---------- */
+  /* ---------- toolbar + meta actions ---------- */
 
   viewer.addEventListener('click', function (e) {
     var a = e.target.closest('a[data-action]');
@@ -240,11 +243,27 @@
       a.textContent = on ? 'Exit full width' : 'View full width';
       a.setAttribute('aria-pressed', String(on));
       viewer.focus({ preventScroll: true });
+      return;
+    }
+
+    if (action === 'toggle-meta') {
+      var targetId = a.getAttribute('aria-controls');
+      var body = targetId && document.getElementById(targetId);
+      if (!body) return;
+      var expanded = a.getAttribute('aria-expanded') === 'true';
+      body.hidden = expanded;
+      a.setAttribute('aria-expanded', String(!expanded));
+      a.textContent = expanded ? 'Show details' : 'Hide details';
+      return;
+    }
+
+    if (action === 'reclassify') {
+      // Hook your real action here
+      console.log('Reclassify clicked');
+      return;
     }
   }, false);
 })();
 </script>
-
-
 {% endblock %}
 

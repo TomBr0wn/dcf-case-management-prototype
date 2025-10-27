@@ -47,16 +47,18 @@
 */
 
 .dcf-viewer__meta {
-  border: #3B64AC 12px solid; /* GOV.UK extended blue */
+  border-width: 12px 12px 0 12px;
+  border-style: solid;
+  border-color: #3B64AC;/* GOV.UK extended blue */
   background:  #fff ;       /* GOV.UK extended blue */
   color: #000;
-  padding: 12px;
-  margin-bottom: 8px;
+  padding: 12px 12px 0px 12px; /* bottom padding handled by meta bar */
+  margin-bottom: 0px;
 
   // Ensure the list shows the standard GOV.UK borders
   .govuk-summary-list {
     border-top: 1px solid #b1b4b6;     // top rule like GOV.UK
-    margin-bottom: 0;
+    margin-bottom: 10px;
   }
 
   .govuk-summary-list__row {
@@ -99,30 +101,45 @@
   }
 }
 
-/* full-bleed chip bar */
-.dcf-chiplist {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
 
-  /* make the violet bar touch the blue border on top/left/right */
-  margin: -12px -12px 12px;   /* top/left/right = -meta padding, bottom = normal gap */
-  padding: 10px 12px 16px 12px;  /* inner spacing inside the violet bar */
-  width: auto;                /* flex will fill once margins are applied */
+/* Full-bleed meta action bar */
+.dcf-viewer__meta-bar {
+  /* make it touch the blue border of .dcf-viewer__meta */
+  margin: -12px -12px 0px;   /* top/left/right = -meta padding, bottom = normal gap */
+  padding: 4px 0px 16px 0px; /* vertical padding only */
   background: #3B64AC;
+  color: #fff;
+
+  display: flex;              /* host flex just to contain the row */
 }
 
+/* Row that holds the two controls */
+.dcf-meta-actions {
+  display: flex;
+  align-items: center;        /* vertical centering */
+  gap: 12px;
+  width: 100%;                /* stretch across the bar */
 
-.dcf-chip {
-  background: #dce6f7;
+  /* Put the button first (left), link last (right) */
+  .dcf-meta-secondary { order: 0; }           /* the “Reclassify” button */
+  .js-meta-toggle     { order: 1; margin-left: auto; }
+}
+
+/* Inverse link styling on the blue bar */
+.dcf-viewer__meta-bar .govuk-link {
+  color: #fff;
+  text-decoration-thickness: 1px;
+}
+.dcf-viewer__meta-bar .govuk-link:hover { text-decoration-thickness: 2px; }
+.dcf-viewer__meta-bar .govuk-link:focus {
+  outline: 3px solid transparent;
+  background: #fd0;
   color: #0b0c0c;
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-size: 14px;
-  line-height: 1.2;
+  box-shadow: 0 -2px #fd0, 0 4px #0b0c0c;
+  text-decoration: none;
 }
 
-/* Optional: spacing tweaks when meta appears directly above the iframe */
-.dcf-viewer__frame {
-  margin-top: 8px;
+/* Optional: tighten the secondary button so it sits nicely in the bar */
+.dcf-viewer__meta-bar .dcf-meta-secondary {
+  margin: 0;                  /* remove govuk-button default bottom margin if any */
 }
