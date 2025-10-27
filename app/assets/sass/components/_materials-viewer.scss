@@ -47,36 +47,43 @@
 */
 
 .dcf-viewer__meta {
-  background: #234a94;       /* GOV.UK extended blue */
-  color: #fff;
+  border: #275bcc 12px solid; /* GOV.UK extended blue */
+  background:  #fff ;       /* GOV.UK extended blue */
+  color: #000;
   padding: 12px;
   margin-bottom: 8px;
 
-  /* Summary list inside a dark panel */
+  // Ensure the list shows the standard GOV.UK borders
   .govuk-summary-list {
-    color: inherit;
+    border-top: 1px solid #b1b4b6;     // top rule like GOV.UK
     margin-bottom: 0;
   }
+
   .govuk-summary-list__row {
-    border-color: rgba(255,255,255,0.25); /* subtle dividers on dark bg */
+    border-bottom: 1px solid #b1b4b6;  // row separators
   }
+
+  // (optional) slightly tighter row spacing
   .govuk-summary-list__key,
   .govuk-summary-list__value,
   .govuk-summary-list__actions {
-    color: #fff;
+    color: #0b0c0c;
+    font-size: 16px;
+    padding-top: 8px;
+    padding-bottom: 8px;
   }
 
   /* Headings used as section titles within meta */
   .govuk-heading-s,
   .govuk-heading-m {
-    color: #fff;
+    color: #000;
     margin-top: 12px;
     margin-bottom: 6px;
   }
 
   /* Links on dark background */
   .govuk-link {
-    color: #fff;
+    color: #000;
     text-decoration-thickness: 1px;
   }
   .govuk-link:hover {
@@ -92,13 +99,20 @@
   }
 }
 
-/* Little tag “chips” you wanted inline next to values */
+/* full-bleed chip bar */
 .dcf-chiplist {
-  display: inline-flex;
+  display: flex;
+  flex-wrap: wrap;
   gap: 6px;
-  margin-left: 8px;
-  vertical-align: middle;
+
+  /* make the violet bar touch the blue border on top/left/right */
+  margin: -12px -12px 12px;   /* top/left/right = -meta padding, bottom = normal gap */
+  padding: 10px 12px 16px 12px;  /* inner spacing inside the violet bar */
+  width: auto;                /* flex will fill once margins are applied */
+  background: #275bcc;
 }
+
+
 .dcf-chip {
   background: #dce6f7;
   color: #0b0c0c;
