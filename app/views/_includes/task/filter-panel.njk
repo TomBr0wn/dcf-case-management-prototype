@@ -1,5 +1,17 @@
 {% set filterOptionsHtml %}
 
+  {{ appCheckboxFilter({
+    idPrefix: "taskListFilters[assigned]",
+    name: "taskListFilters[assigned]",
+    classes: "govuk-checkboxes--small assigned-filter",
+    attributes: { id: 'assigned-filter' },
+    fieldset: { legend: { text: "Assignee", classes: "govuk-fieldset__legend--s" } },
+    maxHeight: true,
+    items: assigneeItems,
+    values: selectedAssigneeFilters,
+    selectedItems: selectedAssigneeItems
+  }) }}
+
   {{ govukCheckboxes({
     idPrefix: "taskListFilters[taskTypes]",
     name: "taskListFilters[taskTypes]",

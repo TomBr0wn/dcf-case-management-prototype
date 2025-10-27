@@ -1,3 +1,4 @@
+const _ = require('lodash')
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 const checkSignedIn = require('../middleware/checkSignedIn')
@@ -11,6 +12,7 @@ module.exports = router => {
   })
 
   router.post('/account/sign-in', async (req, res) => {
+    // Put current user into session so that we know if and who is signed in
     req.session.data.user = await prisma.user.findFirst()
     res.redirect('/overview')
   })

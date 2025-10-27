@@ -8,15 +8,16 @@ datasource db {
 }
 
 model User {
-  id       Int    @id @default(autoincrement())
-  email    String @unique
-  password String
-  firstName String
-  lastName  String
-  role     String
-  cases    Case[]
-  notes    Note[]
+  id           Int           @id @default(autoincrement())
+  email        String        @unique
+  password     String
+  firstName    String
+  lastName     String
+  role         String
+  cases        Case[]
+  notes        Note[]
   activityLogs ActivityLog[]
+  tasks        Task[]        @relation("TaskAssignedTo")
 }
 
 model ActivityLog {
@@ -223,12 +224,14 @@ model Location {
 }
 
 model Task {
-  id       Int      @id @default(autoincrement())
-  name     String
-  type     String
-  dueDate  DateTime
-  case     Case     @relation(fields: [caseId], references: [id])
-  caseId   Int
+  id           Int      @id @default(autoincrement())
+  name         String
+  type         String
+  dueDate      DateTime
+  case         Case     @relation(fields: [caseId], references: [id])
+  caseId       Int
+  assignedTo   User?    @relation("TaskAssignedTo", fields: [assignedToId], references: [id])
+  assignedToId Int?
 }
 
 model Document {

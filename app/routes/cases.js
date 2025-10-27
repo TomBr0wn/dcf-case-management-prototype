@@ -36,6 +36,7 @@ module.exports = router => {
     let selectedLawyerFilters = _.get(req.session.data.caseListFilters, 'lawyers', [])
 
     let selectedFilters = { categories: [] }
+    let selectedLawyerItems = []
 
     // Priority filter display
     if (selectedDgaFilters?.length) {
@@ -110,14 +111,14 @@ module.exports = router => {
         })
       }
 
-      let items = selectedLawyerFilters.map(function(selectedLawyer) {
+      selectedLawyerItems = selectedLawyerFilters.map(function(selectedLawyer) {
         if (selectedLawyer === "Unassigned") return { text: "Unassigned", href: '/cases/remove-lawyer/' + selectedLawyer }
 
         let lawyer = fetchedLawyers.find(function(lawyer) { return lawyer.id === Number(selectedLawyer) })
         return { text: lawyer ? lawyer.firstName + " " + lawyer.lastName : selectedLawyer, href: '/cases/remove-lawyer/' + selectedLawyer }
       })
 
-      selectedFilters.categories.push({ heading: { text: 'Prosecutor' }, items: items })
+      selectedFilters.categories.push({ heading: { text: 'Prosecutor' }, items: selectedLawyerItems })
     }
 
     // Build Prisma where clause
@@ -252,14 +253,15 @@ module.exports = router => {
     cases = pagination.getData()
 
     res.render('cases/index', {
-      totalCases, 
+      totalCases,
       cases,
       dgaItems,
       ctlItems,
       unitItems,
-      complexityItems, 
-      typeItems, 
+      complexityItems,
+      typeItems,
       lawyerItems,
+      selectedLawyerItems,
       selectedFilters,
       pagination
     })

@@ -95,6 +95,19 @@ async function main() {
     },
   ];
 
+  // Generate 18 additional users to reach 20 total
+  for (let i = 0; i < 18; i++) {
+    const firstName = faker.helpers.arrayElement(firstNames);
+    const lastName = faker.helpers.arrayElement(lastNames);
+    userData.push({
+      email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}@example.com`,
+      password: "password123",
+      role: "USER",
+      firstName: firstName,
+      lastName: lastName,
+    });
+  }
+
   for (const u of userData) {
     const hashedPassword = await bcrypt.hash(u.password, 10);
     const user = await prisma.user.create({
@@ -105,7 +118,7 @@ async function main() {
     });
     users.push(user);
   }
-  console.log("✅ Users seeded");
+  console.log(`✅ ${users.length} users seeded`);
 
   // -------------------- Specialisms --------------------
   await prisma.specialism.createMany({
@@ -238,11 +251,19 @@ async function main() {
     const numTasks = faker.number.int({ min: 0, max: 5 });
     const chosenTaskNames = faker.helpers.arrayElements(taskNames, numTasks);
 
-    const tasksData = chosenTaskNames.map((name) => ({
-      name,
-      type: faker.helpers.arrayElement(taskTypes),
-      dueDate: faker.date.future(),
-    }));
+    const tasksData = chosenTaskNames.map((name) => {
+      // 90% assigned to users, 10% unassigned
+      const assignedToId = faker.datatype.boolean({ probability: 0.9 })
+        ? faker.helpers.arrayElement(users).id
+        : null;
+
+      return {
+        name,
+        type: faker.helpers.arrayElement(taskTypes),
+        dueDate: faker.date.future(),
+        assignedToId: assignedToId,
+      };
+    });
 
     // Pick between 5 and 15 documents
     const numDocuments = faker.number.int({ min: 5, max: 15 });
@@ -264,7 +285,7 @@ async function main() {
         type: faker.helpers.arrayElement(types),
         user: {
           connect: {
-            id: faker.helpers.arrayElement([users[0].id, users[1].id]),
+            id: faker.helpers.arrayElement(users).id,
           },
         },
         isCTL: faker.datatype.boolean(),
@@ -480,7 +501,7 @@ async function main() {
         data: {
           content: noteContent,
           caseId: createdCase.id,
-          userId: faker.helpers.arrayElement([users[0].id, users[1].id])
+          userId: faker.helpers.arrayElement(users).id
         }
       });
     }
