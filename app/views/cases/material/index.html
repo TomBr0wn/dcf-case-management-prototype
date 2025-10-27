@@ -46,12 +46,130 @@
 {% block pageScripts %}
 <script>
 (function () {
-  // Grab viewer and layout once
   var viewer = document.getElementById('material-viewer');
   var layout = document.querySelector('.dcf-materials-layout');
   if (!viewer) return;
 
-  // Utility: mark the clicked card as active
+  /* ---------- helpers ---------- */
+
+  function getMaterialJSONFromLink(link) {
+    var card = link.closest('.dcf-material-card');
+    if (!card) return null;
+    var tag = card.querySelector('script.js-material-data[type="application/json"]');
+    if (!tag) return null;
+    try { return JSON.parse(tag.textContent); } catch (e) { return null; }
+  }
+
+  function esc(s) {
+    return (s == null ? '' : String(s))
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  function rowsHTML(obj, mapping) {
+    // mapping: [{key:'Field', label:'Nice label', render:(v)=>string?}]
+    return mapping.map(function (m) {
+      var v = (m.get ? m.get(obj) : obj && obj[m.key]);
+      if (v == null || v === '' || (Array.isArray(v) && v.length === 0)) return '';
+      var valHTML = (m.render ? m.render(v) : esc(v));
+      return (
+        '<div class="govuk-summary-list__row">' +
+          '<dt class="govuk-summary-list__key">' + esc(m.label) + '</dt>' +
+          '<dd class="govuk-summary-list__value">' + valHTML + '</dd>' +
+        '</div>'
+      );
+    }).join('');
+  }
+
+  function sectionHTML(title, rows) {
+    if (!rows) return '';
+    return (
+      '<h3 class="govuk-heading-s govuk-!-margin-top-3 govuk-!-margin-bottom-1">' + esc(title) + '</h3>' +
+      '<div class="govuk-summary-list govuk-!-margin-bottom-2">' + rows + '</div>'
+    );
+  }
+
+  function buildMetaPanel(meta) {
+    // Top line chips/badges
+    var topChips = [];
+    if (meta.Status) topChips.push('<span class="dcf-chip">' + esc(meta.Status) + '</span>');
+    if (meta.Type)   topChips.push('<span class="dcf-chip">' + esc(meta.Type)   + '</span>');
+    if (meta.date)   topChips.push('<span class="dcf-chip">' + esc(meta.date)   + '</span>');
+    if (meta.ItemId) topChips.push('<span class="dcf-chip">' + esc(meta.ItemId) + '</span>');
+    var chips = topChips.length ? '<div class="dcf-chiplist" role="list" aria-label="Attributes">' + topChips.join(' ') + '</div>' : '';
+
+    // Sections
+    var mat = meta.Material || {};
+    var rel = meta.RelatedMaterials || {};
+    var dig = meta.DigitalRepresentation || {};
+    var pol = meta.PoliceMaterial || {};
+    var cps = meta.CPSMaterial || {};
+    var insp = pol.Inspection || {};
+
+    var materialRows = rowsHTML(mat, [
+      { key:'Title',                  label:'Title' },
+      { key:'Reference',              label:'Reference' },
+      { key:'ProducedbyWitnessId',    label:'Produced by (witness id)' },
+      { key:'MaterialClassification', label:'Material classification' },
+      { key:'MaterialType',           label:'Material type' },
+      { key:'SentExternally',         label:'Sent externally' },
+      { key:'RelatedParticipantId',   label:'Related participant id' },
+      { key:'Incident',               label:'Incident' },
+      { key:'Location',               label:'Location' },
+      { key:'PeriodFrom',             label:'Period from' },
+      { key:'PeriodTo',               label:'Period to' }
+    ]);
+
+    var relatedRows = rowsHTML(rel, [
+      { key:'RelatesToItem', label:'Relates to item' },
+      { key:'RelatedItemId', label:'Related item id' },
+      { key:'RelationshipType', label:'Relationship type' }
+    ]);
+
+    var digitalRows = rowsHTML(dig, [
+      { key:'FileName',               label:'File name' },
+      { key:'Document',               label:'Document' },
+      { key:'ExternalFileLocation',   label:'External file location' },
+      { key:'ExternalFileURL',        label:'External file URL', render: function (v) {
+          if (v === '#' || v === '') return '—';
+          return '<a class="govuk-link" href="' + esc(v) + '" target="_blank" rel="noreferrer">' + esc(v) + '</a>';
+        } },
+      { key:'DigitalSignature',       label:'Digital signature' }
+    ]);
+
+    var policeRows = rowsHTML(pol, [
+      { key:'DisclosureStatus',              label:'Disclosure status' },
+      { key:'RationaleForDisclosureDecision',label:'Rationale for disclosure decision' },
+      { key:'Rebuttable',                    label:'Rebuttable' },
+      { key:'SensitivityRationale',          label:'Sensitivity rationale' },
+      { key:'Description',                   label:'Description' },
+      { key:'Exceptions',                    label:'Exceptions', render: function (arr) {
+          if (!Array.isArray(arr) || !arr.length) return '—';
+          return '<ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">' +
+            arr.map(function (x){ return '<li>' + esc(x) + '</li>'; }).join('') +
+            '</ul>';
+        } },
+      { label:'Inspection date', get: function(){ return insp.DateOfInspection; } },
+      { label:'Inspected by',   get: function(){ return insp.InspectedBy; } }
+    ]);
+
+    var cpsRows = rowsHTML(cps, [
+      { key:'DisclosureStatus',              label:'Disclosure status' },
+      { key:'RationaleForDisclosureDecision',label:'Rationale for disclosure decision' },
+      { key:'SensitivityDispute',            label:'Sensitivity dispute' }
+    ]);
+
+    return '\
+      <div class="dcf-viewer__meta">\
+        ' + chips + '\
+        ' + sectionHTML('Material',              materialRows) + '\
+        ' + sectionHTML('Related materials',     relatedRows)  + '\
+        ' + sectionHTML('Digital representation',digitalRows)  + '\
+        ' + sectionHTML('Police material',       policeRows)   + '\
+        ' + sectionHTML('CPS material',          cpsRows)      + '\
+      </div>';
+  }
+
   function setActiveCard(linkEl) {
     document.querySelectorAll('.dcf-material-card--active')
       .forEach(function (el) { el.classList.remove('dcf-material-card--active'); });
@@ -59,70 +177,74 @@
     if (card) card.classList.add('dcf-material-card--active');
   }
 
-  // Open in inline viewer (intercept any link with data-file-url)
+  /* ---------- open preview ---------- */
+
   document.addEventListener('click', function (e) {
-    var link = e.target.closest('a[data-file-url]');
+    var link = e.target.closest('a.js-material-link[data-file-url]');
     if (!link) return;
 
     e.preventDefault();
 
+    var meta = getMaterialJSONFromLink(link) || {};
     var url   = link.getAttribute('data-file-url') || link.href;
-    var title = (link.textContent || '').trim() || 'Selected file';
+    var title = link.getAttribute('data-title') || (link.textContent || '').trim() || 'Selected file';
     var isPDF = /\.pdf(\?|#|$)/i.test(url);
 
-    viewer.hidden = false;
-    viewer.setAttribute('tabindex', '-1');
-
-    viewer.innerHTML = '\
-      <div class="dcf-viewer__toolbar govuk-!-margin-bottom-4">\
+    var toolbar =
+      ' <div class="dcf-viewer__toolbar govuk-!-margin-bottom-4">\
         <a href="#" class="govuk-link" data-action="close-viewer">Close preview</a>\
         <span aria-hidden="true" class="govuk-!-margin-horizontal-2"> &nbsp; | &nbsp; </span>\
         <a href="#" class="govuk-link" data-action="toggle-full" aria-pressed="false">View full width</a>\
         <span aria-hidden="true" class="govuk-!-margin-horizontal-2"> &nbsp; | &nbsp; </span>\
         <a href="' + url + '" target="_blank" rel="noreferrer" class="govuk-link">Open in a new tab</a>\
         <span class="govuk-!-margin-left-3">' + title + '</span>\
-      </div>' +
-      (isPDF
-        ? '<iframe class="dcf-viewer__frame" src="' + url + '" title="Preview of ' + title + '" loading="lazy" referrerpolicy="no-referrer"></iframe>'
-        : '<div class="govuk-inset-text govuk-!-margin-bottom-2">\
-             This file type may not preview inline. You can \
-             <a class="govuk-link" href="' + url + '" target="_blank" rel="noreferrer">open it in a new tab</a>.\
-           </div>\
-           <iframe class="dcf-viewer__frame" src="' + url + '" title="Preview of ' + title + '" loading="lazy" referrerpolicy="no-referrer"></iframe>'
-      );
+      </div>';
+
+    var metaBar = buildMetaPanel(meta);
+
+    var iframe = isPDF
+      ? '<iframe class="dcf-viewer__frame" src="' + esc(url) + '" title="Preview of ' + esc(title) + '" loading="lazy" referrerpolicy="no-referrer"></iframe>'
+      : '<div class="govuk-inset-text govuk-!-margin-bottom-2">This file type may not preview inline. You can ' +
+          '<a class="govuk-link" href="' + esc(url) + '" target="_blank" rel="noreferrer">open it in a new tab</a>.' +
+        '</div>' +
+        '<iframe class="dcf-viewer__frame" src="' + esc(url) + '" title="Preview of ' + esc(title) + '" loading="lazy" referrerpolicy="no-referrer"></iframe>';
+
+    viewer.hidden = false;
+    viewer.setAttribute('tabindex', '-1');
+    viewer.innerHTML = toolbar + metaBar + iframe;
 
     setActiveCard(link);
     viewer.focus({ preventScroll: false });
   }, false);
 
-  // Delegate toolbar link actions (close / toggle full width)
+  /* ---------- toolbar actions ---------- */
+
   viewer.addEventListener('click', function (e) {
-    var actionLink = e.target.closest('a[data-action]');
-    if (!actionLink) return;
+    var a = e.target.closest('a[data-action]');
+    if (!a) return;
 
     e.preventDefault();
-    var action = actionLink.getAttribute('data-action');
+    var action = a.getAttribute('data-action');
 
     if (action === 'close-viewer') {
       viewer.innerHTML = '<p class="govuk-hint govuk-!-margin-bottom-3">Select a material from the list to preview it here.</p>';
       viewer.hidden = true;
       if (layout) layout.classList.remove('is-full');
-      document.querySelectorAll('.dcf-material-card--active')
-        .forEach(function (el) { el.classList.remove('dcf-material-card--active'); });
+      document.querySelectorAll('.dcf-material-card--active').forEach(function (el) { el.classList.remove('dcf-material-card--active'); });
       return;
     }
 
     if (action === 'toggle-full') {
       if (!layout) return;
-      var isFull = layout.classList.toggle('is-full');
-      actionLink.textContent = isFull ? 'Exit full width' : 'View full width';
-      actionLink.setAttribute('aria-pressed', String(isFull));
+      var on = layout.classList.toggle('is-full');
+      a.textContent = on ? 'Exit full width' : 'View full width';
+      a.setAttribute('aria-pressed', String(on));
       viewer.focus({ preventScroll: true });
-      return;
     }
   }, false);
 })();
 </script>
+
 
 {% endblock %}
 

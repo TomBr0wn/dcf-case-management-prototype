@@ -40,3 +40,75 @@
   height: calc(100vh - 220px); /* adjust to taste */
   border: 0;
 }
+
+/* _materials-viewer.scss
+   Styles for the preview pane meta block shown above the iframe.
+   Keep separate from accordion/card styles.
+*/
+
+.dcf-viewer__meta {
+  background: #234a94;       /* GOV.UK extended blue */
+  color: #fff;
+  padding: 12px;
+  margin-bottom: 8px;
+
+  /* Summary list inside a dark panel */
+  .govuk-summary-list {
+    color: inherit;
+    margin-bottom: 0;
+  }
+  .govuk-summary-list__row {
+    border-color: rgba(255,255,255,0.25); /* subtle dividers on dark bg */
+  }
+  .govuk-summary-list__key,
+  .govuk-summary-list__value,
+  .govuk-summary-list__actions {
+    color: #fff;
+  }
+
+  /* Headings used as section titles within meta */
+  .govuk-heading-s,
+  .govuk-heading-m {
+    color: #fff;
+    margin-top: 12px;
+    margin-bottom: 6px;
+  }
+
+  /* Links on dark background */
+  .govuk-link {
+    color: #fff;
+    text-decoration-thickness: 1px;
+  }
+  .govuk-link:hover {
+    text-decoration-thickness: 2px;
+  }
+  .govuk-link:focus {
+    /* standard GOV.UK focus ring, looks fine on dark background */
+    outline: 3px solid transparent;
+    color: #0b0c0c;
+    background: #fd0;
+    box-shadow: 0 -2px #fd0, 0 4px #0b0c0c;
+    text-decoration: none;
+  }
+}
+
+/* Little tag “chips” you wanted inline next to values */
+.dcf-chiplist {
+  display: inline-flex;
+  gap: 6px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+.dcf-chip {
+  background: #dce6f7;
+  color: #0b0c0c;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+/* Optional: spacing tweaks when meta appears directly above the iframe */
+.dcf-viewer__frame {
+  margin-top: 8px;
+}

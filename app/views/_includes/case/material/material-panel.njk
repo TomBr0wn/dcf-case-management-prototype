@@ -10,7 +10,7 @@
             <div class="dcf-material-card__main">
               {% if m.Status %}<span class="dcf-material-card__badge">{{ m.Status }}</span>{% endif %}
               <h3 class="dcf-material-card__title govuk-!-margin-bottom-1">
-                {% set linkText = m.Material.Title %}
+                {% set linkText = m.Material.Title or m.DigitalRepresentation.FileName %}
                 {% if m.myFileUrl %}
                   <a
                     href="{{ m.myFileUrl }}"
@@ -18,9 +18,22 @@
                     target="_blank"
                     rel="noreferrer"
                     data-file-url="{{ m.myFileUrl }}"
-                  >
-                    {{ linkText }}
-                  </a>
+                    data-title="{{ linkText | escape }}"
+                  >{{ linkText }}</a>
+
+                  {# pass meta (no myFileUrl) for the viewer meta panel #}
+                  {% set __meta__ = {
+                    ItemId: m.ItemId,
+                    Type: m.Type,
+                    date: m.date,
+                    Status: m.Status,
+                    Material: m.Material,
+                    RelatedMaterials: m.RelatedMaterials,
+                    DigitalRepresentation: m.DigitalRepresentation,
+                    PoliceMaterial: m.PoliceMaterial,
+                    CPSMaterial: m.CPSMaterial
+                  } %}
+                  <script type="application/json" class="js-material-data">{{ __meta__ | dump | safe }}</script>
                 {% else %}
                   {{ linkText }}
                 {% endif %}
@@ -37,8 +50,6 @@
 {% endset %}
 
 
-
-
 {# Exhibits #}
 {% set exhibitsHtml %}
   {% set hasAny = false %}
@@ -53,7 +64,27 @@
               <h3 class="dcf-material-card__title">
                 {% set linkText = m.Material.Title or m.DigitalRepresentation.FileName %}
                 {% if m.myFileUrl %}
-                  <a href="{{ m.myFileUrl }}" class="govuk-link" target="_blank" rel="noreferrer">{{ linkText }}</a>
+                  <a
+                    href="{{ m.myFileUrl }}"
+                    class="govuk-link js-material-link"
+                    target="_blank"
+                    rel="noreferrer"
+                    data-file-url="{{ m.myFileUrl }}"
+                    data-title="{{ linkText | escape }}"
+                  >{{ linkText }}</a>
+
+                  {% set __meta__ = {
+                    ItemId: m.ItemId,
+                    Type: m.Type,
+                    date: m.date,
+                    Status: m.Status,
+                    Material: m.Material,
+                    RelatedMaterials: m.RelatedMaterials,
+                    DigitalRepresentation: m.DigitalRepresentation,
+                    PoliceMaterial: m.PoliceMaterial,
+                    CPSMaterial: m.CPSMaterial
+                  } %}
+                  <script type="application/json" class="js-material-data">{{ __meta__ | dump | safe }}</script>
                 {% else %}
                   {{ linkText }}
                 {% endif %}
@@ -68,6 +99,7 @@
   </ul>
   {% if not hasAny %}<p class="govuk-hint">No items yet.</p>{% endif %}
 {% endset %}
+
 
 {# MG forms #}
 {% set mgFormsHtml %}
@@ -83,7 +115,27 @@
               <h3 class="dcf-material-card__title">
                 {% set linkText = m.Material.Title or m.DigitalRepresentation.FileName %}
                 {% if m.myFileUrl %}
-                  <a href="{{ m.myFileUrl }}" class="govuk-link" target="_blank" rel="noreferrer">{{ linkText }}</a>
+                  <a
+                    href="{{ m.myFileUrl }}"
+                    class="govuk-link js-material-link"
+                    target="_blank"
+                    rel="noreferrer"
+                    data-file-url="{{ m.myFileUrl }}"
+                    data-title="{{ linkText | escape }}"
+                  >{{ linkText }}</a>
+
+                  {% set __meta__ = {
+                    ItemId: m.ItemId,
+                    Type: m.Type,
+                    date: m.date,
+                    Status: m.Status,
+                    Material: m.Material,
+                    RelatedMaterials: m.RelatedMaterials,
+                    DigitalRepresentation: m.DigitalRepresentation,
+                    PoliceMaterial: m.PoliceMaterial,
+                    CPSMaterial: m.CPSMaterial
+                  } %}
+                  <script type="application/json" class="js-material-data">{{ __meta__ | dump | safe }}</script>
                 {% else %}
                   {{ linkText }}
                 {% endif %}
@@ -98,6 +150,7 @@
   </ul>
   {% if not hasAny %}<p class="govuk-hint">No items yet.</p>{% endif %}
 {% endset %}
+
 
 {# Other material #}
 {% set otherMaterialHtml %}
@@ -113,7 +166,27 @@
               <h3 class="dcf-material-card__title">
                 {% set linkText = m.Material.Title or m.DigitalRepresentation.FileName %}
                 {% if m.myFileUrl %}
-                  <a href="{{ m.myFileUrl }}" class="govuk-link" target="_blank" rel="noreferrer">{{ linkText }}</a>
+                  <a
+                    href="{{ m.myFileUrl }}"
+                    class="govuk-link js-material-link"
+                    target="_blank"
+                    rel="noreferrer"
+                    data-file-url="{{ m.myFileUrl }}"
+                    data-title="{{ linkText | escape }}"
+                  >{{ linkText }}</a>
+
+                  {% set __meta__ = {
+                    ItemId: m.ItemId,
+                    Type: m.Type,
+                    date: m.date,
+                    Status: m.Status,
+                    Material: m.Material,
+                    RelatedMaterials: m.RelatedMaterials,
+                    DigitalRepresentation: m.DigitalRepresentation,
+                    PoliceMaterial: m.PoliceMaterial,
+                    CPSMaterial: m.CPSMaterial
+                  } %}
+                  <script type="application/json" class="js-material-data">{{ __meta__ | dump | safe }}</script>
                 {% else %}
                   {{ linkText }}
                 {% endif %}
@@ -128,6 +201,7 @@
   </ul>
   {% if not hasAny %}<p class="govuk-hint">No items yet.</p>{% endif %}
 {% endset %}
+
 
 {# Unused non-sensitive #}
 {% set unsNonSensitiveHtml %}
@@ -143,7 +217,27 @@
               <h3 class="dcf-material-card__title">
                 {% set linkText = m.Material.Title or m.DigitalRepresentation.FileName %}
                 {% if m.myFileUrl %}
-                  <a href="{{ m.myFileUrl }}" class="govuk-link" target="_blank" rel="noreferrer">{{ linkText }}</a>
+                  <a
+                    href="{{ m.myFileUrl }}"
+                    class="govuk-link js-material-link"
+                    target="_blank"
+                    rel="noreferrer"
+                    data-file-url="{{ m.myFileUrl }}"
+                    data-title="{{ linkText | escape }}"
+                  >{{ linkText }}</a>
+
+                  {% set __meta__ = {
+                    ItemId: m.ItemId,
+                    Type: m.Type,
+                    date: m.date,
+                    Status: m.Status,
+                    Material: m.Material,
+                    RelatedMaterials: m.RelatedMaterials,
+                    DigitalRepresentation: m.DigitalRepresentation,
+                    PoliceMaterial: m.PoliceMaterial,
+                    CPSMaterial: m.CPSMaterial
+                  } %}
+                  <script type="application/json" class="js-material-data">{{ __meta__ | dump | safe }}</script>
                 {% else %}
                   {{ linkText }}
                 {% endif %}
@@ -158,6 +252,7 @@
   </ul>
   {% if not hasAny %}<p class="govuk-hint">No items yet.</p>{% endif %}
 {% endset %}
+
 
 {# Unused sensitive #}
 {% set unsSensitiveHtml %}
@@ -173,7 +268,27 @@
               <h3 class="dcf-material-card__title">
                 {% set linkText = m.Material.Title or m.DigitalRepresentation.FileName %}
                 {% if m.myFileUrl %}
-                  <a href="{{ m.myFileUrl }}" class="govuk-link" target="_blank" rel="noreferrer">{{ linkText }}</a>
+                  <a
+                    href="{{ m.myFileUrl }}"
+                    class="govuk-link js-material-link"
+                    target="_blank"
+                    rel="noreferrer"
+                    data-file-url="{{ m.myFileUrl }}"
+                    data-title="{{ linkText | escape }}"
+                  >{{ linkText }}</a>
+
+                  {% set __meta__ = {
+                    ItemId: m.ItemId,
+                    Type: m.Type,
+                    date: m.date,
+                    Status: m.Status,
+                    Material: m.Material,
+                    RelatedMaterials: m.RelatedMaterials,
+                    DigitalRepresentation: m.DigitalRepresentation,
+                    PoliceMaterial: m.PoliceMaterial,
+                    CPSMaterial: m.CPSMaterial
+                  } %}
+                  <script type="application/json" class="js-material-data">{{ __meta__ | dump | safe }}</script>
                 {% else %}
                   {{ linkText }}
                 {% endif %}
@@ -189,8 +304,9 @@
   {% if not hasAny %}<p class="govuk-hint">No items yet.</p>{% endif %}
 {% endset %}
 
-{# ----- Your existing layout, with captured HTML plugged in ----- #}
-<div class="govuk-grid-row dcf-materials-layout"> {# <-- added class here #}
+
+{# ----- Layout (unchanged) ----- #}
+<div class="govuk-grid-row dcf-materials-layout">
   <div class="govuk-grid-column-one-third">
     <div class="dcf-materials-panel">
       <div class="dcf-materials-header">
@@ -228,5 +344,3 @@
     </div>
   </div>
 </div>
-
-
