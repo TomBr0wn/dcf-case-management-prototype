@@ -1,3 +1,22 @@
+{# --- counts per document type --- #}
+{% set statementsCount = 0 %}
+{% set exhibitsCount = 0 %}
+{% set mgFormsCount = 0 %}
+{% set otherMaterialCount = 0 %}
+{% set unsNonSensitiveCount = 0 %}
+{% set unsSensitiveCount = 0 %}
+
+{% for m in (data.caseMaterials or []) %}
+  {% set t = (m.Type | lower) %}
+  {% if t == 'statement' %}{% set statementsCount = statementsCount + 1 %}{% endif %}
+  {% if t == 'exhibit' %}{% set exhibitsCount = exhibitsCount + 1 %}{% endif %}
+  {% if t == 'mg form' %}{% set mgFormsCount = mgFormsCount + 1 %}{% endif %}
+  {% if t == 'other material' %}{% set otherMaterialCount = otherMaterialCount + 1 %}{% endif %}
+  {% if t == 'unused non-sensitive' %}{% set unsNonSensitiveCount = unsNonSensitiveCount + 1 %}{% endif %}
+  {% if t == 'unused sensitive' %}{% set unsSensitiveCount = unsSensitiveCount + 1 %}{% endif %}
+{% endfor %}
+
+
 {# Statements #}
 {% set statementsHtml %}
   {% set hasAny = false %}
@@ -322,18 +341,19 @@
         </form>
       </div>
 
-      {{ govukAccordion({
-        id: "materials-accordion",
-        classes: "dcf-accordion",
-        items: [
-          { heading: { text: "Statements" },           content: { html: statementsHtml    } },
-          { heading: { text: "Exhibits" },             content: { html: exhibitsHtml      } },
-          { heading: { text: "MG forms" },             content: { html: mgFormsHtml       } },
-          { heading: { text: "Other material" },       content: { html: otherMaterialHtml } },
-          { heading: { text: "Unused non-sensitive" }, content: { html: unsNonSensitiveHtml } },
-          { heading: { text: "Unused sensitive" },     content: { html: unsSensitiveHtml  } }
-        ]
-      }) }}
+        {{ govukAccordion({
+          id: "materials-accordion",
+          classes: "dcf-accordion",
+          items: [
+            { heading: { text: "Statements (" ~ statementsCount ~ ")" },           content: { html: statementsHtml    } },
+            { heading: { text: "Exhibits (" ~ exhibitsCount ~ ")" },               content: { html: exhibitsHtml      } },
+            { heading: { text: "MG forms (" ~ mgFormsCount ~ ")" },                content: { html: mgFormsHtml       } },
+            { heading: { text: "Other material (" ~ otherMaterialCount ~ ")" },    content: { html: otherMaterialHtml } },
+            { heading: { text: "Unused non-sensitive (" ~ unsNonSensitiveCount ~ ")" }, content: { html: unsNonSensitiveHtml } },
+            { heading: { text: "Unused sensitive (" ~ unsSensitiveCount ~ ")" },   content: { html: unsSensitiveHtml  } }
+          ]
+        }) }}
+
     </div>
   </div>
 

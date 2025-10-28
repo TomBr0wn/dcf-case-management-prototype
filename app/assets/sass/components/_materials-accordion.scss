@@ -103,6 +103,10 @@
   padding-bottom: var(--space-s, 4px);
 }
 
+.govuk-accordion__section-content{
+  background: #fff;
+}
+
 /* Bring the Show/Hide row (section headers) a little tighter */
 .dcf-accordion .govuk-accordion__section-header {
   padding-top: 3px;
@@ -118,5 +122,36 @@
 
 .govuk-frontend-supported .govuk-accordion__section--expanded .govuk-accordion__section-button{
   padding-bottom: 0px;
+  
 }
+
+
+/* --- White content only when expanded; no stray stripes when collapsed --- */
+
+/* expanded -> show white slab behind the cards, edge-to-edge inside the grey panel */
+.dcf-materials-panel .dcf-accordion
+  .govuk-accordion__section--expanded > .govuk-accordion__section-content {
+  background: #fff;
+  margin-left: -12px;               /* match .dcf-materials-panel padding */
+  margin-right: -12px;
+  padding: 8px 12px;                /* bring the padding back inside */
+  border-top: 1px solid #b1b4b6;    /* subtle divider under the header */
+}
+
+/* collapsed -> no background, no margins, no border = no visible stripe */
+.dcf-materials-panel .dcf-accordion
+  .govuk-accordion__section:not(.govuk-accordion__section--expanded)
+  > .govuk-accordion__section-content {
+  background: transparent;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* keep headers on the grey panel */
+.dcf-materials-panel .dcf-accordion .govuk-accordion__section {
+  background: transparent;
+}
+
+
 
