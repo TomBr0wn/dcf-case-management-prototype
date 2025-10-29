@@ -15,16 +15,21 @@
 
 {% set navId = 'cases' %}
 {% set secondaryNavId = 'materials' %}
-{% set pageName = 'Materials' %}
+{# {% set pageName = 'Materials' %} #}
 
 {% set defendantsValue %}
-  {{ _case.defendants[0].firstName }} {{ _case.defendants[0].lastName }}
-  {% if _case.defendants.length > 1 %}and {{ _case.defendants.length - 1 }} more{% endif %}
+  {{_case.defendants[0].firstName}} {{_case.defendants[0].lastName}}
+  {% if _case.defendants.length > 1 %}
+    and {{_case.defendants.length - 1}} more
+  {% endif %}
 {% endset %}
 
-{% block beforeContent %}
+
+{% set pageName = defendantsValue %}
+
+{# {% block beforeContent %}
   {% include "_includes/case/identity-bar.njk" %}
-{% endblock %}
+{% endblock %} #}
 
 {% block content %}
   {% include "_includes/success-banner.njk" %}
@@ -34,7 +39,8 @@
     <div class="govuk-grid-column-full">
       <div class="moj-page-header-actions">
         <div class="moj-page-header-actions__title">
-          <h1 class="govuk-heading-m">{{ pageName }}</h1>
+         <span class="govuk-caption-m">{{_case.reference}}</span>
+        <h1 class="govuk-heading-m">{{pageName}}</h1>
         </div>
         <div class="moj-page-header-actions__actions">
           <div class="moj-button-group moj-button-group--inline">
