@@ -2,16 +2,20 @@
 {% from "moj/components/button-menu/macro.njk" import mojButtonMenu %}
 
 {# Pre-render MoJ Button Menu as HTML #}
-{% set viewerOpsMenuHtml %}
+{# {% set viewerOpsMenuHtml %}
   {{ mojButtonMenu({
     button: { text: "Edit Document", classes: "govuk-button--inverse" },
     items: [
-      { text: "Menu item 1" },
-      { text: "Menu item 2" },
-      { text: "Menu item 3" }
+      { text: "Log an under or over redaction" },
+      { text: "View redaction log history" },
+      { text: "Turn on potential redactions" },
+      { text: "Rotate pages" },
+      { text: "Discard pages" },
+      { text: "Mark as read" },
+      { text: "Rename" }
     ]
   }) }}
-{% endset %}
+{% endset %} #}
 
 {% set navId = 'cases' %}
 {% set secondaryNavId = 'materials' %}
@@ -233,9 +237,13 @@
                 '</button>' +
                 '<div class="moj-button-menu__wrapper" hidden>' +
                   '<ul class="moj-button-menu__list" role="menu">' +
-                    '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Menu item 1</a></li>' +
-                    '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Menu item 2</a></li>' +
-                    '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Menu item 3</a></li>' +
+                    '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Log an under or over redaction</a></li>' +
+                    '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">View redaction log history</a></li>' +
+                    '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Turn on potential redactions</a></li>' +
+                    '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Rotate pages</a></li>' +
+                    '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Discard pages</a></li>' +
+                    '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Mark as read</a></li>' +
+                    '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Rename</a></li>' +
                   '</ul>' +
                 '</div>' +
               '</div>' +
