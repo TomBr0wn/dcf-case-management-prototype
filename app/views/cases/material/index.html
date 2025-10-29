@@ -1,7 +1,7 @@
 {% extends "layouts/main.html" %}
 {% set navId = 'cases' %}
 {% set secondaryNavId = 'materials' %}
-{# {% set pageName = 'Materials' %} #}
+{% set pageName = 'Materials' %}
 {# {% set pageName = "Material (:total)" | replace(':total', _case.materials.length) %} #}
 
 {% set defendantsValue %}
@@ -11,11 +11,11 @@
   {% endif %}
 {% endset %}
 
-{% set pageName = defendantsValue %}
+{# {% set pageName = defendantsValue %} #}
 
-{# {% block beforeContent %}
+{% block beforeContent %}
   {% include "_includes/case/identity-bar.njk" %}
-{% endblock %} #}
+{% endblock %}
 
 {% block content %}
   {% include "_includes/success-banner.njk" %}
@@ -28,8 +28,8 @@
 
         <div class="moj-page-header-actions">
           <div class="moj-page-header-actions__title">
-            <span class="govuk-caption-m">{{_case.reference}}</span>
-            <h1 class="govuk-heading-m">{{defendantsValue}}</h1>
+            {# <span class="govuk-caption-m">{{_case.reference}}</span> #}
+            <h1 class="govuk-heading-m">{{pageName}}</h1>
           </div>
           <div class="moj-page-header-actions__actions">
             <div class="moj-button-group moj-button-group--inline">
