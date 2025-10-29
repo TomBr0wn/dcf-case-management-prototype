@@ -143,3 +143,88 @@
 .dcf-viewer__meta-bar .dcf-meta-secondary {
   margin: 0;                  /* remove govuk-button default bottom margin if any */
 }
+
+/* //////////////////////////////////////////////////////////////////////////////////////////////
+
+/* ── OPS BAR (drop-in replacement for your previous ops-bar rules) ─────────── */
+
+.dcf-viewer__ops-bar {
+  background:#3B64AC;
+  color:#fff;
+  margin:0;
+  padding:12px;
+  border-top: #fff 2px solid;
+}
+
+.dcf-ops-actions {
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  gap:12px;
+}
+
+/* compact inverse icon button */
+.dcf-viewer__ops-bar .govuk-button { margin:0 !important; width:auto; }
+.dcf-viewer__ops-bar .dcf-ops-iconbtn {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:6px 8px;
+  min-height:auto;
+  line-height:1;
+  margin:0 !important;
+}
+
+/* force icon/text colour on inverse button */
+.dcf-viewer__ops-bar .govuk-button.govuk-button--inverse.dcf-ops-iconbtn,
+.dcf-viewer__ops-bar .govuk-button.govuk-button--inverse.dcf-ops-iconbtn:link,
+.dcf-viewer__ops-bar .govuk-button.govuk-button--inverse.dcf-ops-iconbtn:visited {
+  color:#1d70b8 !important;
+  background:#fff;
+  border-color:#fff;
+}
+.dcf-viewer__ops-bar .govuk-button.govuk-button--inverse.dcf-ops-iconbtn:hover,
+.dcf-viewer__ops-bar .govuk-button.govuk-button--inverse.dcf-ops-iconbtn:active {
+  color:#1d70b8 !important;
+}
+.dcf-viewer__ops-bar .govuk-button.govuk-button--inverse.dcf-ops-iconbtn:focus {
+  color:#0b0c0c !important;
+}
+
+/* icon inherits colour */
+.dcf-viewer__ops-bar .dcf-ops-icon {
+  color:inherit;
+  display:inline-flex;
+  width:1.25rem; height:1.25rem;
+}
+.dcf-viewer__ops-bar .dcf-ops-icon svg {
+  width:100%; height:100%;
+  fill:currentColor; stroke:currentColor;
+}
+
+.dcf-ops-icon { display:inline-flex; align-items:center; line-height:0; }
+.dcf-ops-icon img { display:block; width:20px; height:20px; }
+
+
+/* dropdown menu panel */
+.dcf-viewer__ops-bar .moj-button-menu { position:relative; }
+.dcf-viewer__ops-bar .moj-button-menu__wrapper[hidden] { display:none !important; }
+.dcf-viewer__ops-bar .moj-button-menu__wrapper {
+  position:absolute;
+  right:0; top:100%;
+  margin-top:6px;
+  background:#fff; color:#0b0c0c;
+  border:1px solid #b1b4b6; border-radius:2px;
+  box-shadow:0 2px 6px rgba(0,0,0,.15);
+  z-index:20; /* above PDF viewer */
+}
+.dcf-viewer__ops-bar .moj-button-menu__list { list-style:none; margin:0; padding:4px; }
+.dcf-viewer__ops-bar .moj-button-menu__item { margin:0; }
+.dcf-viewer__ops-bar .moj-button-menu__link {
+  display:block; padding:8px 12px; text-decoration:none; color:#0b0c0c;
+}
+.dcf-viewer__ops-bar .moj-button-menu__link:hover { background:#f3f2f1; }
+
+
+
+
