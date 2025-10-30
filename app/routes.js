@@ -8,6 +8,10 @@ const checkSignedIn = require('./middleware/checkSignedIn')
 const flash = require('connect-flash')
 router.use(flash())
 
+
+
+
+
 router.all('*', (req, res, next) => {
   res.locals.referrer = req.query.referrer
   res.locals.path = req.path
@@ -61,6 +65,8 @@ router.get('/clear-data', function (req, res) {
 router.get('/', (req, res) => {
   res.render("index")
 })
+
+
 
 require('./routes/static')(router)
 
