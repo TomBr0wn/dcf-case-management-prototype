@@ -36,6 +36,16 @@
                   {% endif %}
                 {% endset %}
 
+                {% set assignedToValue %}
+                  {% if task.assignedToUser %}
+                    {{task.assignedToUser.firstName}} {{task.assignedToUser.lastName}}
+                  {% elif task.assignedToTeam %}
+                    {{task.assignedToTeam.name}} ({{task.assignedToTeam.unit.name}})
+                  {% else %}
+                    Unassigned
+                  {% endif %}
+                {% endset %}
+
                 {{ govukSummaryList({
                   classes: 'govuk-summary-list--no-border app-summary-list--compact app-summary-list--small-text',
                   rows: [
@@ -78,7 +88,15 @@
                       value: {
                         html: task.type
                       }
-                    }                
+                    },
+                    {
+                      key: {
+                        html: 'Assigned to'
+                      },
+                      value: {
+                        html: assignedToValue
+                      }
+                    }
                   ]
                 })}}
 

@@ -63,6 +63,13 @@
                   {% if witness.isKeyWitness %}
                     {{ govukTag({ text: 'Key witness' })}}
                   {% endif %}
+                  {% if witness.isAppearingInCourt %}
+                    {{ govukTag({ text: 'Attending court' })}}
+                  {% endif %}
+
+                  {% if witness.isAppearingInCourt == false %}
+                    {{ govukTag({ text: 'Not attending court' })}}
+                  {% endif %}
                 </div>
               </h2>
 

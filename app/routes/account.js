@@ -13,7 +13,15 @@ module.exports = router => {
 
   router.post('/account/sign-in', async (req, res) => {
     // Put current user into session so that we know if and who is signed in
-    req.session.data.user = await prisma.user.findFirst()
+    req.session.data.user = await prisma.user.findFirst({
+      include: {
+        units: {
+          include: {
+            unit: true
+          }
+        }
+      }
+    })
     res.redirect('/overview')
   })
 

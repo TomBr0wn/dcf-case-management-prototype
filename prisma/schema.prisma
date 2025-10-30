@@ -17,7 +17,8 @@ model User {
   cases        Case[]
   notes        Note[]
   activityLogs ActivityLog[]
-  tasks        Task[]        @relation("TaskAssignedTo")
+  tasks        Task[]
+  units        UserUnit[]
 }
 
 model ActivityLog {
@@ -192,10 +193,30 @@ model Specialism {
 }
 
 model Unit {
-  id      Int      @id @default(autoincrement())
-  name    String
-  lawyers Lawyer[]
-  cases   Case[]
+  id        Int        @id @default(autoincrement())
+  name      String
+  lawyers   Lawyer[]
+  cases     Case[]
+  teams     Team[]
+  userUnits UserUnit[]
+}
+
+model Team {
+  id          Int     @id @default(autoincrement())
+  name        String
+  unitId      Int
+  unit        Unit    @relation(fields: [unitId], references: [id])
+  isStandard  Boolean @default(true)
+  tasks       Task[]
+}
+
+model UserUnit {
+  id     Int  @id @default(autoincrement())
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+  unitId Int
+  unit   Unit @relation(fields: [unitId], references: [id])
+  @@unique([userId, unitId])
 }
 
 model Defendant {
@@ -224,14 +245,16 @@ model Location {
 }
 
 model Task {
-  id           Int      @id @default(autoincrement())
-  name         String
-  type         String
-  dueDate      DateTime
-  case         Case     @relation(fields: [caseId], references: [id])
-  caseId       Int
-  assignedTo   User?    @relation("TaskAssignedTo", fields: [assignedToId], references: [id])
-  assignedToId Int?
+  id               Int       @id @default(autoincrement())
+  name             String
+  type             String
+  dueDate          DateTime
+  case             Case      @relation(fields: [caseId], references: [id])
+  caseId           Int
+  assignedToUser   User?     @relation(fields: [assignedToUserId], references: [id])
+  assignedToUserId Int?
+  assignedToTeam   Team?     @relation(fields: [assignedToTeamId], references: [id])
+  assignedToTeamId Int?
 }
 
 model Document {

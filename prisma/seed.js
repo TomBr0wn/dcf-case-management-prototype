@@ -69,13 +69,48 @@ async function main() {
   // -------------------- Units --------------------
   await prisma.unit.createMany({
     data: [
-      { name: "Magistrates" },
-      { name: "Crown Court" },
-      { name: "Rape and serious sexual offences " },
-      { name: "Complex casework unit" },
+      // Wessex area units
+      { name: "Dorset Magistrates Court" },
+      { name: "Hampshire Magistrates Court" },
+      { name: "Wessex Crown Court" },
+      { name: "Wessex RASSO" },
+      { name: "Wessex CCU" },
+      { name: "Wessex Fraud" },
+      { name: "Wiltshire Magistrates Court" },
+      // Yorkshire and Humberside area units
+      { name: "North Yorkshire Crown Court" },
+      { name: "North Yorkshire Magistrates Court" },
+      { name: "South Yorkshire Crown Court" },
+      { name: "South Yorkshire Magistrates Court" },
+      { name: "West Yorkshire Crown Court" },
+      { name: "West Yorkshire Magistrates Court" },
+      { name: "Yorkshire and Humberside CCU" },
+      { name: "Yorkshire and Humberside RASSO" },
+      { name: "Humberside South Yorkshire RASSO" },
+      { name: "Humberside Crown Court" },
+      { name: "Humberside Magistrates Court" },
     ],
   });
-  console.log("✅ Units seeded");
+  console.log("✅ 18 units seeded");
+
+  // -------------------- Teams --------------------
+  const standardTeamNames = [
+    "Admin pool",
+    "Crown Court",
+    "Magistrates Court General",
+    "Magistrates Court Contested"
+  ];
+
+  for (let unitId = 1; unitId <= 18; unitId++) {
+    await prisma.team.createMany({
+      data: standardTeamNames.map(name => ({
+        name,
+        unitId,
+        isStandard: true
+      }))
+    });
+  }
+  console.log("✅ 72 standard teams created (4 per unit)");
 
   // -------------------- Users --------------------
   const users = [];
@@ -121,6 +156,24 @@ async function main() {
   }
   console.log(`✅ ${users.length} users seeded`);
 
+  // -------------------- User-Unit Assignments --------------------
+  // Assign each user to 1-3 random units
+  for (const user of users) {
+    const numUnits = faker.number.int({ min: 1, max: 3 });
+    const selectedUnits = faker.helpers.arrayElements(
+      Array.from({ length: 18 }, (_, i) => i + 1),
+      numUnits
+    );
+
+    await prisma.userUnit.createMany({
+      data: selectedUnits.map(unitId => ({
+        userId: user.id,
+        unitId
+      }))
+    });
+  }
+  console.log(`✅ Users assigned to units`);
+
   // -------------------- Specialisms --------------------
   await prisma.specialism.createMany({
     data: specialisms.map((name) => ({ name })),
@@ -133,7 +186,7 @@ async function main() {
     data: {
       firstName: "Tony",
       lastName: "Stark",
-      unit: { connect: { id: faker.number.int({ min: 1, max: 4 }) } },
+      unit: { connect: { id: faker.number.int({ min: 1, max: 18 }) } },
     },
   });
   lawyers.push(tony);
@@ -162,7 +215,7 @@ async function main() {
       data: {
         firstName: faker.helpers.arrayElement(firstNames),
         lastName: faker.helpers.arrayElement(lastNames),
-        unit: { connect: { id: faker.number.int({ min: 1, max: 4 }) } },
+        unit: { connect: { id: faker.number.int({ min: 1, max: 18 }) } },
         specialistAreas: { connect: specialistAreas.map((name) => ({ name })) },
         preferredAreas: { connect: preferredAreas.map((name) => ({ name })) },
         restrictedAreas: { connect: restrictedAreas.map((name) => ({ name })) },
@@ -234,23 +287,37 @@ async function main() {
       faker.number.int({ min: 1, max: 3 })
     );
 
-    const caseUnitId = faker.number.int({ min: 1, max: 4 });
+    const caseUnitId = faker.number.int({ min: 1, max: 18 });
 
     // Pick between 0 and 5 unique task names
     const numTasks = faker.number.int({ min: 0, max: 5 });
     const chosenTaskNames = faker.helpers.arrayElements(taskNames, numTasks);
 
     const tasksData = chosenTaskNames.map((name) => {
-      // 90% assigned to users, 10% unassigned
-      const assignedToId = faker.datatype.boolean({ probability: 0.9 })
-        ? faker.helpers.arrayElement(users).id
-        : null;
+      // 70% assigned to users, 20% assigned to teams, 10% unassigned
+      const assignmentType = faker.helpers.weightedArrayElement([
+        { weight: 70, value: 'user' },
+        { weight: 20, value: 'team' },
+        { weight: 10, value: 'unassigned' }
+      ]);
+
+      let assignedToUserId = null;
+      let assignedToTeamId = null;
+
+      if (assignmentType === 'user') {
+        assignedToUserId = faker.helpers.arrayElement(users).id;
+      } else if (assignmentType === 'team') {
+        // Pick a random team from the case's unit (4 teams per unit)
+        const unitTeamOffset = (caseUnitId - 1) * 4;
+        assignedToTeamId = faker.number.int({ min: unitTeamOffset + 1, max: unitTeamOffset + 4 });
+      }
 
       return {
         name,
         type: faker.helpers.arrayElement(taskTypes),
         dueDate: faker.date.future(),
-        assignedToId: assignedToId,
+        assignedToUserId,
+        assignedToTeamId,
       };
     });
 

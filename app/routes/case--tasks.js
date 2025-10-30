@@ -7,7 +7,17 @@ module.exports = router => {
     const _case = await prisma.case.findUnique({
       where: { id: parseInt(req.params.caseId) },
       include: {
-        tasks: { orderBy: { dueDate: 'asc' } },
+        tasks: {
+          orderBy: { dueDate: 'asc' },
+          include: {
+            assignedToUser: true,
+            assignedToTeam: {
+              include: {
+                unit: true
+              }
+            }
+          }
+        },
         user: true,
         unit: true,
         lawyers: true,

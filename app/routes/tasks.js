@@ -17,6 +17,9 @@ module.exports = router => {
   router.get("/tasks", async (req, res) => {
     const currentUser = req.session.data.user
 
+    // Get user's unit IDs for filtering
+    const userUnitIds = currentUser?.units?.map(uu => uu.unitId) || []
+
     // Track if this is the first visit (filters object doesn't exist)
     const isFirstVisit = !req.session.data.taskListFilters
 
@@ -46,7 +49,7 @@ module.exports = router => {
 
     // Assigned filter display
     if (selectedAssigneeFilters?.length) {
-      userIds = selectedAssigneeFilters.filter(function(f) { return f !== "Unassigned" }).map(Number)
+      userIds = selectedAssigneeFilters.map(Number)
 
       let fetchedUsers = []
       if (userIds.length) {
@@ -57,8 +60,6 @@ module.exports = router => {
       }
 
       selectedAssigneeItems = selectedAssigneeFilters.map(function(selectedUser) {
-        if (selectedUser === "Unassigned") return { text: "Unassigned", href: '/tasks/remove-assigned/' + selectedUser }
-
         let user = fetchedUsers.find(function(user) { return user.id === Number(selectedUser) })
         let displayText = user ? user.firstName + " " + user.lastName : selectedUser
 
@@ -116,20 +117,13 @@ module.exports = router => {
     // Build Prisma where clause
     let where = { AND: [] }
 
-    if (selectedAssigneeFilters?.length) {
-      let assignedFilters = []
+    // MANDATORY: Restrict to tasks in user's units only
+    if (userUnitIds.length) {
+      where.AND.push({ case: { unitId: { in: userUnitIds } } })
+    }
 
-      if (selectedAssigneeFilters?.includes("Unassigned")) {
-        assignedFilters.push({ assignedToId: null })
-      }
-
-      if (userIds?.length) {
-        assignedFilters.push({ assignedToId: { in: userIds } })
-      }
-
-      if (assignedFilters.length) {
-        where.AND.push({ OR: assignedFilters })
-      }
+    if (selectedAssigneeFilters?.length && userIds?.length) {
+      where.AND.push({ assignedToUserId: { in: userIds } })
     }
 
     if (selectedTaskTypeFilters?.length) {
@@ -159,7 +153,12 @@ module.exports = router => {
             unit: true
           }
         },
-        assignedTo: true
+        assignedToUser: true,
+        assignedToTeam: {
+          include: {
+            unit: true
+          }
+        }
       }
     })
 
@@ -199,11 +198,10 @@ module.exports = router => {
       return 0
     })
 
-    // Put "Unassigned" second
-    assigneeItems.splice(1, 0, { text: 'Unassigned', value: 'Unassigned' })
-
-    // Fetch all units for the filter
-    let units = await prisma.unit.findMany()
+    // Fetch only user's units for the filter
+    let units = await prisma.unit.findMany({
+      where: { id: { in: userUnitIds } }
+    })
 
     let unitItems = units.map(unit => ({
       text: unit.name,
