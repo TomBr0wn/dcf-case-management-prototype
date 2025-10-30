@@ -294,11 +294,10 @@ async function main() {
     const chosenTaskNames = faker.helpers.arrayElements(taskNames, numTasks);
 
     const tasksData = chosenTaskNames.map((name) => {
-      // 70% assigned to users, 20% assigned to teams, 10% unassigned
+      // 75% assigned to users, 25% assigned to teams
       const assignmentType = faker.helpers.weightedArrayElement([
-        { weight: 70, value: 'user' },
-        { weight: 20, value: 'team' },
-        { weight: 10, value: 'unassigned' }
+        { weight: 75, value: 'user' },
+        { weight: 25, value: 'team' }
       ]);
 
       let assignedToUserId = null;

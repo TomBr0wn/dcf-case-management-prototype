@@ -9,6 +9,14 @@
     <div class="govuk-grid-column-two-thirds">
       <h1 class="govuk-heading-l">{{ pageName }}</h1>
 
+      {% set unitsValue %}
+        <ul class="govuk-list govuk-list--bullet">
+          {% for uu in user.units %}
+            <li>{{ uu.unit.name }}</li>
+          {% endfor %}
+        </ul>
+      {% endset %}
+
       {{ govukSummaryList({
         rows: [
           {
@@ -58,6 +66,23 @@
                   href: "Item URL",
                   text: "Change",
                   visuallyHiddenText: "Email address"
+                }
+              ]
+            }
+          },
+          {
+            key: {
+              text: "Unit"
+            },
+            value: {
+              html: unitsValue
+            },
+            actions: {
+              items: [
+                {
+                  href: "Item URL",
+                  text: "Change",
+                  visuallyHiddenText: "Unit"
                 }
               ]
             }

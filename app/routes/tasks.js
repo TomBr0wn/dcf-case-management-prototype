@@ -7,7 +7,7 @@ const taskNames = require('../data/task-names')
 
 function resetFilters(req) {
   _.set(req, 'session.data.taskListFilters.taskTypes', null)
-  _.set(req, 'session.data.taskListFilters.assigned', null)
+  _.set(req, 'session.data.taskListFilters.owner', null)
   _.set(req, 'session.data.taskListFilters.units', null)
   _.set(req, 'session.data.taskListFilters.taskNames', null)
 }
@@ -28,30 +28,42 @@ module.exports = router => {
       req.session.data.taskListFilters = {}
     }
 
-    // Only set default assignee to current user on first visit
-    // If filters exist but assigned is missing, user cleared it intentionally
-    if (isFirstVisit && !_.has(req.session.data, 'taskListFilters.assigned')) {
-      _.set(req.session.data.taskListFilters, 'assigned', [`${req.session.data.user.id}`])
+    // Only set default owner to current user on first visit
+    // If filters exist but owner is missing, user cleared it intentionally
+    if (isFirstVisit) {
+      _.set(req.session.data.taskListFilters, 'owner', [`user-${currentUser.id}`])
     }
 
-    let selectedAssigneeFilters = _.get(req.session.data.taskListFilters, 'assigned', [])
+    let selectedOwnerFilters = _.get(req.session.data.taskListFilters, 'owner', [])
     let selectedTaskTypeFilters = _.get(req.session.data.taskListFilters, 'taskTypes', [])
     let selectedUnitFilters = _.get(req.session.data.taskListFilters, 'units', [])
     let selectedTaskNameFilters = _.get(req.session.data.taskListFilters, 'taskNames', [])
 
     let selectedFilters = { categories: [] }
 
-    let userIds
-    let selectedAssigneeItems = []
+    let selectedOwnerItems = []
     let selectedUnitItems = []
     let selectedTaskTypeItems = []
     let selectedTaskNameItems = []
 
-    // Assigned filter display
-    if (selectedAssigneeFilters?.length) {
-      userIds = selectedAssigneeFilters.map(Number)
+    // Owner filter display
+    if (selectedOwnerFilters?.length) {
+      // Parse filters into userIds and teamIds
+      const userIds = []
+      const teamIds = []
 
+      selectedOwnerFilters.forEach(filter => {
+        if (filter.startsWith('user-')) {
+          userIds.push(Number(filter.replace('user-', '')))
+        } else if (filter.startsWith('team-')) {
+          teamIds.push(Number(filter.replace('team-', '')))
+        }
+      })
+
+      // Fetch users and teams
       let fetchedUsers = []
+      let fetchedTeams = []
+
       if (userIds.length) {
         fetchedUsers = await prisma.user.findMany({
           where: { id: { in: userIds } },
@@ -59,19 +71,35 @@ module.exports = router => {
         })
       }
 
-      selectedAssigneeItems = selectedAssigneeFilters.map(function(selectedUser) {
-        let user = fetchedUsers.find(function(user) { return user.id === Number(selectedUser) })
-        let displayText = user ? user.firstName + " " + user.lastName : selectedUser
+      if (teamIds.length) {
+        fetchedTeams = await prisma.team.findMany({
+          where: { id: { in: teamIds } },
+          include: { unit: true }
+        })
+      }
 
-        // Show name with "(you)" for current user
-        if (currentUser && user && user.id === currentUser.id) {
-          displayText = user.firstName + " " + user.lastName + " (you)"
+      // Build display items
+      selectedOwnerItems = selectedOwnerFilters.map(function(filter) {
+        if (filter.startsWith('user-')) {
+          const userId = Number(filter.replace('user-', ''))
+          const user = fetchedUsers.find(u => u.id === userId)
+          let displayText = user ? `${user.firstName} ${user.lastName}` : filter
+
+          if (currentUser && user && user.id === currentUser.id) {
+            displayText += " (you)"
+          }
+
+          return { text: displayText, href: '/tasks/remove-owner/' + filter }
+        } else if (filter.startsWith('team-')) {
+          const teamId = Number(filter.replace('team-', ''))
+          const team = fetchedTeams.find(t => t.id === teamId)
+          const displayText = team ? `${team.name} (${team.unit.name})` : filter
+
+          return { text: displayText, href: '/tasks/remove-owner/' + filter }
         }
-
-        return { text: displayText, href: '/tasks/remove-assigned/' + selectedUser }
       })
 
-      selectedFilters.categories.push({ heading: { text: 'Assignee' }, items: selectedAssigneeItems })
+      selectedFilters.categories.push({ heading: { text: 'Owner' }, items: selectedOwnerItems })
     }
 
     // Unit filter display
@@ -122,8 +150,30 @@ module.exports = router => {
       where.AND.push({ case: { unitId: { in: userUnitIds } } })
     }
 
-    if (selectedAssigneeFilters?.length && userIds?.length) {
-      where.AND.push({ assignedToUserId: { in: userIds } })
+    // Owner filter (users and teams)
+    if (selectedOwnerFilters?.length) {
+      const userIds = []
+      const teamIds = []
+
+      selectedOwnerFilters.forEach(filter => {
+        if (filter.startsWith('user-')) {
+          userIds.push(Number(filter.replace('user-', '')))
+        } else if (filter.startsWith('team-')) {
+          teamIds.push(Number(filter.replace('team-', '')))
+        }
+      })
+
+      const ownerConditions = []
+      if (userIds.length) {
+        ownerConditions.push({ assignedToUserId: { in: userIds } })
+      }
+      if (teamIds.length) {
+        ownerConditions.push({ assignedToTeamId: { in: teamIds } })
+      }
+
+      if (ownerConditions.length) {
+        where.AND.push({ OR: ownerConditions })
+      }
     }
 
     if (selectedTaskTypeFilters?.length) {
@@ -174,25 +224,50 @@ module.exports = router => {
       })
     }
 
-    // Fetch all users for the filter
-    let users = await prisma.user.findMany()
-
-    let assigneeItems = users.map(user => {
-      // Show name with "(you)" for current user
-      if (currentUser && user.id === currentUser.id) {
-        return {
-          text: `${user.firstName} ${user.lastName} (you)`,
-          value: `${user.id}`
+    // Fetch users and teams from user's units for the owner filter
+    let users = await prisma.user.findMany({
+      where: {
+        units: {
+          some: {
+            unitId: { in: userUnitIds }
+          }
         }
-      }
-      return {
-        text: `${user.firstName} ${user.lastName}`,
-        value: `${user.id}`
       }
     })
 
+    let teams = await prisma.team.findMany({
+      where: { unitId: { in: userUnitIds } },
+      include: { unit: true }
+    })
+
+    // Build owner items with prefixed values
+    let ownerItems = []
+
+    // Add users with "user-{id}" prefix
+    users.forEach(user => {
+      if (currentUser && user.id === currentUser.id) {
+        ownerItems.push({
+          text: `${user.firstName} ${user.lastName} (you)`,
+          value: `user-${user.id}`
+        })
+      } else {
+        ownerItems.push({
+          text: `${user.firstName} ${user.lastName}`,
+          value: `user-${user.id}`
+        })
+      }
+    })
+
+    // Add teams with "team-{id}" prefix and unit label
+    teams.forEach(team => {
+      ownerItems.push({
+        text: `${team.name} (${team.unit.name})`,
+        value: `team-${team.id}`
+      })
+    })
+
     // Put current user (you) first
-    assigneeItems.sort((a, b) => {
+    ownerItems.sort((a, b) => {
       if (a.text.includes('(you)')) return -1
       if (b.text.includes('(you)')) return 1
       return 0
@@ -227,9 +302,9 @@ module.exports = router => {
       tasks,
       pagination,
       totalTasks,
-      assigneeItems,
-      selectedAssigneeFilters,
-      selectedAssigneeItems,
+      ownerItems,
+      selectedOwnerFilters,
+      selectedOwnerItems,
       unitItems,
       selectedUnitFilters,
       selectedUnitItems,
@@ -243,9 +318,9 @@ module.exports = router => {
     })
   })
 
-  router.get('/tasks/remove-assigned/:userId', (req, res) => {
-    const currentFilters = _.get(req, 'session.data.taskListFilters.assigned', [])
-    _.set(req, 'session.data.taskListFilters.assigned', _.pull(currentFilters, req.params.userId))
+  router.get('/tasks/remove-owner/:filter', (req, res) => {
+    const currentFilters = _.get(req, 'session.data.taskListFilters.owner', [])
+    _.set(req, 'session.data.taskListFilters.owner', _.pull(currentFilters, req.params.filter))
     res.redirect('/tasks')
   })
 

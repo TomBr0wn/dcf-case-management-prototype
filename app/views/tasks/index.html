@@ -36,7 +36,7 @@
                   {% endif %}
                 {% endset %}
 
-                {% set assignedToValue %}
+                {% set ownerValue %}
                   {% if task.assignedToUser %}
                     {{task.assignedToUser.firstName}} {{task.assignedToUser.lastName}}
                   {% elif task.assignedToTeam %}
@@ -91,10 +91,10 @@
                     },
                     {
                       key: {
-                        html: 'Assigned to'
+                        html: 'Owner'
                       },
                       value: {
-                        html: assignedToValue
+                        html: ownerValue
                       }
                     }
                   ]
@@ -136,9 +136,9 @@
     })
 
     new App.ListFilter({
-      container: $('.assigned-filter'),
+      container: $('.owner-filter'),
       textBox: {
-        label: 'Find assignee'
+        label: 'Find owner'
       }
     })
 
