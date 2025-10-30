@@ -17,7 +17,7 @@
 /* Grid wrapper for main content */
 .case-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1fr 1fr;
   grid-template-rows: auto auto;
   gap: 1.5rem;
   min-height: 70vh; /* fill most of viewport height */
