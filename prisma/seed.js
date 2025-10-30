@@ -136,10 +136,17 @@ async function main() {
       firstName: "Simon",
       lastName: "Whatley",
     },
+    {
+      email: "tony@cps.gov.uk",
+      password: "password123",
+      role: "Casework assistant",
+      firstName: "Tony",
+      lastName: "Stark",
+    },
   ];
 
-  // Generate 17 additional users to reach 20 total
-  for (let i = 0; i < 17; i++) {
+  // Generate 16 additional users to reach 20 total
+  for (let i = 0; i < 16; i++) {
     const firstName = faker.helpers.arrayElement(firstNames);
     const lastName = faker.helpers.arrayElement(lastNames);
     userData.push({
@@ -173,6 +180,8 @@ async function main() {
       selectedUnits = [3, 4]; // Wessex Crown Court, Wessex RASSO
     } else if (user.firstName === "Simon" && user.lastName === "Whatley") {
       selectedUnits = [9, 11, 13, 18]; // North Yorkshire Magistrates Court, South Yorkshire Magistrates Court, West Yorkshire Magistrates Court, Humberside Magistrates Court
+    } else if (user.firstName === "Tony" && user.lastName === "Stark") {
+      selectedUnits = [1, 2, 3, 4, 5, 6, 7]; // All Wessex units: Dorset Magistrates Court, Hampshire Magistrates Court, Wessex Crown Court, Wessex RASSO, Wessex CCU, Wessex Fraud, Wiltshire Magistrates Court
     } else {
       const numUnits = faker.number.int({ min: 1, max: 3 });
       selectedUnits = faker.helpers.arrayElements(

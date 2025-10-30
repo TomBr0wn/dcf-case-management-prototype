@@ -43,6 +43,26 @@
         }) }}
       </form>
 
+      <h2 class="govuk-heading-m">Sign in as Tony Stark (Casework assistant)</h2>
+      <p>Units:</p>
+      <ul class="govuk-list govuk-list--bullet">
+        <li>Dorset Magistrates Court</li>
+        <li>Hampshire Magistrates Court</li>
+        <li>Wessex Crown Court</li>
+        <li>Wessex RASSO</li>
+        <li>Wessex CCU</li>
+        <li>Wessex Fraud</li>
+        <li>Wiltshire Magistrates Court</li>
+      </ul>
+
+      <form action="/account/sign-in" method="post" novalidate>
+        <input type="hidden" name="signIn[emailAddress]" value="tony@cps.gov.uk">
+        <input type="hidden" name="signIn[password]" value="password123">
+        {{ govukButton({
+          text: "Sign in"
+        }) }}
+      </form>
+
     </div>
   </div>
 {% endblock %}
