@@ -1,0 +1,49 @@
+.case-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+/* Progress bar / stage area */
+.case-header {
+  background: #f3f2f1; /* GOV.UK light grey */
+  padding: 1rem;
+  border: 1px solid #b1b4b6;
+  text-align: center;
+  min-height: 80px;
+}
+
+/* Grid wrapper for main content */
+.case-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 1.5rem;
+  min-height: 70vh; /* fill most of viewport height */
+}
+
+/* Left column (Contacts) */
+.contacts-box {
+  background: #f3f2f1;
+  border: 1px solid #b1b4b6;
+  padding: 1rem;
+  grid-row: span 2; /* spans both right-hand boxes */
+  min-height: 500px; /* gives extra visual weight */
+}
+
+/* Right column (Tasks) */
+.tasks-box {
+  background: #f3f2f1;
+  border: 1px solid #b1b4b6;
+  padding: 1rem;
+  min-height: 200px;
+}
+
+/* Right column (Monitoring codes) */
+.monitoring-box {
+  background: #f3f2f1;
+  border: 1px solid #b1b4b6;
+  padding: 1rem;
+  min-height: 250px;
+}

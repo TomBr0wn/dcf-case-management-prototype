@@ -1,5 +1,18 @@
 {# _includes/case/details/main-tabs.njk #}
-{% set overviewHtml %}<h3 class="govuk-heading-m">Overview</h3>{% endset -%}
+{% set overviewHtml %}
+  {# Some skeleton structure to mimic overview page #}
+  <div class="case-layout">
+    <div class="case-header">Progress bar area (Charge → Sentence)</div>
+
+    <div class="case-grid">
+      <div class="contacts-box">Contacts</div>
+      <div class="tasks-box">Tasks</div>
+      <div class="monitoring-box">Monitoring codes</div>
+    </div>
+  </div>
+{% endset %}
+
+{# {% set overviewHtml %}<h3 class="govuk-heading-m">Overview</h3>{% endset -%} #}
 
 {% set caseOutlineHtml %}
   <h3 class="govuk-heading-m">Case outline</h3>
