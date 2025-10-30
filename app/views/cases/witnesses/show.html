@@ -46,7 +46,7 @@
           {{ govukTag({ text: 'Attending court' })}}
         {% endif %}
 
-        {% if not witness.isAppearingInCourt == false %}
+        {% if witness.isAppearingInCourt == false %}
           {{ govukTag({ text: 'Not attending court' })}}
         {% endif %}
       </h1>
