@@ -12,8 +12,12 @@ module.exports = router => {
   })
 
   router.post('/account/sign-in', async (req, res) => {
+    // Get email from form
+    const email = _.get(req.body, 'signIn.emailAddress')
+
     // Put current user into session so that we know if and who is signed in
-    req.session.data.user = await prisma.user.findFirst({
+    req.session.data.user = await prisma.user.findUnique({
+      where: { email: email },
       include: {
         units: {
           include: {

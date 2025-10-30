@@ -9,11 +9,40 @@
         {{ pageName }}
       </h1>
 
-      {{ govukButton({
-        text: "Start prototype",
-        isStartButton: true,
-        href: '/account/sign-in'
-      }) }}
+      <p><a href="/account/sign-in" class="govuk-link">Sign in</a></p>
+
+      <h2 class="govuk-heading-m">Sign in as Rachael Harvey (Paralegal officer)</h2>
+      <p>Units:</p>
+      <ul class="govuk-list govuk-list--bullet">
+        <li>Wessex Crown Court</li>
+        <li>Wessex RASSO</li>
+      </ul>
+
+      <form action="/account/sign-in" method="post" novalidate>
+        <input type="hidden" name="signIn[emailAddress]" value="rachael@cps.gov.uk">
+        <input type="hidden" name="signIn[password]" value="password123">
+        {{ govukButton({
+          text: "Sign in"
+        }) }}
+      </form>
+
+      <h2 class="govuk-heading-m">Sign in as Simon Whatley (Prosecutor)</h2>
+      <p>Units:</p>
+      <ul class="govuk-list govuk-list--bullet">
+        <li>North Yorkshire Magistrates Court</li>
+        <li>South Yorkshire Magistrates Court</li>
+        <li>West Yorkshire Magistrates Court</li>
+        <li>Humberside Magistrates Court</li>
+      </ul>
+
+      <form action="/account/sign-in" method="post" novalidate>
+        <input type="hidden" name="signIn[emailAddress]" value="simon@cps.gov.uk">
+        <input type="hidden" name="signIn[password]" value="password123">
+        {{ govukButton({
+          text: "Sign in"
+        }) }}
+      </form>
+
     </div>
   </div>
 {% endblock %}
