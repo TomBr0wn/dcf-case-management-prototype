@@ -186,14 +186,20 @@
       if (card) card.classList.add('dcf-material-card--active');
     }
 
-    // ------- open preview -------
-    document.addEventListener('click', function (e) {
-      var link = e.target.closest('a.js-material-link[data-file-url]');
-      if (!link) return;
-      e.preventDefault();
+    // Normalise any file href to a Kit-served /public path
+    function toPublic(u){
+      if (!u) return '';
+      if (u.startsWith('/public/')) return u;
+      if (u.startsWith('/assets/')) return '/public' + u.slice('/assets'.length);
+      if (u.startsWith('/files/'))  return '/public' + u;
+      if (u.startsWith('/'))        return '/public' + u;
+      return '/public/' + u;
+    }
 
+    // ----- open preview (factored) -----
+    function openMaterialPreview(link) {
       var meta  = getMaterialJSONFromLink(link) || {};
-      var url   = link.getAttribute('data-file-url') || link.href;
+      var url   = link.getAttribute('data-file-url') || link.href; // prefer data attribute
       var title = link.getAttribute('data-title') || (link.textContent || '').trim() || 'Selected file';
       var isPDF = /\.pdf(\?|#|$)/i.test(url);
 
@@ -202,48 +208,45 @@
           '<a href="#" class="govuk-link" data-action="close-viewer">Close preview</a>' +
           '<span aria-hidden="true" class="govuk-!-margin-horizontal-2">&nbsp;|&nbsp;</span>' +
           '<a href="#" class="govuk-link" data-action="toggle-full" aria-pressed="false">View full width</a>' +
-          '<span class="govuk-!-margin-left-3">' + esc(title) + '</span>' +
         '</div>';
 
       var metaPanel = buildMetaPanel(meta);
 
-        // Build ops bar (uses the raw SVG file path)
-        var opsBar =
-          '<div class="dcf-viewer__ops-bar">' +
-            '<div class="dcf-ops-actions">' +
-
-              // Left icon-only inverse button
-              '<a href="#" class="govuk-button govuk-button--inverse dcf-ops-iconbtn" data-action="ops-icon">' +
-                '<span class="dcf-ops-icon" aria-hidden="true">' +
-                  '<img src="/public/files/marquee-blue.svg" alt="" width="20" height="20" />' +
-                '</span>' +
-                '<span class="govuk-visually-hidden">Primary action</span>' +
-              '</a>' +
-
-              // MoJ button menu (simple HTML version)
-              '<div class="moj-button-menu" data-module="moj-button-menu">' +
-                '<button type="button" class="govuk-button govuk-button--inverse moj-button-menu__toggle" aria-haspopup="true" aria-expanded="false">' +
-                  'Edit Document <span class="moj-button-menu__icon" aria-hidden="true">▾</span>' +
-                '</button>' +
-                '<div class="moj-button-menu__wrapper" hidden>' +
-                  '<ul class="moj-button-menu__list" role="menu">' +
-                    '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Menu item 1</a></li>' +
-                    '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Menu item 2</a></li>' +
-                    '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Menu item 3</a></li>' +
-                  '</ul>' +
-                '</div>' +
+      // Ops bar with your SVG icon (served from /public/files)
+      var opsBar =
+        '<div class="dcf-viewer__ops-bar">' +
+          '<div class="dcf-ops-actions">' +
+            '<a href="#" class="govuk-button govuk-button--inverse dcf-ops-iconbtn" data-action="ops-icon">' +
+              '<span class="dcf-ops-icon" aria-hidden="true">' +
+                '<img src="/public/files/marquee-blue.svg" alt="" width="20" height="20" />' +
+              '</span>' +
+              '<span class="govuk-visually-hidden">Primary action</span>' +
+            '</a>' +
+            '<div class="moj-button-menu" data-module="moj-button-menu">' +
+              '<button type="button" class="govuk-button govuk-button--inverse moj-button-menu__toggle" aria-haspopup="true" aria-expanded="false">' +
+                'Edit Document <span class="moj-button-menu__icon" aria-hidden="true">▾</span>' +
+              '</button>' +
+              '<div class="moj-button-menu__wrapper" hidden>' +
+                '<ul class="moj-button-menu__list" role="menu">' +
+                  '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Log an under or over redaction</a></li>' +
+                  '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">View redaction log history</a></li>' +
+                  '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Turn on potential redactions</a></li>' +
+                  '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Rotate pages</a></li>' +
+                  '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Discard pages</a></li>' +
+                  '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Mark as read</a></li>' +
+                  '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Rename</a></li>' +
+                '</ul>' +
               '</div>' +
-
             '</div>' +
-          '</div>';
-
-
-      var iframe = isPDF
-        ? '<iframe class="dcf-viewer__frame" src="' + esc(url) + '" title="Preview of ' + esc(title) + '" loading="lazy" referrerpolicy="no-referrer"></iframe>'
-        : '<div class="govuk-inset-text govuk-!-margin-bottom-2">This file type may not preview inline. You can ' +
-            '<a class="govuk-link" href="' + esc(url) + '" target="_blank" rel="noreferrer">open it in a new tab</a>.' +
           '</div>' +
-          '<iframe class="dcf-viewer__frame" src="' + esc(url) + '" title="Preview of ' + esc(title) + '" loading="lazy" referrerpolicy="no-referrer"></iframe>';
+        '</div>';
+
+      // Build pdf.js viewer URL (viewer assets must be in /public/pdfjs/web/)
+      var fileUrl      = toPublic(url); // e.g. /public/files/PRE_CONS_D.pdf
+      var pdfViewerUrl = '/public/pdfjs/web/viewer.html?file=' + encodeURIComponent(fileUrl);
+      // var pdfViewerUrl = '/public/viewer.html?file=' + encodeURIComponent(fileUrl);
+      var iframe = '<iframe class="dcf-viewer__frame" src="' + esc(pdfViewerUrl) + '" title="Preview of ' + esc(title) + '" loading="lazy" referrerpolicy="no-referrer"></iframe>';
+
 
       viewer.hidden = false;
       viewer.setAttribute('tabindex', '-1');
@@ -251,7 +254,18 @@
 
       setActiveCard(link);
       viewer.focus({ preventScroll: false });
-    }, false);
+    }
+
+    // ------- click intercept (capture phase, so it always wins) -------
+    document.addEventListener('click', function (e) {
+      var link = e.target.closest('a.js-material-link[data-file-url]');
+      if (!link) return;
+      if (!viewer) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+      openMaterialPreview(link);
+    }, true); // capture
 
     // ------- toolbar + meta actions -------
     viewer.addEventListener('click', function (e) {
@@ -318,6 +332,9 @@
         if (wrap) wrap.hidden = true;
       }
     });
+
+    // quick sanity flag
+    window.__materialsPreviewReady = true;
   })();
   </script>
 {% endblock %}
