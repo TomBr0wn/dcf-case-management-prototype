@@ -1,21 +1,6 @@
 {% extends "layouts/main.html" %}
 {% from "moj/components/button-menu/macro.njk" import mojButtonMenu %}
 
-{# Pre-render MoJ Button Menu as HTML #}
-{# {% set viewerOpsMenuHtml %}
-  {{ mojButtonMenu({
-    button: { text: "Edit Document", classes: "govuk-button--inverse" },
-    items: [
-      { text: "Log an under or over redaction" },
-      { text: "View redaction log history" },
-      { text: "Turn on potential redactions" },
-      { text: "Rotate pages" },
-      { text: "Discard pages" },
-      { text: "Mark as read" },
-      { text: "Rename" }
-    ]
-  }) }}
-{% endset %} #}
 
 {% set navId = 'cases' %}
 {% set secondaryNavId = 'materials' %}
@@ -62,6 +47,6 @@
 
 {% block pageScripts %}
   <script src="/public/javascripts/components/material-viewer.js"></script>
-{% endblock %}
+{% endblock %} 
 
 

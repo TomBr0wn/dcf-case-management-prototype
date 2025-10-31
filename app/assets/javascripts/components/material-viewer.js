@@ -55,90 +55,118 @@
       );
     }
 
-    function buildMetaPanel(meta) {
-      var bodyId = 'meta-' + esc((meta.ItemId || (meta.Material && meta.Material.Reference) || Date.now()).toString())
-        .replace(/[^a-zA-Z0-9_-]/g,'-');
+  function buildMetaPanel(meta, bodyId) {
+  var mat  = (meta && meta.Material) || {};
+  var rel  = (meta && meta.RelatedMaterials) || {};
+  var dig  = (meta && meta.DigitalRepresentation) || {};
+  var pol  = (meta && meta.PoliceMaterial) || {};
+  var cps  = (meta && meta.CPSMaterial) || {};
+  var insp = pol.Inspection || {};
 
-      var mat  = meta.Material || {};
-      var rel  = meta.RelatedMaterials || {};
-      var dig  = meta.DigitalRepresentation || {};
-      var pol  = meta.PoliceMaterial || {};
-      var cps  = meta.CPSMaterial || {};
-      var insp = pol.Inspection || {};
+  function rowsHTML(obj, mapping) {
+    return mapping.map(function (m) {
+      var v = (m.get ? m.get(obj) : obj && obj[m.key]);
+      if (v == null || v === '' || (Array.isArray(v) && v.length === 0)) return '';
+      var valHTML = (m.render ? m.render(v) : esc(v));
+      return (
+        '<div class="govuk-summary-list__row">' +
+          '<dt class="govuk-summary-list__key">' + esc(m.label) + '</dt>' +
+          '<dd class="govuk-summary-list__value">' + valHTML + '</dd>' +
+        '</div>'
+      );
+    }).join('');
+  }
 
-      var materialRows = rowsHTML(mat, [
-        { key:'Title',                  label:'Title' },
-        { key:'Reference',              label:'Reference' },
-        { key:'ProducedbyWitnessId',    label:'Produced by (witness id)' },
-        { key:'MaterialClassification', label:'Material classification' },
-        { key:'MaterialType',           label:'Material type' },
-        { key:'SentExternally',         label:'Sent externally' },
-        { key:'RelatedParticipantId',   label:'Related participant id' },
-        { key:'Incident',               label:'Incident' },
-        { key:'Location',               label:'Location' },
-        { key:'PeriodFrom',             label:'Period from' },
-        { key:'PeriodTo',               label:'Period to' }
-      ]);
+  function sectionHTML(title, rows) {
+    if (!rows) return '';
+    return (
+      '<h3 class="govuk-heading-s govuk-!-margin-top-3 govuk-!-margin-bottom-1">' + esc(title) + '</h3>' +
+      '<dl class="govuk-summary-list govuk-!-margin-bottom-2">' + rows + '</dl>'
+    );
+  }
 
-      var relatedRows = rowsHTML(rel, [
-        { key:'RelatesToItem',   label:'Relates to item' },
-        { key:'RelatedItemId',   label:'Related item id' },
-        { key:'RelationshipType',label:'Relationship type' }
-      ]);
+  var materialRows = rowsHTML(mat, [
+    { key:'Title',                  label:'Title' },
+    { key:'Reference',              label:'Reference' },
+    { key:'ProducedbyWitnessId',    label:'Produced by (witness id)' },
+    { key:'MaterialClassification', label:'Material classification' },
+    { key:'MaterialType',           label:'Material type' },
+    { key:'SentExternally',         label:'Sent externally' },
+    { key:'RelatedParticipantId',   label:'Related participant id' },
+    { key:'Incident',               label:'Incident' },
+    { key:'Location',               label:'Location' },
+    { key:'PeriodFrom',             label:'Period from' },
+    { key:'PeriodTo',               label:'Period to' }
+  ]);
 
-      var digitalRows = rowsHTML(dig, [
-        { key:'FileName',             label:'File name' },
-        { key:'Document',             label:'Document' },
-        { key:'ExternalFileLocation', label:'External file location' },
-        { key:'ExternalFileURL',      label:'External file URL', render: function (v) {
-            if (v === '#' || v === '') return '—';
-            return '<a class="govuk-link" href="' + esc(v) + '" target="_blank" rel="noreferrer">' + esc(v) + '</a>';
-          }},
-        { key:'DigitalSignature',     label:'Digital signature' }
-      ]);
+  var relatedRows = rowsHTML(rel, [
+    { key:'RelatesToItem',   label:'Relates to item' },
+    { key:'RelatedItemId',   label:'Related item id' },
+    { key:'RelationshipType',label:'Relationship type' }
+  ]);
 
-      var policeRows = rowsHTML(pol, [
-        { key:'DisclosureStatus',               label:'Disclosure status' },
-        { key:'RationaleForDisclosureDecision', label:'Rationale for disclosure decision' },
-        { key:'Rebuttable',                     label:'Rebuttable' },
-        { key:'SensitivityRationale',           label:'Sensitivity rationale' },
-        { key:'Description',                    label:'Description' },
-        { key:'Exceptions',                     label:'Exceptions', render: function (arr) {
-            if (!Array.isArray(arr) || !arr.length) return '—';
-            return '<ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">' +
-                     arr.map(function (x){ return '<li>' + esc(x) + '</li>'; }).join('') +
-                   '</ul>';
-          }},
-        { label:'Inspection date', get: function(){ return insp.DateOfInspection; } },
-        { label:'Inspected by',   get: function(){ return insp.InspectedBy; } }
-      ]);
+  var digitalRows = rowsHTML(dig, [
+    { key:'FileName',             label:'File name' },
+    { key:'Document',             label:'Document' },
+    { key:'ExternalFileLocation', label:'External file location' },
+    { key:'ExternalFileURL',      label:'External file URL', render: function (v) {
+        if (v === '#' || v === '') return '—';
+        return '<a class="govuk-link" href="' + esc(v) + '" target="_blank" rel="noreferrer">' + esc(v) + '</a>';
+      }},
+    { key:'DigitalSignature',     label:'Digital signature' }
+  ]);
 
-      var cpsRows = rowsHTML(cps, [
-        { key:'DisclosureStatus',               label:'Disclosure status' },
-        { key:'RationaleForDisclosureDecision', label:'Rationale for disclosure decision' },
-        { key:'SensitivityDispute',             label:'Sensitivity dispute' }
-      ]);
+  var policeRows = rowsHTML(pol, [
+    { key:'DisclosureStatus',               label:'Disclosure status' },
+    { key:'RationaleForDisclosureDecision', label:'Rationale for disclosure decision' },
+    { key:'Rebuttable',                     label:'Rebuttable' },
+    { key:'SensitivityRationale',           label:'Sensitivity rationale' },
+    { key:'Description',                    label:'Description' },
+    { key:'Exceptions',                     label:'Exceptions', render: function (arr) {
+        if (!Array.isArray(arr) || !arr.length) return '—';
+        return '<ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">' +
+                arr.map(function (x){ return '<li>' + esc(x) + '</li>'; }).join('') +
+              '</ul>';
+      }},
+    { label:'Inspection date', get: function(){ return insp.DateOfInspection; } },
+    { label:'Inspected by',   get: function(){ return insp.InspectedBy; } }
+  ]);
 
-      var metaBar =
-        '<div class="dcf-viewer__meta-bar">' +
-          '<div class="dcf-meta-actions">' +
-            '<a href="#" class="govuk-link js-meta-toggle" data-action="toggle-meta" aria-expanded="true" aria-controls="' + bodyId + '">Hide details</a>' +
-            '<a href="#" class="govuk-button govuk-button--inverse dcf-meta-secondary" data-action="reclassify">Reclassify</a>' +
-          '</div>' +
-        '</div>';
+  var cpsRows = rowsHTML(cps, [
+    { key:'DisclosureStatus',               label:'Disclosure status' },
+    { key:'RationaleForDisclosureDecision', label:'Rationale for disclosure decision' },
+    { key:'SensitivityDispute',             label:'Sensitivity dispute' }
+  ]);
 
-      return '' +
-        '<div class="dcf-viewer__meta">' +
-          metaBar +
-          '<div id="' + bodyId + '" class="dcf-viewer__meta-body">' +
-            sectionHTML('Material',               materialRows) +
-            sectionHTML('Related materials',      relatedRows)  +
-            sectionHTML('Digital representation', digitalRows)  +
-            sectionHTML('Police material',        policeRows)   +
-            sectionHTML('CPS material',           cpsRows)      +
-          '</div>' +
-        '</div>';
-    }
+  // Meta bar now ONLY has the show/hide details control
+  var metaBar =
+    '<div class="dcf-viewer__meta-bar">' +
+      '<div class="dcf-meta-actions">' +
+        '<a href="#" class="govuk-link js-meta-toggle" data-action="toggle-meta" aria-expanded="true" aria-controls="' + esc(bodyId) + '">Hide details</a>' +
+      '</div>' +
+    '</div>';
+
+  // Reclassify button moved inside meta body, before the first <h3>
+  // with this (no GOV.UK margin utilities):
+  var inlineActions =
+  '<div class="dcf-meta-inline-actions">' +
+    '<a href="#" class="govuk-button govuk-button--secondary dcf-meta-secondary" data-action="reclassify">Reclassify</a>' +
+  '</div>';
+
+  return '' +
+    '<div class="dcf-viewer__meta">' +
+      metaBar +
+      '<div id="' + esc(bodyId) + '" class="dcf-viewer__meta-body">' +
+        inlineActions +                                         // <-- now sits right before the first section
+        sectionHTML('Material',               materialRows) +
+        sectionHTML('Related materials',      relatedRows)  +
+        sectionHTML('Digital representation', digitalRows)  +
+        sectionHTML('Police material',        policeRows)   +
+        sectionHTML('CPS material',           cpsRows)      +
+      '</div>' +
+    '</div>';
+  }
+
 
     function setActiveCard(linkEl) {
       document.querySelectorAll('.dcf-material-card--active')
@@ -160,9 +188,8 @@
     // ----- open preview (factored) -----
     function openMaterialPreview(link) {
       var meta  = getMaterialJSONFromLink(link) || {};
-      var url   = link.getAttribute('data-file-url') || link.href; // prefer data attribute
+      var url   = link.getAttribute('data-file-url') || link.href;
       var title = link.getAttribute('data-title') || (link.textContent || '').trim() || 'Selected file';
-      var isPDF = /\.pdf(\?|#|$)/i.test(url);
 
       var toolbar =
         '<div class="dcf-viewer__toolbar govuk-!-margin-bottom-4">' +
@@ -171,7 +198,11 @@
           '<a href="#" class="govuk-link" data-action="toggle-full" aria-pressed="false">View full width</a>' +
         '</div>';
 
-      var metaPanel = buildMetaPanel(meta);
+      // NEW: stable, safe ID for the meta body
+      var rawId = (meta.ItemId || (meta.Material && meta.Material.Reference) || Date.now()).toString();
+      var bodyId = 'meta-' + rawId.replace(/[^a-zA-Z0-9_-]/g, '-');
+
+      var metaPanel = buildMetaPanel(meta, bodyId); // <-- pass the id
 
       // Ops bar with your SVG icon (served from /public/files)
       var opsBar =

@@ -239,3 +239,23 @@
   display: block; padding: 8px 12px; text-decoration: none; color: #0b0c0c;
 }
 .dcf-viewer__ops-bar .moj-button-menu__link:hover { background: #f3f2f1; }
+
+/* sits just under the blue meta bar, snug */
+.dcf-viewer__meta-body { padding-top: 0; }
+
+/* put the button on its own line without flex weirdness */
+.dcf-meta-inline-actions {
+  display: block;
+  margin: 1rem 0 1rem; /* small, consistent spacing */
+}
+
+/* kill the default GOV.UK button margins so the strip doesn’t grow */
+.dcf-meta-inline-actions .govuk-button {
+  margin: 0;
+}
+
+/* the first section heading doesn’t need big top margin now */
+.dcf-viewer__meta-body > h3:first-of-type {
+  margin-top: 0.5rem !important;
+}
+

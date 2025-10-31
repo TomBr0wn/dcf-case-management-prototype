@@ -1,27 +1,31 @@
-{# --- counts per document type --- #}
+{# --- counts per document type (match your JSON) --- #}
 {% set statementsCount = 0 %}
 {% set exhibitsCount = 0 %}
-{% set mgFormsCount = 0 %}
-{% set otherMaterialCount = 0 %}
-{% set unsNonSensitiveCount = 0 %}
-{% set unsSensitiveCount = 0 %}
+{% set unusedNonSensitiveCount = 0 %}
+{% set sensitiveCount = 0 %}
 
-{% for m in (data.caseMaterials or []) %}
+{% for m in (data.caseMaterials.Material or []) %}
   {% set t = (m.Type | lower) %}
   {% if t == 'statement' %}{% set statementsCount = statementsCount + 1 %}{% endif %}
   {% if t == 'exhibit' %}{% set exhibitsCount = exhibitsCount + 1 %}{% endif %}
-  {% if t == 'mg form' %}{% set mgFormsCount = mgFormsCount + 1 %}{% endif %}
-  {% if t == 'other material' %}{% set otherMaterialCount = otherMaterialCount + 1 %}{% endif %}
-  {% if t == 'unused non-sensitive' %}{% set unsNonSensitiveCount = unsNonSensitiveCount + 1 %}{% endif %}
-  {% if t == 'unused sensitive' %}{% set unsSensitiveCount = unsSensitiveCount + 1 %}{% endif %}
+  {% if t == 'unused non-sensitive' %}{% set unusedNonSensitiveCount = unusedNonSensitiveCount + 1 %}{% endif %}
+  {% if t == 'sensitive' %}{% set sensitiveCount = sensitiveCount + 1 %}{% endif %}
 {% endfor %}
 
+{# helper to get a filename from a URL if Title is missing (optional) #}
+{% macro filenameFromUrl(url) %}
+  {% if url %}
+    {{ url.split('/').pop() }}
+  {% else %}
+    Untitled
+  {% endif %}
+{% endmacro %}
 
-{# Statements #}
+{# --------- Statements --------- #}
 {% set statementsHtml %}
   {% set hasAny = false %}
   <ul class="dcf-material-list govuk-!-margin-top-1 govuk-!-margin-bottom-1">
-    {% for m in (data.caseMaterials or []) %}
+    {% for m in (data.caseMaterials.Material or []) %}
       {% if (m.Type | lower) == 'statement' %}
         {% set hasAny = true %}
         <li class="govuk-!-margin-bottom-2">
@@ -29,33 +33,45 @@
             <div class="dcf-material-card__main">
               {% if m.Status %}<span class="dcf-material-card__badge">{{ m.Status }}</span>{% endif %}
               <h3 class="dcf-material-card__title govuk-!-margin-bottom-1">
-                {% set linkText = m.Material.Title or m.DigitalRepresentation.FileName %}
+                {% set linkText = m.Title or filenameFromUrl(m.myFileUrl) %}
                 {% if m.myFileUrl %}
                   <a
-                    href="{{ m.myFileUrl }}"
+                    href="#"
                     class="govuk-link js-material-link"
                     rel="noreferrer"
                     data-file-url="{{ m.myFileUrl }}"
                     data-title="{{ linkText | escape }}"
-                  >
-                    {{ linkText }}
-                  </a>
+                    role="button"
+                  >{{ linkText }}</a>
 
-                  
-
-                  {# pass meta (no myFileUrl) for the viewer meta panel #}
+                  {# pass per-item + case-level meta to the viewer (structure matches buildMetaPanel) #}
                   {% set __meta__ = {
                     ItemId: m.ItemId,
                     Type: m.Type,
                     date: m.date,
                     Status: m.Status,
-                    Material: m.Material,
-                    RelatedMaterials: m.RelatedMaterials,
-                    DigitalRepresentation: m.DigitalRepresentation,
-                    PoliceMaterial: m.PoliceMaterial,
-                    CPSMaterial: m.CPSMaterial
+
+                    Material: {
+                      Title: m.Title,
+                      Reference: m.Reference,
+                      ProducedbyWitnessId: m.ProducedbyWitnessId,
+                      MaterialClassification: m.MaterialClassification,
+                      MaterialType: m.MaterialType,
+                      SentExternally: m.SentExternally,
+                      RelatedParticipantId: m.RelatedParticipantId,
+                      Incident: m.Incident,
+                      Location: m.Location,
+                      PeriodFrom: m.PeriodFrom,
+                      PeriodTo: m.PeriodTo
+                    },
+
+                    RelatedMaterials: data.caseMaterials.RelatedMaterials,
+                    DigitalRepresentation: data.caseMaterials.DigitalRepresentation,
+                    PoliceMaterial: data.caseMaterials.PoliceMaterial,
+                    CPSMaterial: data.caseMaterials.CPSMaterial
                   } %}
                   <script type="application/json" class="js-material-data">{{ __meta__ | dump | safe }}</script>
+
                 {% else %}
                   {{ linkText }}
                 {% endif %}
@@ -71,12 +87,11 @@
   {% if not hasAny %}<p class="govuk-hint">No items yet.</p>{% endif %}
 {% endset %}
 
-
-{# Exhibits #}
+{# --------- Exhibits --------- #}
 {% set exhibitsHtml %}
   {% set hasAny = false %}
   <ul class="dcf-material-list">
-    {% for m in (data.caseMaterials or []) %}
+    {% for m in (data.caseMaterials.Material or []) %}
       {% if (m.Type | lower) == 'exhibit' %}
         {% set hasAny = true %}
         <li>
@@ -84,29 +99,41 @@
             <div class="dcf-material-card__main">
               {% if m.Status %}<span class="dcf-material-card__badge">{{ m.Status }}</span>{% endif %}
               <h3 class="dcf-material-card__title">
-                {% set linkText = m.Material.Title or m.DigitalRepresentation.FileName %}
+                {% set linkText = m.Title or filenameFromUrl(m.myFileUrl) %}
                 {% if m.myFileUrl %}
                   <a
-                    href="{{ m.myFileUrl }}"
+                    href="#"
                     class="govuk-link js-material-link"
                     rel="noreferrer"
                     data-file-url="{{ m.myFileUrl }}"
                     data-title="{{ linkText | escape }}"
-                  >
-                    {{ linkText }}
-                  </a>
-
+                    role="button"
+                  >{{ linkText }}</a>
 
                   {% set __meta__ = {
                     ItemId: m.ItemId,
                     Type: m.Type,
                     date: m.date,
                     Status: m.Status,
-                    Material: m.Material,
-                    RelatedMaterials: m.RelatedMaterials,
-                    DigitalRepresentation: m.DigitalRepresentation,
-                    PoliceMaterial: m.PoliceMaterial,
-                    CPSMaterial: m.CPSMaterial
+                    Title: m.Title,
+                    Reference: m.Reference,
+                    ProducedbyWitnessId: m.ProducedbyWitnessId,
+                    MaterialClassification: m.MaterialClassification,
+                    MaterialType: m.MaterialType,
+                    SentExternally: m.SentExternally,
+                    RelatedParticipantId: m.RelatedParticipantId,
+                    Incident: m.Incident,
+                    Location: m.Location,
+                    PeriodFrom: m.PeriodFrom,
+                    PeriodTo: m.PeriodTo,
+                    CaseLevel: {
+                      caseId: data.caseMaterials.caseId,
+                      caseStatus: data.caseMaterials.caseStatus,
+                      RelatedMaterials: data.caseMaterials.RelatedMaterials,
+                      DigitalRepresentation: data.caseMaterials.DigitalRepresentation,
+                      PoliceMaterial: data.caseMaterials.PoliceMaterial,
+                      CPSMaterial: data.caseMaterials.CPSMaterial
+                    }
                   } %}
                   <script type="application/json" class="js-material-data">{{ __meta__ | dump | safe }}</script>
                 {% else %}
@@ -124,118 +151,11 @@
   {% if not hasAny %}<p class="govuk-hint">No items yet.</p>{% endif %}
 {% endset %}
 
-
-{# MG forms #}
-{% set mgFormsHtml %}
+{# --------- Unused non-sensitive --------- #}
+{% set unusedNonSensitiveHtml %}
   {% set hasAny = false %}
   <ul class="dcf-material-list">
-    {% for m in (data.caseMaterials or []) %}
-      {% if (m.Type | lower) == 'mg form' %}
-        {% set hasAny = true %}
-        <li>
-          <article class="dcf-material-card">
-            <div class="dcf-material-card__main">
-              {% if m.Status %}<span class="dcf-material-card__badge">{{ m.Status }}</span>{% endif %}
-              <h3 class="dcf-material-card__title">
-                {% set linkText = m.Material.Title or m.DigitalRepresentation.FileName %}
-                {% if m.myFileUrl %}
-                  <a
-                    href="{{ m.myFileUrl }}"
-                    class="govuk-link js-material-link"
-                    rel="noreferrer"
-                    data-file-url="{{ m.myFileUrl }}"
-                    data-title="{{ linkText | escape }}"
-                  >
-                    {{ linkText }}
-                  </a>
-
-
-                  {% set __meta__ = {
-                    ItemId: m.ItemId,
-                    Type: m.Type,
-                    date: m.date,
-                    Status: m.Status,
-                    Material: m.Material,
-                    RelatedMaterials: m.RelatedMaterials,
-                    DigitalRepresentation: m.DigitalRepresentation,
-                    PoliceMaterial: m.PoliceMaterial,
-                    CPSMaterial: m.CPSMaterial
-                  } %}
-                  <script type="application/json" class="js-material-data">{{ __meta__ | dump | safe }}</script>
-                {% else %}
-                  {{ linkText }}
-                {% endif %}
-              </h3>
-              {% if m.date %}<p class="dcf-material-card__meta">Date: {{ m.date }}</p>{% endif %}
-            </div>
-            <div class="dcf-material-card__comment is-unread"></div>
-          </article>
-        </li>
-      {% endif %}
-    {% endfor %}
-  </ul>
-  {% if not hasAny %}<p class="govuk-hint">No items yet.</p>{% endif %}
-{% endset %}
-
-
-{# Other material #}
-{% set otherMaterialHtml %}
-  {% set hasAny = false %}
-  <ul class="dcf-material-list">
-    {% for m in (data.caseMaterials or []) %}
-      {% if (m.Type | lower) == 'other material' %}
-        {% set hasAny = true %}
-        <li>
-          <article class="dcf-material-card">
-            <div class="dcf-material-card__main">
-              {% if m.Status %}<span class="dcf-material-card__badge">{{ m.Status }}</span>{% endif %}
-              <h3 class="dcf-material-card__title">
-                {% set linkText = m.Material.Title or m.DigitalRepresentation.FileName %}
-                {% if m.myFileUrl %}
-                  <a
-                    href="{{ m.myFileUrl }}"
-                    class="govuk-link js-material-link"
-                    rel="noreferrer"
-                    data-file-url="{{ m.myFileUrl }}"
-                    data-title="{{ linkText | escape }}"
-                  >
-                    {{ linkText }}
-                  </a>
-
-
-                  {% set __meta__ = {
-                    ItemId: m.ItemId,
-                    Type: m.Type,
-                    date: m.date,
-                    Status: m.Status,
-                    Material: m.Material,
-                    RelatedMaterials: m.RelatedMaterials,
-                    DigitalRepresentation: m.DigitalRepresentation,
-                    PoliceMaterial: m.PoliceMaterial,
-                    CPSMaterial: m.CPSMaterial
-                  } %}
-                  <script type="application/json" class="js-material-data">{{ __meta__ | dump | safe }}</script>
-                {% else %}
-                  {{ linkText }}
-                {% endif %}
-              </h3>
-              {% if m.date %}<p class="dcf-material-card__meta">Date: {{ m.date }}</p>{% endif %}
-            </div>
-            <div class="dcf-material-card__comment is-unread"></div>
-          </article>
-        </li>
-      {% endif %}
-    {% endfor %}
-  </ul>
-  {% if not hasAny %}<p class="govuk-hint">No items yet.</p>{% endif %}
-{% endset %}
-
-
-{# Unused non-sensitive #}
-{% set unsNonSensitiveHtml %}
-  {% set hasAny = false %}
-  <ul class="dcf-material-list">
-    {% for m in (data.caseMaterials or []) %}
+    {% for m in (data.caseMaterials.Material or []) %}
       {% if (m.Type | lower) == 'unused non-sensitive' %}
         {% set hasAny = true %}
         <li>
@@ -243,29 +163,41 @@
             <div class="dcf-material-card__main">
               {% if m.Status %}<span class="dcf-material-card__badge">{{ m.Status }}</span>{% endif %}
               <h3 class="dcf-material-card__title">
-                {% set linkText = m.Material.Title or m.DigitalRepresentation.FileName %}
+                {% set linkText = m.Title or filenameFromUrl(m.myFileUrl) %}
                 {% if m.myFileUrl %}
                   <a
-                    href="{{ m.myFileUrl }}"
+                    href="#"
                     class="govuk-link js-material-link"
                     rel="noreferrer"
                     data-file-url="{{ m.myFileUrl }}"
                     data-title="{{ linkText | escape }}"
-                  >
-                    {{ linkText }}
-                  </a>
-
+                    role="button"
+                  >{{ linkText }}</a>
 
                   {% set __meta__ = {
                     ItemId: m.ItemId,
                     Type: m.Type,
                     date: m.date,
                     Status: m.Status,
-                    Material: m.Material,
-                    RelatedMaterials: m.RelatedMaterials,
-                    DigitalRepresentation: m.DigitalRepresentation,
-                    PoliceMaterial: m.PoliceMaterial,
-                    CPSMaterial: m.CPSMaterial
+                    Title: m.Title,
+                    Reference: m.Reference,
+                    ProducedbyWitnessId: m.ProducedbyWitnessId,
+                    MaterialClassification: m.MaterialClassification,
+                    MaterialType: m.MaterialType,
+                    SentExternally: m.SentExternally,
+                    RelatedParticipantId: m.RelatedParticipantId,
+                    Incident: m.Incident,
+                    Location: m.Location,
+                    PeriodFrom: m.PeriodFrom,
+                    PeriodTo: m.PeriodTo,
+                    CaseLevel: {
+                      caseId: data.caseMaterials.caseId,
+                      caseStatus: data.caseMaterials.caseStatus,
+                      RelatedMaterials: data.caseMaterials.RelatedMaterials,
+                      DigitalRepresentation: data.caseMaterials.DigitalRepresentation,
+                      PoliceMaterial: data.caseMaterials.PoliceMaterial,
+                      CPSMaterial: data.caseMaterials.CPSMaterial
+                    }
                   } %}
                   <script type="application/json" class="js-material-data">{{ __meta__ | dump | safe }}</script>
                 {% else %}
@@ -283,42 +215,53 @@
   {% if not hasAny %}<p class="govuk-hint">No items yet.</p>{% endif %}
 {% endset %}
 
-
-{# Unused sensitive #}
-{% set unsSensitiveHtml %}
+{# --------- Sensitive --------- #}
+{% set sensitiveHtml %}
   {% set hasAny = false %}
   <ul class="dcf-material-list">
-    {% for m in (data.caseMaterials or []) %}
-      {% if (m.Type | lower) == 'unused sensitive' %}
+    {% for m in (data.caseMaterials.Material or []) %}
+      {% if (m.Type | lower) == 'sensitive' %}
         {% set hasAny = true %}
         <li>
           <article class="dcf-material-card">
             <div class="dcf-material-card__main">
               {% if m.Status %}<span class="dcf-material-card__badge">{{ m.Status }}</span>{% endif %}
               <h3 class="dcf-material-card__title">
-                {% set linkText = m.Material.Title or m.DigitalRepresentation.FileName %}
+                {% set linkText = m.Title or filenameFromUrl(m.myFileUrl) %}
                 {% if m.myFileUrl %}
                   <a
-                    href="{{ m.myFileUrl }}"
+                    href="#"
                     class="govuk-link js-material-link"
                     rel="noreferrer"
                     data-file-url="{{ m.myFileUrl }}"
                     data-title="{{ linkText | escape }}"
-                  >
-                    {{ linkText }}
-                  </a>
-
+                    role="button"
+                  >{{ linkText }}</a>
 
                   {% set __meta__ = {
                     ItemId: m.ItemId,
                     Type: m.Type,
                     date: m.date,
                     Status: m.Status,
-                    Material: m.Material,
-                    RelatedMaterials: m.RelatedMaterials,
-                    DigitalRepresentation: m.DigitalRepresentation,
-                    PoliceMaterial: m.PoliceMaterial,
-                    CPSMaterial: m.CPSMaterial
+                    Title: m.Title,
+                    Reference: m.Reference,
+                    ProducedbyWitnessId: m.ProducedbyWitnessId,
+                    MaterialClassification: m.MaterialClassification,
+                    MaterialType: m.MaterialType,
+                    SentExternally: m.SentExternally,
+                    RelatedParticipantId: m.RelatedParticipantId,
+                    Incident: m.Incident,
+                    Location: m.Location,
+                    PeriodFrom: m.PeriodFrom,
+                    PeriodTo: m.PeriodTo,
+                    CaseLevel: {
+                      caseId: data.caseMaterials.caseId,
+                      caseStatus: data.caseMaterials.caseStatus,
+                      RelatedMaterials: data.caseMaterials.RelatedMaterials,
+                      DigitalRepresentation: data.caseMaterials.DigitalRepresentation,
+                      PoliceMaterial: data.caseMaterials.PoliceMaterial,
+                      CPSMaterial: data.caseMaterials.CPSMaterial
+                    }
                   } %}
                   <script type="application/json" class="js-material-data">{{ __meta__ | dump | safe }}</script>
                 {% else %}
@@ -336,8 +279,7 @@
   {% if not hasAny %}<p class="govuk-hint">No items yet.</p>{% endif %}
 {% endset %}
 
-
-{# ----- Layout (unchanged) ----- #}
+{# ----- Layout ----- #}
 <div class="govuk-grid-row dcf-materials-layout">
   <div class="govuk-grid-column-one-third">
     <div class="dcf-materials-panel">
@@ -359,12 +301,15 @@
           items: [
             { heading: { text: "Statements (" ~ statementsCount ~ ")" },           content: { html: statementsHtml    } },
             { heading: { text: "Exhibits (" ~ exhibitsCount ~ ")" },               content: { html: exhibitsHtml      } },
-            { heading: { text: "MG forms (" ~ mgFormsCount ~ ")" },                content: { html: mgFormsHtml       } },
-            { heading: { text: "Other material (" ~ otherMaterialCount ~ ")" },    content: { html: otherMaterialHtml } },
-            { heading: { text: "Unused non-sensitive (" ~ unsNonSensitiveCount ~ ")" }, content: { html: unsNonSensitiveHtml } },
-            { heading: { text: "Unused sensitive (" ~ unsSensitiveCount ~ ")" },   content: { html: unsSensitiveHtml  } }
+            { heading: { text: "MG forms (" ~ (mgFormsCount | default(0)) ~ ")" }, content: { html: (mgFormsHtml | default('<p class="govuk-hint">No items yet.</p>')) | safe } },
+            { heading: { text: "Other material (" ~ (otherMaterialCount | default(0)) ~ ")" }, content: { html: (otherMaterialHtml | default('<p class="govuk-hint">No items yet.</p>')) | safe } },
+            { heading: { text: "Unused non-sensitive (" ~ unusedNonSensitiveCount ~ ")" }, content: { html: unusedNonSensitiveHtml } },
+            { heading: { text: "Sensitive (" ~ sensitiveCount ~ ")" },   content: { html: sensitiveHtml  } }
           ]
         }) }}
+
+
+
 
     </div>
   </div>
@@ -372,8 +317,8 @@
   <div class="govuk-grid-column-two-thirds">
     <div id="material-viewer" class="dcf-viewer" hidden aria-live="polite">
       <p class="govuk-body govuk-!-margin-bottom-3">
-        Select a material from the list to preview it here.
+        
       </p>
     </div>
-  </div>
+  </div> 
 </div>
