@@ -3,49 +3,44 @@
 {% set pageName = "Prototype" %}
 
 {% block content %}
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-full-width">
-      <form action="/account/sign-in" method="post" novalidate>
-        {{ govukRadios({
-          name: "signIn[emailAddress]",
-          fieldset: {
-            legend: {
-              text: "User",
-              classes: "govuk-fieldset__legend--l"
-            }
-          },
-          items: [
-            {
-              value: "rachael@cps.gov.uk",
-              html: "<b>Rachael Harvey (Paralegal officer)</b>",
-              hint: {
-                html: "<ul class='govuk-list govuk-list--bullet govuk-!-margin-bottom-0'><li>Wessex Crown Court</li><li>Wessex RASSO</li></ul>"
-              }
-            },
-            {
-              value: "simon@cps.gov.uk",
-              html: "<b>Simon Whatley (Prosecutor)</b>",
-              hint: {
-                html: "<ul class='govuk-list govuk-list--bullet govuk-!-margin-bottom-0'><li>North Yorkshire Magistrates Court</li><li>South Yorkshire Magistrates Court</li><li>West Yorkshire Magistrates Court</li><li>Humberside Magistrates Court</li></ul>"
-              }
-            },
-            {
-              value: "tony@cps.gov.uk",
-              html: "<b>Tony Stark (Casework assistant)</b>",
-              hint: {
-                html: "<ul class='govuk-list govuk-list--bullet govuk-!-margin-bottom-0'><li>Dorset Magistrates Court</li><li>Hampshire Magistrates Court</li><li>Wessex Crown Court</li><li>Wessex RASSO</li><li>Wessex CCU</li><li>Wessex Fraud</li><li>Wiltshire Magistrates Court</li></ul>"
-              }
-            }
-          ]
-        }) }}
+  <form action="/account/sign-in" method="post" novalidate>
+    {{ govukRadios({
+      name: "signIn[emailAddress]",
+      fieldset: {
+        legend: {
+          text: "User",
+          classes: "govuk-fieldset__legend--l"
+        }
+      },
+      items: [
+        {
+          value: "rachael@cps.gov.uk",
+          html: "<b>Rachael Harvey (Paralegal officer)</b>",
+          hint: {
+            html: "<ul class='govuk-list govuk-list--bullet govuk-!-margin-bottom-0'><li>Wessex Crown Court</li><li>Wessex RASSO</li></ul>"
+          }
+        },
+        {
+          value: "simon@cps.gov.uk",
+          html: "<b>Simon Whatley (Prosecutor)</b>",
+          hint: {
+            html: "<ul class='govuk-list govuk-list--bullet govuk-!-margin-bottom-0'><li>North Yorkshire Magistrates Court</li><li>South Yorkshire Magistrates Court</li><li>West Yorkshire Magistrates Court</li><li>Humberside Magistrates Court</li></ul>"
+          }
+        },
+        {
+          value: "tony@cps.gov.uk",
+          html: "<b>Tony Stark (Casework assistant)</b>",
+          hint: {
+            html: "<ul class='govuk-list govuk-list--bullet govuk-!-margin-bottom-0'><li>Dorset Magistrates Court</li><li>Hampshire Magistrates Court</li><li>Wessex Crown Court</li><li>Wessex RASSO</li><li>Wessex CCU</li><li>Wessex Fraud</li><li>Wiltshire Magistrates Court</li></ul>"
+          }
+        }
+      ]
+    }) }}
 
-        {{ govukButton({
-          text: "Sign in"
-        }) }}
-      </form>
-
-    </div>
-  </div>
+    {{ govukButton({
+      text: "Sign in"
+    }) }}
+  </form>
 {% endblock %}
 
 
