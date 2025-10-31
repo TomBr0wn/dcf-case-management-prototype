@@ -1,0 +1,91 @@
+/* materials-viewer-tabs.scss
+   Lightweight styles for the dynamic document tab injected between
+   .dcf-viewer__toolbar and .dcf-viewer__meta. Purely presentational.
+   Does not alter existing layout or JS behaviour.
+*/
+
+.dcf-viewer__tabs {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+.dcf-doc-tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.5rem;
+  background: #f3f2f1; // GOV.UK light grey
+  border: 1px solid #b1b4b6;
+  border-bottom: 0;
+  border-radius: 0.375rem 0.375rem 0 0; // small top radius, squared bottom
+  font-weight: 700;
+  line-height: 1.1;
+  color: #0b0c0c;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.dcf-doc-tab:hover {
+  background: #eeeded;
+}
+
+.dcf-doc-tab:focus {
+  outline: 3px solid #fd0; /* GOV.UK yellow focus */
+  outline-offset: 1px;
+}
+
+.dcf-doc-tab__label {
+  white-space: nowrap;
+  max-width: 28ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Circular close glyph */
+.dcf-doc-tab__close {
+  display: inline-grid;
+  place-items: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background: #b1b4b6;   /* mid grey circle */
+  color: #ffffff;
+  font-weight: 700;
+  line-height: 1;
+  font-size: 0.95rem;
+  user-select: none;
+}
+
+.dcf-doc-tab__close:hover {
+  background: #8f9295;
+}
+
+.dcf-doc-tab__close:focus {
+  outline: 2px solid #fd0;
+  outline-offset: 2px;
+}
+
+/* Blue bar indicating the active document */
+.dcf-doc-tab__bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 4px;
+  background: #1d70b8; /* GOV.UK blue */
+  border-radius: 0 0 2px 2px;
+  pointer-events: none;
+  content: "";
+}
+
+/* Only show the blue bar when the tab is active */
+.dcf-doc-tab:not(.is-active) .dcf-doc-tab__bar {
+  display: none;
+}
+
+/* Optional: utility to hide the container if you need it */
+.dcf-viewer__tabs--hidden {
+  display: none;
+}

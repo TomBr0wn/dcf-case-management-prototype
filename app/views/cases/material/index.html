@@ -82,7 +82,37 @@
         .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     }
 
-    function rowsHTML(obj, mapping) {
+    
+      function buildDocTabs(title) {
+        var safe = esc(title || 'Document');
+        return (
+          '<div id="dcf-viewer-tabs" class="dcf-viewer__tabs govuk-!-margin-bottom-2">' +
+            '<button type="button" class="dcf-doc-tab is-active" aria-selected="true" title="' + safe + '">' +
+              '<span class="dcf-doc-tab__label">' + safe + '</span>' +
+              '<span class="dcf-doc-tab__close" aria-label="Close tab" role="button">×</span>' +
+              '<span class="dcf-doc-tab__bar" aria-hidden="true"></span>' +
+            '</button>' +
+          '</div>'
+        );
+      }
+
+      // Inject minimal styles once
+      (function ensureTabStyles(){
+        if (document.getElementById('dcf-doc-tab-styles')) return;
+        var css = [
+          '.dcf-viewer__tabs{display:flex;gap:.5rem;align-items:flex-end}',
+          '.dcf-doc-tab{position:relative;display:inline-flex;align-items:center;gap:.5rem;padding:.375rem .5rem;background:#f3f2f1;border:1px solid #b1b4b6;border-bottom:0;border-radius:.375rem .375rem 0 0;font-weight:700;line-height:1.1;cursor:pointer}',
+          '.dcf-doc-tab__label{white-space:nowrap;max-width:28ch;overflow:hidden;text-overflow:ellipsis}',
+          '.dcf-doc-tab__close{display:inline-grid;place-items:center;width:1.25rem;height:1.25rem;border-radius:50%;background:#b1b4b6;color:#fff;font-weight:700;line-height:1;font-size:.95rem}',
+          '.dcf-doc-tab__bar{position:absolute;left:0;right:0;bottom:-4px;height:4px;background:#1d70b8;border-radius:0 0 2px 2px;pointer-events:none}',
+          '.dcf-doc-tab:not(.is-active) .dcf-doc-tab__bar{display:none}'
+        ].join('');
+        var style = document.createElement('style');
+        style.id = 'dcf-doc-tab-styles';
+        style.textContent = css;
+        document.head.appendChild(style);
+      })();
+function rowsHTML(obj, mapping) {
       return mapping.map(function (m) {
         var v = (m.get ? m.get(obj) : obj && obj[m.key]);
         if (v == null || v === '' || (Array.isArray(v) && v.length === 0)) return '';
@@ -260,7 +290,7 @@
 
       viewer.hidden = false;
       viewer.setAttribute('tabindex', '-1');
-      viewer.innerHTML = toolbar + metaPanel + opsBar + iframe;
+      viewer.innerHTML = toolbar + buildDocTabs(title) + metaPanel + opsBar + iframe;
 
       setActiveCard(link);
       viewer.focus({ preventScroll: false });
@@ -279,6 +309,15 @@
 
     // ------- toolbar + meta actions -------
     viewer.addEventListener('click', function (e) {
+      // Tab close (×) inside generated tab
+      if (e.target && e.target.closest('.dcf-doc-tab__close')) {
+        e.preventDefault();
+        // Reuse existing close behaviour
+        var close = viewer.querySelector('[data-action="close-viewer"]');
+        if (close) close.click();
+        return;
+      }
+
       var a = e.target.closest('a[data-action]');
       if (!a) return;
       e.preventDefault();
