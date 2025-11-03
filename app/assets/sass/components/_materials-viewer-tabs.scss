@@ -29,7 +29,7 @@
   border: 1px solid #1d70b8;
   border-bottom: 0;
   border-radius: 0 !important;  /* force square corners */
-  font-weight: 700;
+  font-weight: 500;
   line-height: 2.25;
   color: #0b0c0c;
   cursor: pointer;
@@ -48,6 +48,7 @@
   max-width: 28ch;
   overflow: hidden;
   text-overflow: ellipsis;
+
 }
 
 /* Close glyph: perfectly centred, circular */
