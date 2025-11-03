@@ -25,7 +25,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 0.5rem 0.375rem;
-  background: #ebf2fd;   /* GOV.UK light grey */
+  background: #ffffff;   /* GOV.UK light grey */
   border: 1px solid #1d70b8;
   border-bottom: 0;
   border-radius: 0 !important;  /* force square corners */
@@ -37,7 +37,7 @@
   margin: 0;
 }
 
-.dcf-doc-tab:hover { background: #eeeded; }
+.dcf-doc-tab:hover { background: #ebf2fd; }
 .dcf-doc-tab:focus {
   outline: 3px solid #fd0;       /* GOV.UK yellow focus */
   outline-offset: 1px;
@@ -75,7 +75,7 @@
   right: 0;
   top: 0;            /* pull it down so it “kisses” the meta bar */
   height: 6px;
-  background: #1d70b8;     /* GOV.UK blue */
+  background: none;     /* GOV.UK blue */
   border-radius: 0;
   pointer-events: none;
   content: "";
