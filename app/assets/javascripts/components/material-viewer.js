@@ -105,16 +105,41 @@
     { key:'RelationshipType',label:'Relationship type' }
   ]);
 
-  var digitalRows = rowsHTML(dig, [
-    { key:'FileName',             label:'File name' },
-    { key:'Document',             label:'Document' },
-    { key:'ExternalFileLocation', label:'External file location' },
-    { key:'ExternalFileURL',      label:'External file URL', render: function (v) {
-        if (v === '#' || v === '') return '—';
-        return '<a class="govuk-link" href="' + esc(v) + '" target="_blank" rel="noreferrer">' + esc(v) + '</a>';
-      }},
-    { key:'DigitalSignature',     label:'Digital signature' }
-  ]);
+  // --- Digital representation (supports array OR legacy single) ---
+  var digitalRows;
+  if (Array.isArray(dig.Items) && dig.Items.length) {
+    // render each item as its own mini summary list rows
+    digitalRows = dig.Items.map(function (it, idx) {
+      var itemRows = rowsHTML(it, [
+        { key:'FileName',             label:'File name' },
+        { key:'ExternalFileLocation', label:'External file location' },
+        { key:'ExternalFileURL',      label:'External file URL', render: function (v) {
+            if (v === '#' || v === '') return '—';
+            return '<a class="govuk-link" href="' + esc(v) + '" target="_blank" rel="noreferrer">' + esc(v) + '</a>';
+          }},
+        { key:'DigitalSignature',     label:'Digital signature' }
+      ]);
+      return itemRows ? (
+        '<div class="govuk-!-margin-bottom-2">' +
+          '<h4 class="govuk-heading-s govuk-!-margin-bottom-1">Item ' + (idx + 1) + '</h4>' +
+          '<dl class="govuk-summary-list govuk-!-margin-bottom-1">' + itemRows + '</dl>' +
+        '</div>'
+      ) : '';
+    }).join('');
+  } else {
+    // legacy single-object fields (backward compatible)
+    digitalRows = rowsHTML(dig, [
+      { key:'FileName',             label:'File name' },
+      { key:'Document',             label:'Document' },
+      { key:'ExternalFileLocation', label:'External file location' },
+      { key:'ExternalFileURL',      label:'External file URL', render: function (v) {
+          if (v === '#' || v === '') return '—';
+          return '<a class="govuk-link" href="' + esc(v) + '" target="_blank" rel="noreferrer">' + esc(v) + '</a>';
+        }},
+      { key:'DigitalSignature',     label:'Digital signature' }
+    ]);
+  }
+
 
   var policeRows = rowsHTML(pol, [
     { key:'DisclosureStatus',               label:'Disclosure status' },
