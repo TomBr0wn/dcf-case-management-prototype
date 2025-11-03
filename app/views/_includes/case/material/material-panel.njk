@@ -115,27 +115,28 @@
                     Type: m.Type,
                     date: m.date,
                     Status: m.Status,
-                    Title: m.Title,
-                    Reference: m.Reference,
-                    ProducedbyWitnessId: m.ProducedbyWitnessId,
-                    MaterialClassification: m.MaterialClassification,
-                    MaterialType: m.MaterialType,
-                    SentExternally: m.SentExternally,
-                    RelatedParticipantId: m.RelatedParticipantId,
-                    Incident: m.Incident,
-                    Location: m.Location,
-                    PeriodFrom: m.PeriodFrom,
-                    PeriodTo: m.PeriodTo,
-                    CaseLevel: {
-                      caseId: data.caseMaterials.caseId,
-                      caseStatus: data.caseMaterials.caseStatus,
-                      RelatedMaterials: data.caseMaterials.RelatedMaterials,
-                      DigitalRepresentation: data.caseMaterials.DigitalRepresentation,
-                      PoliceMaterial: data.caseMaterials.PoliceMaterial,
-                      CPSMaterial: data.caseMaterials.CPSMaterial
-                    }
+
+                    Material: {
+                      Title: m.Title,
+                      Reference: m.Reference,
+                      ProducedbyWitnessId: m.ProducedbyWitnessId,
+                      MaterialClassification: m.MaterialClassification,
+                      MaterialType: m.MaterialType,
+                      SentExternally: m.SentExternally,
+                      RelatedParticipantId: m.RelatedParticipantId,
+                      Incident: m.Incident,
+                      Location: m.Location,
+                      PeriodFrom: m.PeriodFrom,
+                      PeriodTo: m.PeriodTo
+                    },
+
+                    RelatedMaterials: data.caseMaterials.RelatedMaterials,
+                    DigitalRepresentation: data.caseMaterials.DigitalRepresentation,
+                    PoliceMaterial: data.caseMaterials.PoliceMaterial,
+                    CPSMaterial: data.caseMaterials.CPSMaterial
                   } %}
                   <script type="application/json" class="js-material-data">{{ __meta__ | dump | safe }}</script>
+
                 {% else %}
                   {{ linkText }}
                 {% endif %}
@@ -179,27 +180,28 @@
                     Type: m.Type,
                     date: m.date,
                     Status: m.Status,
-                    Title: m.Title,
-                    Reference: m.Reference,
-                    ProducedbyWitnessId: m.ProducedbyWitnessId,
-                    MaterialClassification: m.MaterialClassification,
-                    MaterialType: m.MaterialType,
-                    SentExternally: m.SentExternally,
-                    RelatedParticipantId: m.RelatedParticipantId,
-                    Incident: m.Incident,
-                    Location: m.Location,
-                    PeriodFrom: m.PeriodFrom,
-                    PeriodTo: m.PeriodTo,
-                    CaseLevel: {
-                      caseId: data.caseMaterials.caseId,
-                      caseStatus: data.caseMaterials.caseStatus,
-                      RelatedMaterials: data.caseMaterials.RelatedMaterials,
-                      DigitalRepresentation: data.caseMaterials.DigitalRepresentation,
-                      PoliceMaterial: data.caseMaterials.PoliceMaterial,
-                      CPSMaterial: data.caseMaterials.CPSMaterial
-                    }
+
+                    Material: {
+                      Title: m.Title,
+                      Reference: m.Reference,
+                      ProducedbyWitnessId: m.ProducedbyWitnessId,
+                      MaterialClassification: m.MaterialClassification,
+                      MaterialType: m.MaterialType,
+                      SentExternally: m.SentExternally,
+                      RelatedParticipantId: m.RelatedParticipantId,
+                      Incident: m.Incident,
+                      Location: m.Location,
+                      PeriodFrom: m.PeriodFrom,
+                      PeriodTo: m.PeriodTo
+                    },
+
+                    RelatedMaterials: data.caseMaterials.RelatedMaterials,
+                    DigitalRepresentation: data.caseMaterials.DigitalRepresentation,
+                    PoliceMaterial: data.caseMaterials.PoliceMaterial,
+                    CPSMaterial: data.caseMaterials.CPSMaterial
                   } %}
                   <script type="application/json" class="js-material-data">{{ __meta__ | dump | safe }}</script>
+
                 {% else %}
                   {{ linkText }}
                 {% endif %}
