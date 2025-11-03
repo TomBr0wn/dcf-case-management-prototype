@@ -127,7 +127,7 @@
 .dcf-viewer__meta-bar {
   /* make it touch the blue border of .dcf-viewer__meta */
   margin: -12px -12px 0;      /* top/left/right = -meta padding */
-  padding: 4px 0 16px 0;      /* vertical padding only */
+  padding: 0px 0 10px 0;      /* vertical padding only */
   background: #3B64AC;
   color: #fff;
   display: flex;              /* host flex just to contain the row */
