@@ -139,12 +139,18 @@
   ]);
 
   // Meta bar now ONLY has the show/hide details control
-  var metaBar =
-    '<div class="dcf-viewer__meta-bar">' +
-      '<div class="dcf-meta-actions">' +
-        '<a href="#" class="govuk-link js-meta-toggle" data-action="toggle-meta" aria-expanded="true" aria-controls="' + esc(bodyId) + '">Hide details</a>' +
-      '</div>' +
-    '</div>';
+    var metaBar =
+      '<div class="dcf-viewer__meta-bar">' +
+        '<div class="dcf-meta-actions">' +
+          '<a href="#" class="govuk-link js-meta-toggle" ' +
+            'data-action="toggle-meta" ' +
+            'aria-expanded="true" ' +
+            'aria-controls="' + esc(bodyId) + '" ' +
+            'data-controls="' + esc(bodyId) + '">' +           // <-- add this
+            'Hide details</a>' +
+        '</div>' +
+      '</div>';
+
 
   // Reclassify button moved inside meta body, before the first <h3>
   // with this (no GOV.UK margin utilities):
@@ -292,15 +298,33 @@
       }
 
       if (action === 'toggle-meta') {
-        var targetId = a.getAttribute('aria-controls');
-        var body = targetId && document.getElementById(targetId);
+        // Prefer a nearby meta body in the same viewer, regardless of id drift.
+        var metaWrap = a.closest('.dcf-viewer__meta');
+        var body =
+          // 1) Exact id in the same wrapper (if provided)
+          (function () {
+            var id = a.getAttribute('aria-controls') || a.getAttribute('data-controls');
+            if (!metaWrap || !id) return null;
+            try { return metaWrap.querySelector('#' + CSS.escape(id)); } catch (e) { return null; }
+            console.log('toggle-meta -> hidden:', body.hidden);
+          })()
+          // 2) Fallback: first meta body inside the wrapper
+          || (metaWrap && metaWrap.querySelector('.dcf-viewer__meta-body'));
+
         if (!body) return;
-        var expanded = a.getAttribute('aria-expanded') === 'true';
-        body.hidden = expanded;
-        a.setAttribute('aria-expanded', String(!expanded));
-        a.textContent = expanded ? 'Show details' : 'Hide details';
+
+        // Toggle strictly from the DOM state, then sync the control’s state/text.
+        var willHide = !body.hidden;    // visible -> hide; hidden -> show
+        body.hidden = willHide;
+
+        a.setAttribute('aria-expanded', String(!willHide));
+        a.textContent = willHide ? 'Show details' : 'Hide details';
+        console.log('toggle-meta -> hidden:', body.hidden);
         return;
       }
+
+
+
 
       if (action === 'reclassify') {
         console.log('Reclassify clicked');

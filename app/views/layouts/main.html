@@ -8,6 +8,9 @@
 {% from "_components/identity-bar/macro.njk" import appIdentityBar %}
 {% from "_components/activity-log-item/macro.njk" import appActivityLogItem %}
 
+{% from "_components/material-panel/macro.njk" import appMaterialPanel %}
+
+
 {% block header %}
   {% include "_includes/header.njk" %}
   {% include "_includes/navigation.njk" %}
@@ -26,6 +29,6 @@
   <script src="/public/javascripts/components/list-filter.js"></script>
   <script src="/public/javascripts/components/button-menu.js"></script>
   <script src="/public/javascripts/components/text-expander.js"></script>
-  <script src="/public/javascripts/components/material-viewer.js"></script>
+
 
 {% endblock %}

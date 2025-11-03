@@ -240,6 +240,10 @@
 }
 .dcf-viewer__ops-bar .moj-button-menu__link:hover { background: #f3f2f1; }
 
+.dcf-viewer__meta-body[hidden] {
+  display: none !important;
+}
+
 /* sits just under the blue meta bar, snug */
 .dcf-viewer__meta-body { padding-top: 0; }
 
