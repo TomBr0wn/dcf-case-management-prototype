@@ -1,0 +1,57 @@
+/* Results area only */
+.dcf-search-results {
+  /* Give each hit a top rule (your “border above each h3”) */
+  .dcf-search-hit {
+    background: transparent;
+    padding-top: 12px;
+    margin-bottom: 16px;
+    border-top: 1px solid #b1b4b6; // govuk mid-grey
+    border-bottom: none;
+    border-right: none;
+  }
+
+  /* Keep the heading snug to that rule */
+  .dcf-search-hit > .govuk-heading-s {
+    margin-top: 0;
+  }
+
+  /* Make the summary list look plain */
+  .dcf-summary.dcf-summary--results {
+    margin-top: 0;
+    border: 0;
+    padding-left: 0;
+    background: transparent;
+  }
+
+  /* Remove borders between rows */
+  .dcf-summary.dcf-summary--results .govuk-summary-list__row {
+    border: 0;
+    font-size: smaller;
+  }
+
+  .govuk-summary-list__key{
+    padding-top: 2px;
+    padding-bottom: 2px;
+  }
+
+  .govuk-summary-list__value{
+    padding-top: 2px;
+    padding-bottom: 2px;
+  }
+
+  /* Nuke any decorative left bar that might leak in */
+  .dcf-summary.dcf-summary--results,
+  .dcf-search-hit {
+    border-left: 0 !important;
+  }
+
+  /* Some projects add a pseudo-element bar; make sure it disappears */
+  .dcf-summary.dcf-summary--results::before,
+  .dcf-search-hit::before {
+    content: none !important;
+  }
+}
+
+
+
+

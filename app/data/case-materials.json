@@ -4,6 +4,7 @@
   "Material": [
     {
       "Type": "Statement",
+      "materialStatus": "New",
       "myFileUrl": "/public/files/stmt_BLAYNEE_2034_1_JUNE_mg11.pdf",
       "ItemId": "MAT-02001",
       "date": "07/01/2025",
@@ -21,6 +22,7 @@
     },
     {
       "Type": "Statement",
+      "materialStatus": "New",
       "myFileUrl": "/public/files/stmt_Lucy_Doyle_MG11.pdf",
       "ItemId": "MAT-02002",
       "date": "18/10/2025",
@@ -38,6 +40,7 @@
     },
     {
       "Type": "Statement",
+      "materialStatus": "New",
       "myFileUrl": "/public/files/stmt_Shelagh_McLove_MG11.pdf",
       "ItemId": "MAT-02003",
       "date": "28/03/2025",
@@ -56,6 +59,7 @@
 
     {
       "Type": "Exhibit",
+      "materialStatus": "New",
       "myFileUrl": "/public/files/MG12.pdf",
       "ItemId": "MAT-02004",
       "date": "19/02/2025",
@@ -73,6 +77,7 @@
     },
     {
       "Type": "Exhibit",
+      "materialStatus": "New",
       "myFileUrl": "/public/files/MG00.pdf",
       "ItemId": "MAT-02005",
       "date": "21/02/2025",
@@ -90,6 +95,7 @@
     },
     {
       "Type": "Exhibit",
+      "materialStatus": "New",
       "myFileUrl": "/public/files/defendants.pdf",
       "ItemId": "MAT-02006",
       "date": "03/03/2025",
@@ -108,6 +114,7 @@
 
     {
       "Type": "Unused non-sensitive",
+      "materialStatus": "New",
       "myFileUrl": "/public/files/MG06_3June.pdf",
       "ItemId": "MAT-02007",
       "date": "30/06/2025",
@@ -125,6 +132,7 @@
     },
     {
       "Type": "Unused non-sensitive",
+      "materialStatus": "New",
       "myFileUrl": "/public/files/MG06_10june.pdf",
       "ItemId": "MAT-02008",
       "date": "05/07/2025",
@@ -142,6 +150,7 @@
     },
     {
       "Type": "Unused non-sensitive",
+      "materialStatus": "New",
       "myFileUrl": "/public/files/UNUSED_1_STORM_LOG_1881_01.6.20_EDITED_2020-11-23_MCLOVE.pdf",
       "ItemId": "MAT-02009",
       "date": "07/07/2025",
@@ -160,6 +169,7 @@
 
     {
       "Type": "Sensitive",
+      "materialStatus": "New",
       "myFileUrl": "/public/files/ThirdParty_Medical_Note.pdf",
       "ItemId": "MAT-02010",
       "date": "20/08/2025",
@@ -177,6 +187,7 @@
     },
     {
       "Type": "Sensitive",
+      "materialStatus": "New",
       "myFileUrl": "/public/files/Address_List_Witnesses_Redacted.pdf",
       "ItemId": "MAT-02011",
       "date": "02/09/2025",
@@ -194,6 +205,7 @@
     },
     {
       "Type": "Sensitive",
+      "materialStatus": "New",
       "myFileUrl": "/public/files/Medical_Photo_Bystander_Redacted.jpg",
       "ItemId": "MAT-02012",
       "date": "10/09/2025",
