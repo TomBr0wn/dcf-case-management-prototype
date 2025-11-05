@@ -199,7 +199,12 @@ module.exports = router => {
       include: {
         case: {
           include: {
-            defendants: true,
+            defendants: {
+              include: {
+                charges: true,
+                defenceLawyer: true
+              }
+            },
             unit: true
           }
         },
@@ -210,6 +215,24 @@ module.exports = router => {
           }
         }
       }
+    })
+
+    // Add CTL information to each task's case
+    tasks = tasks.map(task => {
+      let allCtlDates = []
+      task.case.defendants.forEach(defendant => {
+        defendant.charges.forEach(charge => {
+          if (charge.custodyTimeLimit) {
+            allCtlDates.push(new Date(charge.custodyTimeLimit))
+          }
+        })
+      })
+
+      task.case.hasCTL = allCtlDates.length > 0
+      task.case.soonestCTL = allCtlDates.length > 0 ? new Date(Math.min(...allCtlDates)) : null
+      task.case.ctlCount = allCtlDates.length
+
+      return task
     })
 
     let keywords = _.get(req.session.data.taskSearch, 'keywords')
@@ -292,6 +315,29 @@ module.exports = router => {
       text: taskName,
       value: taskName
     }))
+
+    // Handle sorting
+    const sortBy = _.get(req.session.data, 'taskSort', 'Due date')
+
+    if (sortBy === 'Days left in custody') {
+      // Sort by soonest CTL first, then tasks without CTL
+      tasks.sort((a, b) => {
+        if (a.case.hasCTL && !b.case.hasCTL) return -1
+        if (!a.case.hasCTL && b.case.hasCTL) return 1
+        if (a.case.hasCTL && b.case.hasCTL) {
+          return a.case.soonestCTL - b.case.soonestCTL
+        }
+        return 0
+      })
+    } else if (sortBy === 'Hearing date') {
+      // Sort by hearing date (assuming case has hearing)
+      tasks.sort((a, b) => {
+        const aDate = a.case.hearing ? new Date(a.case.hearing.date) : new Date(9999, 0, 1)
+        const bDate = b.case.hearing ? new Date(b.case.hearing.date) : new Date(9999, 0, 1)
+        return aDate - bDate
+      })
+    }
+    // Default is 'Due date' which is already sorted by the orderBy in the query
 
     let totalTasks = tasks.length
     let pageSize = 25

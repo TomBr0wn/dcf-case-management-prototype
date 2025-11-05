@@ -47,7 +47,7 @@
               <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
                 <a href="/cases/{{_case.id}}" class="govuk-link--no-visited-state">{{defendantsValue}}</a>
                 <div class="app-list__tag">
-                  {% if _case.isCTL %}
+                  {% if _case.hasCTL %}
                     {{ govukTag({ text: 'CTL', classes: 'govuk-tag--red' })}}
                   {% endif %}
                 </div>
@@ -134,10 +134,18 @@
                   },
                   {
                     key: {
+                      html: 'Custody time limit'
+                    },
+                    value: {
+                      html: (_case.soonestCTL | isoDateString | govukDate) + (' (' + _case.ctlCount + ' CTLs)' if _case.ctlCount > 1 else '')
+                    }
+                  } if _case.hasCTL,
+                  {
+                    key: {
                       html: 'DGA'
                     },
                     value: {
-                      html: 'Needs review' 
+                      html: 'Needs review'
                     }
                   } if _case.dgaReview                  
                 ]

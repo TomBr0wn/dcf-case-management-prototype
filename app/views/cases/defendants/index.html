@@ -24,25 +24,75 @@
                 <a href="/cases/{{_case.id}}/defendants/{{defendant.id}}" class="govuk-link--no-visited-state">{{defendant.firstName}} {{defendant.lastName}}</a>
               </h2>
 
+              {% set chargesList %}
+                <ul class="govuk-list govuk-list--bullet">
+                  {% for charge in defendant.charges %}
+                    <li>{{ charge.chargeCode }}: {{ charge.description }}</li>
+                  {% endfor %}
+                </ul>
+              {% endset %}
+
+              {% set defenceLawyerValue %}
+                {% if defendant.defenceLawyer %}
+                  {{ defendant.defenceLawyer.firstName }} {{ defendant.defenceLawyer.lastName }}, {{ defendant.defenceLawyer.organisation }}
+                {% else %}
+                  Not assigned
+                {% endif %}
+              {% endset %}
+
+              {% set dobValue %}
+                {% if defendant.dateOfBirth %}
+                  {{ defendant.dateOfBirth | isoDateString | govukDate }} ({{ defendant.dateOfBirth | age }} old)
+                {% endif %}
+              {% endset %}
+
+              {% set remandStatusValue %}
+                {% if defendant.remandStatus == 'UNCONDITIONAL_BAIL' %}
+                  Unconditional bail
+                {% elif defendant.remandStatus == 'CONDITIONAL_BAIL' %}
+                  Conditional bail
+                {% elif defendant.remandStatus == 'REMANDED_IN_CUSTODY' %}
+                  Remanded in custody
+                {% elif defendant.remandStatus == 'REMANDED_IN_SECURE_UNIT' %}
+                  Remanded in secure unit
+                {% endif %}
+              {% endset %}
+
               {{ govukSummaryList({
                 classes: 'govuk-summary-list--no-border app-summary-list--compact app-summary-list--small-text',
                 rows: [
                   {
                     key: {
-                      html: 'First name'
+                      html: 'Date of birth'
                     },
                     value: {
-                      html: defendant.firstName
+                      html: dobValue
+                    }
+                  } if defendant.dateOfBirth,
+                  {
+                    key: {
+                      html: 'Remand status'
+                    },
+                    value: {
+                      html: remandStatusValue
+                    }
+                  } if defendant.remandStatus,
+                  {
+                    key: {
+                      html: 'Defence lawyer'
+                    },
+                    value: {
+                      html: defenceLawyerValue
                     }
                   },
                   {
                     key: {
-                      html: 'Last name'
+                      html: 'Charge'
                     },
                     value: {
-                      html: defendant.lastName
+                      html: chargesList
                     }
-                  }
+                  } if defendant.charges.length
                 ]
               })}}
             </div>

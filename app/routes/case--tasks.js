@@ -21,12 +21,31 @@ module.exports = router => {
         user: true,
         unit: true,
         lawyers: true,
-        defendants: true,
+        defendants: {
+          include: {
+            charges: true,
+            defenceLawyer: true
+          }
+        },
         hearing: true,
         location: true,
         dga: true
       },
     })
+
+    // Add CTL information to the case
+    let allCtlDates = []
+    _case.defendants.forEach(defendant => {
+      defendant.charges.forEach(charge => {
+        if (charge.custodyTimeLimit) {
+          allCtlDates.push(new Date(charge.custodyTimeLimit))
+        }
+      })
+    })
+
+    _case.hasCTL = allCtlDates.length > 0
+    _case.soonestCTL = allCtlDates.length > 0 ? new Date(Math.min(...allCtlDates)) : null
+    _case.ctlCount = allCtlDates.length
 
     res.render("cases/tasks/index", { _case })
   })

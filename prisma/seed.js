@@ -22,6 +22,51 @@ const ukCities = [
   "Swansea", "Oxford", "Cambridge", "Peterborough", "Gloucester", "Chester"
 ];
 
+const religions = [
+  "Christianity", "Islam", "Hinduism", "Sikhism", "Judaism", "Buddhism",
+  "No religion", "Not stated", "Other"
+];
+
+const occupations = [
+  "Unemployed", "Student", "Retail worker", "Construction worker", "Teacher",
+  "Healthcare worker", "Office worker", "Self-employed", "Driver", "Engineer",
+  "Hospitality worker", "Tradesperson", "IT professional", "Manager", "Retired"
+];
+
+const remandStatuses = [
+  "UNCONDITIONAL_BAIL", "CONDITIONAL_BAIL", "REMANDED_IN_CUSTODY", "REMANDED_IN_SECURE_UNIT"
+];
+
+const charges = [
+  { code: "B10", description: "THEFT, contrary to section 1(1) of the Theft Act 1968" },
+  { code: "A01", description: "ASSAULT BY BEATING, contrary to section 39 of the Criminal Justice Act 1988" },
+  { code: "C03", description: "CRIMINAL DAMAGE, contrary to section 1(1) of the Criminal Damage Act 1971" },
+  { code: "D05", description: "POSSESSION OF A CONTROLLED DRUG (Class B), contrary to section 5(2) of the Misuse of Drugs Act 1971" },
+  { code: "D06", description: "POSSESSION WITH INTENT TO SUPPLY A CONTROLLED DRUG (Class A), contrary to section 5(3) of the Misuse of Drugs Act 1971" },
+  { code: "F02", description: "FRAUD BY FALSE REPRESENTATION, contrary to section 1 of the Fraud Act 2006" },
+  { code: "H01", description: "HARASSMENT, contrary to section 2 of the Protection from Harassment Act 1997" },
+  { code: "M01", description: "COMMON ASSAULT, contrary to section 39 of the Criminal Justice Act 1988" },
+  { code: "R01", description: "ROBBERY, contrary to section 8(1) of the Theft Act 1968" },
+  { code: "V01", description: "DRIVING WHILST DISQUALIFIED, contrary to section 103(1)(b) of the Road Traffic Act 1988" },
+  { code: "W01", description: "POSSESSION OF AN OFFENSIVE WEAPON, contrary to section 1 of the Prevention of Crime Act 1953" },
+  { code: "B11", description: "BURGLARY, contrary to section 9(1)(a) of the Theft Act 1968" },
+  { code: "A02", description: "ACTUAL BODILY HARM, contrary to section 47 of the Offences Against the Person Act 1861" },
+  { code: "T01", description: "THREATENING BEHAVIOUR, contrary to section 4 of the Public Order Act 1986" }
+];
+
+const chargeStatuses = [
+  "Charged", "Under review", "Proceeded", "Discontinued", "Amended"
+];
+
+const pleas = ["NOT_GUILTY", "GUILTY", "NO_PLEA", "NOT_INDICATED"];
+
+const defenceLawyerOrganisations = [
+  "Smith & Co Solicitors", "Jones Legal LLP", "Brown Associates", "Wilson & Partners",
+  "Taylor Law Firm", "Davies Solicitors", "Evans Legal Services", "Thomas & Associates",
+  "Roberts Law", "Johnson Legal LLP", "Williams Solicitors", "Anderson & Co",
+  "White Legal Services", "Martin & Partners", "Thompson Law Firm", "Jackson Solicitors"
+];
+
 function generateUKMobileNumber() {
   // UK mobile numbers: 07 + 9 digits (07XXXXXXXXX)
   return `07${faker.string.numeric(9)}`;
@@ -250,18 +295,102 @@ async function main() {
   }
   console.log("✅ Lawyers seeded");
 
-  // -------------------- Defendants --------------------
+  // -------------------- Defence Lawyers --------------------
+  const defenceLawyers = [];
+  for (let i = 0; i < 100; i++) {
+    const dl = await prisma.defenceLawyer.create({
+      data: {
+        firstName: faker.helpers.arrayElement(firstNames),
+        lastName: faker.helpers.arrayElement(lastNames),
+        organisation: faker.helpers.arrayElement(defenceLawyerOrganisations),
+      },
+    });
+    defenceLawyers.push(dl);
+  }
+  console.log("✅ Defence lawyers seeded");
+
+  // -------------------- Defendants with Charges --------------------
   const defendants = [];
   for (let i = 0; i < 200; i++) {
+    // Decide how many charges this defendant has (1-4, weighted towards 1-2)
+    const numCharges = faker.helpers.weightedArrayElement([
+      { weight: 50, value: 1 },
+      { weight: 30, value: 2 },
+      { weight: 15, value: 3 },
+      { weight: 5, value: 4 }
+    ]);
+
+    // Select random charges
+    const selectedCharges = faker.helpers.arrayElements(charges, numCharges);
+
+    // Determine if any charges will have CTL (50% chance)
+    const hasAnyCTL = faker.datatype.boolean();
+
+    let ctlDate = null;
+    if (hasAnyCTL) {
+      // Generate a CTL date in the future
+      ctlDate = faker.date.future();
+      ctlDate.setUTCHours(23, 59, 59, 999);
+    }
+
+    // Build charges data
+    const chargesData = selectedCharges.map((charge, index) => {
+      // 50% of charges should have CTL overall
+      const thisChargeHasCTL = faker.datatype.boolean();
+
+      let thisCtlDate = null;
+      if (thisChargeHasCTL && hasAnyCTL) {
+        // If this is the first charge or 75% chance, use the same CTL
+        if (index === 0 || Math.random() < 0.75) {
+          thisCtlDate = ctlDate;
+        } else {
+          // 25% chance of different CTL
+          thisCtlDate = faker.date.future();
+          thisCtlDate.setUTCHours(23, 59, 59, 999);
+        }
+      }
+
+      // Generate particulars with random date and victim
+      const offenceDate = faker.date.past();
+      const particularsDate = offenceDate.toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
+      const victimName = `${faker.helpers.arrayElement(firstNames)} ${faker.helpers.arrayElement(lastNames)}`;
+
+      return {
+        chargeCode: charge.code,
+        description: charge.description,
+        status: faker.helpers.arrayElement(chargeStatuses),
+        offenceDate: offenceDate,
+        plea: faker.helpers.arrayElement(pleas),
+        particulars: `On the ${particularsDate} ${charge.code === 'B10' ? 'stole' : charge.code === 'A01' ? 'assaulted' : charge.code === 'C03' ? 'damaged property belonging to' : 'committed an offence against'} ${victimName}.`,
+        custodyTimeLimit: thisCtlDate,
+        isCount: faker.datatype.boolean(0.3), // 30% are counts
+      };
+    });
+
     const d = await prisma.defendant.create({
       data: {
         firstName: faker.helpers.arrayElement(firstNames),
         lastName: faker.helpers.arrayElement(lastNames),
+        gender: faker.helpers.arrayElement(["Male", "Female", "Unknown"]),
+        religion: faker.helpers.arrayElement([...religions, null]), // Some nulls
+        occupation: faker.helpers.arrayElement([...occupations, null]), // Some nulls
+        dateOfBirth: faker.date.birthdate({ min: 18, max: 75, mode: "age" }),
+        remandStatus: faker.helpers.arrayElement(remandStatuses),
+        defenceLawyer: {
+          connect: { id: faker.helpers.arrayElement(defenceLawyers).id }
+        },
+        charges: {
+          create: chargesData
+        }
       },
     });
     defendants.push(d);
   }
-  console.log("✅ Defendants seeded");
+  console.log("✅ Defendants and charges seeded");
 
   // -------------------- Victims --------------------
   const victims = [];
@@ -338,10 +467,13 @@ async function main() {
         assignedToTeamId = faker.number.int({ min: unitTeamOffset + 1, max: unitTeamOffset + 4 });
       }
 
+      const dueDate = faker.date.future();
+      dueDate.setUTCHours(23, 59, 59, 999);
+
       return {
         name,
         type: faker.helpers.arrayElement(taskTypes),
-        dueDate: faker.date.future(),
+        dueDate,
         assignedToUserId,
         assignedToTeamId,
       };
@@ -370,7 +502,6 @@ async function main() {
             id: faker.helpers.arrayElement(users).id,
           },
         },
-        isCTL: faker.datatype.boolean(),
         complexity: faker.helpers.arrayElement(complexities),
         unit: { connect: { id: caseUnitId } },
         defendants: { connect: assignedDefendants.map((d) => ({ id: d.id })) },
