@@ -23,6 +23,26 @@ async function listFilesIn(dir) {
   }
 }
 
+// Put near the top of case--materials-search.js
+function normaliseRecord(m) {
+  // If m already has Material / RelatedMaterials / etc, keep them.
+  if (m && m.Material) {
+    // Ensure myFileUrl is present on Material (copy through if you store it top-level)
+    if (!m.Material.myFileUrl && m.myFileUrl) m.Material.myFileUrl = m.myFileUrl;
+    return m;
+  }
+
+  // If the array holds just the Material fields flat, wrap them.
+  return {
+    Material: Object.assign({}, m),
+    RelatedMaterials: m.RelatedMaterials || {},
+    DigitalRepresentation: m.DigitalRepresentation || {},
+    PoliceMaterial: m.PoliceMaterial || {},
+    CPSMaterial: m.CPSMaterial || {}
+  };
+}
+
+
 //////////////////////////////////////////////////////////////////
 
 module.exports = router => {
@@ -184,22 +204,21 @@ module.exports = router => {
     return [];
   }
 
-/// builds the search resulst in material viewer  
-function oneSummaryListBlock(m) {
-  const payload = {
-    Material: {
-      Title: m.Title || '',
-      Type: m.Type || '',
-      materialStatus: m.materialStatus || '',
-      Date: m.date || m.Date || '',
-      myFileUrl: m.myFileUrl || ''
-    },
-    caseId: m.caseId || ''
-  };
+  /// builds the search resulst in material viewer  
+  function oneSummaryListBlock(m) {
+    // Full record for the viewer/meta panel
+    const meta = normaliseRecord(m);
+    const mat  = meta.Material || {};
 
-  const titleHtml = (m.myFileUrl)
-    ? `<a href="${esc(m.myFileUrl)}" class="govuk-link dcf-viewer-link">${esc(m.Title || '')}</a>`
-    : esc(m.Title || '');
+    const title  = mat.Title || m.Title || '';
+    const type   = mat.Type  || m.Type  || '';
+    const status = mat.materialStatus || m.materialStatus || m.Status || '';
+    const date   = mat.Date || m.Date || m.date || '';
+    const href   = mat.myFileUrl || m.myFileUrl || '';
+
+    const titleHtml = href
+      ? `<a href="${esc(href)}" class="govuk-link dcf-viewer-link">${esc(title)}</a>`
+      : esc(title);
 
   return `
     <section class="dcf-search-hit dcf-material-card dcf-material-card--unstyled">
@@ -220,9 +239,8 @@ function oneSummaryListBlock(m) {
         </div>
       </dl>
 
-      <script type="application/json" class="js-material-data">
-        ${esc(JSON.stringify(payload))}
-      </script>
+      <!-- RAW JSON (not escaped) so getMaterialJSONFromLink can parse it -->
+      <script type="application/json" class="js-material-data">${JSON.stringify(meta)}</script>
     </section>`;
   }
 
@@ -252,7 +270,12 @@ function oneSummaryListBlock(m) {
 
     const materials = getCurrentCaseMaterials(req, caseId);
     const q = qRaw.toLowerCase();
-    const results = materials.filter(m => (m.Title || '').toLowerCase().includes(q));
+    const results = materials.filter(m => {
+    
+    const t = (m.Title || (m.Material && m.Material.Title) || '').toLowerCase();
+      return t.includes(q);
+    });
+
 
     if (wantsFragment) {
       return res.send(fragmentHTML(results, qRaw));

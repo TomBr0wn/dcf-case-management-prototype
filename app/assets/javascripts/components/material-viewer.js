@@ -209,6 +209,8 @@
     // Normalise any file href to a Kit-served /public path
     function toPublic(u){
       if (!u) return '';
+      // If it's already an absolute URL, leave it alone
+      if (/^https?:\/\//i.test(u)) return u;
       if (u.startsWith('/public/')) return u;
       if (u.startsWith('/assets/')) return '/public' + u.slice('/assets'.length);
       if (u.startsWith('/files/'))  return '/public' + u;
@@ -219,7 +221,8 @@
     // ----- open preview (factored) -----
     function openMaterialPreview(link) {
       var meta  = getMaterialJSONFromLink(link) || {};
-      var url   = link.getAttribute('data-file-url') || link.href;
+      // var url   = link.getAttribute('data-file-url') || link.href;
+      var url   = link.getAttribute('data-file-url') || link.getAttribute('href');
       var title = link.getAttribute('data-title') || (link.textContent || '').trim() || 'Selected file';
 
       var toolbar =
@@ -381,6 +384,24 @@
       }
     });
 
-    // quick sanity flag
+    // quick sanity flagvar url   = link.getAttribute('data-file-url') || link.getAttribute('href');
     window.__materialsPreviewReady = true;
+
+    // Open materials from anywhere (e.g. injected search results)
+    document.addEventListener('click', function (e) {
+      var a = e.target && e.target.closest('a.dcf-viewer-link');
+      if (!a) return;
+
+      // respect explicit new-tab links (defensive only)
+      if (a.getAttribute('target') === '_blank') return;
+
+      // stop the browser navigating; we will render in #material-viewer
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Reuse your existing preview path
+      openMaterialPreview(a);
+    }, true); // capture so we always beat default navigation
+
+
   })();

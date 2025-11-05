@@ -13,6 +13,7 @@
     (form.querySelector('input[name="caseId"]') && form.querySelector('input[name="caseId"]').value) ||
     (document.body && document.body.getAttribute('data-case-id')) ||
     '';
+    
 
   function setViewer(html) {
     viewer.innerHTML = html;
