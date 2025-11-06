@@ -74,7 +74,7 @@
           },
           {
             key: {
-              html: 'Custody time limit'
+              html: 'Custody release date'
             },
             value: {
               html: (_case.soonestCTL | isoDateString | govukDateTime) + (' (' + _case.ctlCount + ' CTLs)' if _case.ctlCount > 1 else '')
