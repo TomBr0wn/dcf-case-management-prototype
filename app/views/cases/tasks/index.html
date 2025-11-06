@@ -48,7 +48,7 @@
                       html: 'Custody release date'
                     },
                     value: {
-                      html: (_case.soonestCTL | isoDateString | govukDateTime) + (' (' + _case.ctlCount + ' CTLs)' if _case.ctlCount > 1 else '')
+                      html: (_case.soonestCTL | isoDateString | govukDateTime) + ' (' + (_case.soonestCTL | daysUntil) + ')'
                     }
                   } if _case.hasCTL,
                   {

@@ -25,3 +25,11 @@ addFilter('isoDateString', date => {
 addFilter('formatNumber', number => {
   return Number(number).toLocaleString('en-GB')
 })
+
+addFilter('daysUntil', date => {
+  const now = new Date()
+  const targetDate = new Date(date)
+  const diffTime = targetDate - now
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  return diffDays === 1 ? '1 day' : `${diffDays} days`
+})
