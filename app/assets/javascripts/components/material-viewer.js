@@ -77,6 +77,7 @@
     }).join('');
   }
 
+  /// creates h3 heading + dl wrapper
   function sectionHTML(title, rows) {
     if (!rows) return '';
     return (
@@ -84,6 +85,16 @@
       '<dl class="govuk-summary-list govuk-!-margin-bottom-2">' + rows + '</dl>'
     );
   }
+
+  /// creates dl wrapper WITHOUT h3 heading
+  function sectionHTMLNoHeading(rows) {
+  if (!rows) return '';
+  return (
+    // Keep the top spacing you had on h3, but on the list instead
+    '<dl class="govuk-summary-list govuk-!-margin-top-3 govuk-!-margin-bottom-2">' + rows + '</dl>'
+  );
+}
+
 
   var materialRows = rowsHTML(mat, [
     { key:'Title',                  label:'Title' },
@@ -181,7 +192,7 @@
   // with this (no GOV.UK margin utilities):
   var inlineActions =
   '<div class="dcf-meta-inline-actions">' +
-    '<a href="#" class="govuk-button govuk-button--secondary dcf-meta-secondary" data-action="reclassify">Reclassify</a>' +
+    '<a href="#" class="govuk-button govuk-button--primary dcf-meta-secondary" data-action="reclassify">Request reclassification</a>' +
   '</div>';
 
   return '' +
@@ -189,7 +200,8 @@
       metaBar +
       '<div id="' + esc(bodyId) + '" class="dcf-viewer__meta-body">' +
         inlineActions +                                         // <-- now sits right before the first section
-        sectionHTML('Material',               materialRows) +
+        // sectionHTML('Material',               materialRows) + // <-- removed heading
+        sectionHTMLNoHeading(materialRows) +
         sectionHTML('Related materials',      relatedRows)  +
         sectionHTML('Digital representation', digitalRows)  +
         sectionHTML('Police material',        policeRows)   +
