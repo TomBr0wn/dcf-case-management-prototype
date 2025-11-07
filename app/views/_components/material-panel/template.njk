@@ -127,6 +127,21 @@
   </div>
 
   <div class="govuk-grid-column-two-thirds">
+
+    {# --- SEARCH STATUS (shown only after a search submit) --- #}
+    <div id="search-status" class="govuk-!-margin-bottom-3" aria-live="polite" hidden>
+      <div data-zero>
+        <div class="dcf-search-meta govuk-!-margin-bottom-0">
+          No results for “<span data-search-term></span>”.
+        </div>
+      </div>
+      <div data-some hidden>
+        <p class="dcf-search-meta">
+          <strong><span data-search-count>0</span></strong> results for “<span data-search-term></span>”.
+        </p>
+      </div>
+    </div>
+
     <div id="material-viewer" class="dcf-viewer" hidden aria-live="polite">
       <p class="govuk-body govuk-!-margin-bottom-3">Select a material from the list to preview it here.</p>
     </div>

@@ -8,6 +8,9 @@
     border-bottom: 1px solid #b1b4b6; // govuk mid-grey
     border-top: none;
     border-right: none;
+    padding-left: 0px;
+    padding-right: 0px;
+    margin-left: 8px;
   }
 
   /* Keep the heading snug to that rule */
@@ -50,7 +53,28 @@
   .dcf-search-hit::before {
     content: none !important;
   }
+
 }
+
+/* Counter line above search results */
+  .dcf-search-meta {
+    color: #000000;              /* secondary text tone (GOV.UK-esque) */
+    margin: 0 0 8px 0;           /* tiny gap before the first card */
+    line-height: 1.4;
+    font-size: 21px;
+    word-break: break-word;
+    margin: 0px 0px 0px 8px;
+  }
+
+  /* Optional: tighten when the results column is narrow */
+  @media (max-width: 640px) {
+    .dcf-search-meta {
+      margin-bottom: 6px;
+    }
+  }
+
+  /* Optional: if you ever want the numbers to pop slightly */
+  /* #materials-search-counter strong { font-weight: 700; } */
 
 
 

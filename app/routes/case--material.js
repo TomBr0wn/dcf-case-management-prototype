@@ -248,15 +248,12 @@ module.exports = router => {
 
 
   function fragmentHTML(matches, q) {
-    if (!matches.length) {
-      return `<div class="govuk-inset-text govuk-!-margin-bottom-0">
-        No materials found for “${esc(q)}”.
-      </div>`;
-    }
-    return `<div class="dcf-search-results" role="region" aria-label="Search results">
-      ${matches.map(oneSummaryListBlock).join('\n')}
+    const count = matches.length;
+    return `<div class="dcf-search-results" role="region" aria-label="Search results" data-results-count="${count}">
+      ${count ? matches.map(oneSummaryListBlock).join('\n') : ''}
     </div>`;
   }
+
 
   router.get('/materials/search', (req, res) => {
     const qRaw = (req.query.q || '').trim();
