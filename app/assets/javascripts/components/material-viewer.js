@@ -9,7 +9,7 @@
   // Helpers
   // --------------------------------------
 
-  // Look upward from a clicked link to find its nearest material card, then
+  // Given a clicked link inside a material card, find and
   // read the embedded JSON describing that material
   function getMaterialJSONFromLink(link) {
     var card = link.closest('.dcf-material-card')
@@ -47,7 +47,7 @@
     )
   }
 
-  // Render a GOV.UK summary list’s rows from a mapping
+  // Render GOV.UK summary list rows from mapping
   function rowsHTML(obj, mapping) {
     return mapping.map(function (m) {
       var v = (m.get ? m.get(obj) : obj && obj[m.key])
