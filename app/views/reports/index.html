@@ -1,0 +1,125 @@
+{% extends "layouts/main.html" %}
+
+{% set navId = 'reports' %}
+{% set pageName = "Non-compliant DGA cases (:total)" | replace(':total', totalReports | formatNumber) %}
+
+{% block content %}
+<span class="govuk-caption-l">Reporting month: October 2025</span>
+<h1 class="govuk-heading-l">{{ pageName }}</h1>
+
+<button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+  Export report
+</button>
+
+<div class="app-filter-layout">
+  <div class="app-filter-layout__filter">
+    {% include "_includes/reports/filter-panel.njk" %}
+  </div>
+  <div class="app-filter-layout__content">
+
+    <div class="app-action-bar">
+      <div class="app-action-bar__filter"></div>
+    </div>
+
+    {% include "_includes/reports/search-form.njk" %}
+   <!-- {% include "_includes/reports/sort-controls.njk" %} -->
+
+    {% if reports.length %}
+      <div class="app-list">
+        {% for caseItem in reports %}
+        <div class="app-list__item">
+          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+            <h2 class="govuk-heading-s govuk-!-margin-bottom-0">
+              {{ caseItem.reference }}
+            </h2>
+            {% if caseItem.reportStatus == "Completed" %}
+              {{ govukTag({
+                text: "Completed",
+                classes: "govuk-tag--grey"
+              }) }}
+            {% elif caseItem.reportStatus == "In progress" %}
+              {{ govukTag({
+                text: "In progress",
+                classes: "govuk-tag--yellow"
+              }) }}
+            {% else %}
+              {{ govukTag({
+                text: "Not started",
+                classes: "govuk-tag--red"
+              }) }}
+            {% endif %}
+          </div>
+
+          {% set defendantsValue %}
+            {% if caseItem.defendants.length > 0 %}
+              {{ caseItem.defendants[0].firstName }} {{ caseItem.defendants[0].lastName }}
+              {% if caseItem.defendants.length > 1 %}
+                and {{ caseItem.defendants.length - 1 }} more
+              {% endif %}
+            {% else %}
+              None
+            {% endif %}
+          {% endset %}
+        <dl class="govuk-summary-list govuk-summary-list--no-border app-summary-list--compact app-summary-list--small-text">
+
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Unit</dt>
+            <dd class="govuk-summary-list__value">{{ caseItem.unit.name }}</dd>
+          </div>
+
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Failure reasons</dt>
+            <dd class="govuk-summary-list__value">
+              {% if caseItem.dga and caseItem.dga.failureReasons %}
+                {{ caseItem.dga.failureReasons | length }}
+              {% else %}
+                0
+              {% endif %}
+            </dd>
+          </div>
+        </dl>
+
+        <a href="/reports/{{ caseItem.id }}/dga-outcomes" class="govuk-link--no-visited-state">Add outcomes</a>
+
+
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p>There are no results.</p>
+    {% endif %}
+
+    {% include "_includes/pagination.njk" %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+  new App.FilterToggleButton({
+    bigModeMediaQuery: '(min-width: 48.063em)',
+    startHidden: false,
+    toggleButton: {
+      container: $('.app-action-bar__filter'),
+      showText: 'Show filter',
+      hideText: 'Hide filter',
+      classes: 'govuk-button--secondary govuk-!-margin-bottom-3'
+    },
+    closeButton: {
+      container: $('.app-filter__header-action'),
+      text: 'Close'
+    },
+    filter: {
+      container: $('.app-filter-layout__filter')
+    }
+  })
+
+  new App.ListFilter({
+    container: $('.owner-filter'),
+    textBox: {
+      label: 'Find unit'
+    }
+  })
+</script>
+{% endblock %}
