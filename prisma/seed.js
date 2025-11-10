@@ -328,8 +328,8 @@ async function main() {
 
     let ctlDate = null;
     if (hasAnyCTL) {
-      // Generate a CTL date in the future
-      ctlDate = faker.date.future();
+      // Generate a CTL date within the next 30 days
+      ctlDate = faker.date.soon({ days: 30 });
       ctlDate.setUTCHours(23, 59, 59, 999);
     }
 
@@ -344,8 +344,8 @@ async function main() {
         if (index === 0 || Math.random() < 0.75) {
           thisCtlDate = ctlDate;
         } else {
-          // 25% chance of different CTL
-          thisCtlDate = faker.date.future();
+          // 25% chance of different CTL within the next 30 days
+          thisCtlDate = faker.date.soon({ days: 30 });
           thisCtlDate.setUTCHours(23, 59, 59, 999);
         }
       }

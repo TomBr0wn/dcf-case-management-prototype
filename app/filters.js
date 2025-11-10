@@ -31,5 +31,8 @@ addFilter('daysUntil', date => {
   const targetDate = new Date(date)
   const diffTime = targetDate - now
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  if (diffDays <= 0) {
+    return 'overdue'
+  }
   return diffDays === 1 ? '1 day' : `${diffDays} days`
 })
