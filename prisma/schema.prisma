@@ -135,15 +135,40 @@ model Case {
   dga         DGA?
   notes       Note[]
   activityLogs ActivityLog[]
+  reportStatus String? // Can be: "In progress" or "Completed", null means "Not started"
+}
+
+enum ReportStatus {
+  NotStarted
+  InProgress
+  Completed
 }
 
 model DGA {
-  id       Int          @id @default(autoincrement())
-  caseId   Int          @unique
-  case     Case?         @relation(fields: [caseId], references: [id])
-  outcome  DGAOutcome?
-  reason   String?
+  id             Int                 @id @default(autoincrement())
+  caseId         Int                 @unique
+  case           Case                @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  reason         String?
+  outcome        String?
+  failureReasons DGAFailureReason[]  
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
 }
+
+model DGAFailureReason {
+  id        Int      @id @default(autoincrement())
+  reason    String
+  outcome   String?
+  details   String?   // Add this field
+  methods   String?   // Add this field
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  dga       DGA      @relation(fields: [dgaId], references: [id])
+  dgaId     Int
+  
+  @@map("dga_failure_reasons")
+}
+
 
 enum DGAOutcome {
   NOT_DISPUTED

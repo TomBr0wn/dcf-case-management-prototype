@@ -1,37 +1,64 @@
 {% if not hideNav %}
-{{ govukServiceNavigation({
-  navigation: [
-    {
-      href: "/overview",
-      text: "Overview",
-      active: navId == 'overview'
-    },
-    {
-      href: "/cases",
-      text: "Cases",
-      active: navId == 'cases'
-    },
-    {
-      href: "/tasks",
-      text: "Tasks",
-      active: navId == 'tasks'
-    },
-    {
-      href: "/lawyers",
-      text: "Prosecutors",
-      active: navId == 'lawyers'
-    },
-    {
-      href: "/paralegal-officers",
-      text: "Paralegal officers",
-      active: navId == 'paralegalOfficers'
-    },
-    {
-      href: "/activity",
-      text: "Activity",
-      active: navId == 'activity'
-    }        
-  ]
-}) }}
-{% endif %}
+  {% if data.user.role == 'Reporting admin' %}
+    {{ govukServiceNavigation({
+      navigation: [
+        { 
+          href: "/overview", 
+          text: "Home", 
+          active: navId == 'overview' 
+        },
+        { 
+          href: "/cases", 
+          text: "Cases", 
+          active: navId == 'cases' 
+        },
+        { 
+          href: "/tasks", 
+          text: "Tasks", 
+          active: navId == 'tasks' 
+        },
+        { 
+          href: "/reports", 
+          text: "Reports", 
+          active: navId == 'reports' 
+        }
+      ]
+    }) }}
 
+  {% else %}
+    {{ govukServiceNavigation({
+      navigation: [
+        { 
+          href: "/overview", 
+          text: "Overview", 
+          active: navId == 'overview' 
+        },
+        { 
+          href: "/cases", 
+          text: "Cases", 
+          active: navId == 'cases' 
+        },
+        { 
+          href: "/tasks", 
+          text: "Tasks", 
+          active: navId == 'tasks' 
+        },
+        { 
+          href: "/lawyers", 
+          text: "Prosecutors", 
+          active: navId == 'lawyers' 
+        },
+        { 
+          href: "/paralegal-officers", 
+          text: "Paralegal officers", 
+          active: navId == 'paralegalOfficers' 
+        },
+        { 
+          href: "/activity", 
+          text: "Activity", 
+          active: navId == 'activity' 
+        }
+      ]
+    }) }}
+  {% endif %}
+{% endif %}

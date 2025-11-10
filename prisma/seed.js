@@ -161,6 +161,13 @@ async function main() {
   const users = [];
   const userData = [
     {
+      email: "reporting.admin@cps.gov.uk",
+      password: "password123",
+      role: "Reporting admin",
+      firstName: "Veronica",
+      lastName: "Mars",
+    },
+    {
       email: "adam@cps.gov.uk",
       password: "password123",
       role: "Paralegal officer",
@@ -227,7 +234,10 @@ async function main() {
       selectedUnits = [9, 11, 13, 18]; // North Yorkshire Magistrates Court, South Yorkshire Magistrates Court, West Yorkshire Magistrates Court, Humberside Magistrates Court
     } else if (user.firstName === "Tony" && user.lastName === "Stark") {
       selectedUnits = [1, 2, 3, 4, 5, 6, 7]; // All Wessex units: Dorset Magistrates Court, Hampshire Magistrates Court, Wessex Crown Court, Wessex RASSO, Wessex CCU, Wessex Fraud, Wiltshire Magistrates Court
-    } else {
+    } else if (user.firstName === "Veronica" && user.lastName === "Mars") {
+      selectedUnits = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]; // All Yorkshire and Humberside units
+    }
+    else {
       const numUnits = faker.number.int({ min: 1, max: 3 });
       selectedUnits = faker.helpers.arrayElements(
         Array.from({ length: 18 }, (_, i) => i + 1),
@@ -730,24 +740,67 @@ async function main() {
 
   console.log(`✅ Created ${createdCases.length} cases`);
 
-  // -------------------- Assign DGAs --------------------
-  const dgaIds = new Set(
-    faker.helpers.arrayElements(createdCases, DGA_TARGET).map((c) => c.id)
-  );
+// NEW DGA SEEDING LOGIC
 
-  for (const c of createdCases) {
-    if (dgaIds.has(c.id)) {
-      await prisma.dGA.create({
+// -------------------- Assign DGAs with Failure Reasons --------------------
+const dgaIds = new Set(
+  faker.helpers.arrayElements(createdCases, DGA_TARGET).map((c) => c.id)
+);
+
+const failureReasonsList = [
+  "Breach failure - Charged by Police in breach of the Director's Guidance",
+  "Disclosure failure - Disclosable unused material not provided",
+  "Disclosure failure - Information about reasonable lines of inquiry insufficient",
+  "Disclosure failure - Information about reasonable lines of inquiry not provided",
+  "Disclosure failure - Rebuttable presumption material not provided",
+  "Disclosure failure - Schedules of unused material not completed correctly",
+  "Disclosure failure - Schedules of unused material not provided",
+  "Evidential failure - Exhibit",
+  "Evidential failure - Forensic",
+  "Evidential failure - Medical evidence",
+  "Evidential failure - Multi-media BWV not clipped",
+  "Evidential failure - Multi-media BWV not in playable format",
+  "Evidential failure - Multi-media BWV not provided",
+  "Evidential failure - Multi-media CCTV not clipped",
+  "Evidential failure - Multi-media CCTV not in playable format",
+  "Evidential failure - Multi-media CCTV not provided",
+  "Evidential failure - Multi-media Other not clipped",
+  "Evidential failure - Multi-media Other not in playable format",
+  "Evidential failure - Relevant orders/applications, details not provided",
+  "Evidential failure - Statement(s)",
+  "Victim and witness failure - Needs of the victim/witness special measures have not been considered or are inadequate",
+  "Victim and witness failure - Victim and witness needs (not special measures related)",
+  "Victim and witness failure - VPS - no information on whether VPS offered/not provided"
+];
+
+for (const c of createdCases) {
+  if (dgaIds.has(c.id)) {
+    // Create DGA
+    const dga = await prisma.dGA.create({
+      data: {
+        caseId: c.id,
+        reason: faker.lorem.sentence(),
+        // outcome omitted → will be NULL
+      },
+    });
+
+    // Create 1-5 failure reasons for this DGA
+    const numFailureReasons = faker.number.int({ min: 1, max: 5 });
+    const selectedReasons = faker.helpers.arrayElements(failureReasonsList, numFailureReasons);
+
+    for (const reason of selectedReasons) {
+      await prisma.dGAFailureReason.create({
         data: {
-          caseId: c.id,
-          reason: faker.lorem.sentence(),
-          // outcome omitted → will be NULL
-        },
+          dgaId: dga.id,
+          reason: reason,
+          outcome: null // All start as "Not started"
+        }
       });
     }
   }
+}
 
-  console.log(`✅ Assigned ${DGA_TARGET} cases needing DGA review (no outcome set)`);
+console.log(`✅ Assigned ${DGA_TARGET} cases needing DGA review with failure reasons`);
 
   // -------------------- Assign cases --------------------
   const unassignedCount = Math.min(UNASSIGNED_TARGET, createdCases.length);
@@ -942,7 +995,70 @@ async function main() {
   console.log(`✅ Created ${totalActivityLogs} activity log entries across ${casesForActivity.length} cases`);
 
   console.log("🌱 Seed finished.");
+  // ✅ Add extra cases for reporting
+    await seedExtraCases(347);
+
+    console.log("🌱 All extra cases seeded.");
+
 }
+
+//----- Reports ----- 
+
+async function seedExtraCases(numCases = 5) {
+  console.log(`🌱 Seeding ${numCases} extra cases...`);
+
+  // Fetch existing entities
+  const users = await prisma.user.findMany();
+  const units = await prisma.unit.findMany();
+  const defendants = await prisma.defendant.findMany();
+  const victims = await prisma.victim.findMany();
+  const taskNamesList = taskNames; // imported at the top
+  const taskTypesList = taskTypes; // imported at the top
+  const documentTypesList = documentTypes; // imported at the top
+
+  for (let i = 0; i < numCases; i++) {
+    const user = faker.helpers.arrayElement(users);
+    const unit = faker.helpers.arrayElement(units);
+    const assignedDefendants = faker.helpers.arrayElements(defendants, faker.number.int({ min: 1, max: 3 }));
+    const assignedVictims = faker.helpers.arrayElements(victims, faker.number.int({ min: 1, max: 3 }));
+
+    // Pick random tasks
+    const numTasks = faker.number.int({ min: 0, max: 3 });
+    const tasksData = faker.helpers.arrayElements(taskNamesList, numTasks).map(name => ({
+      name,
+      type: faker.helpers.arrayElement(taskTypesList),
+      assignedToUserId: faker.helpers.arrayElement(users).id,
+      dueDate: faker.date.future(),
+    }));
+
+    // Pick random documents
+    const numDocuments = faker.number.int({ min: 2, max: 5 });
+    const documentsData = Array.from({ length: numDocuments }).map((_, idx) => ({
+      name: `${faker.helpers.arrayElement(["Report", "Statement", "Evidence"])} ${idx + 1}`,
+      description: faker.lorem.sentence(),
+      type: faker.helpers.arrayElement(documentTypesList),
+      size: faker.number.int({ min: 50, max: 5000 }),
+    }));
+
+    await prisma.case.create({
+      data: {
+        reference: generateCaseReference(),
+        type: faker.helpers.arrayElement(types),
+        complexity: faker.helpers.arrayElement(complexities),
+        user: { connect: { id: user.id } },
+        unit: { connect: { id: unit.id } },
+        defendants: { connect: assignedDefendants.map(d => ({ id: d.id })) },
+        victims: { connect: assignedVictims.map(v => ({ id: v.id })) },
+        hearing: { create: { date: futureDateAt10am() } },
+        tasks: { createMany: { data: tasksData } },
+        documents: { createMany: { data: documentsData } },
+      },
+    });
+  }
+
+  console.log(`✅ ${numCases} extra cases seeded`);
+}
+
 
 main()
   .catch((e) => {
