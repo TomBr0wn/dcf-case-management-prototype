@@ -995,70 +995,7 @@ console.log(`✅ Assigned ${DGA_TARGET} cases needing DGA review with failure re
   console.log(`✅ Created ${totalActivityLogs} activity log entries across ${casesForActivity.length} cases`);
 
   console.log("🌱 Seed finished.");
-  // ✅ Add extra cases for reporting
-    await seedExtraCases(347);
-
-    console.log("🌱 All extra cases seeded.");
-
 }
-
-//----- Reports ----- 
-
-async function seedExtraCases(numCases = 5) {
-  console.log(`🌱 Seeding ${numCases} extra cases...`);
-
-  // Fetch existing entities
-  const users = await prisma.user.findMany();
-  const units = await prisma.unit.findMany();
-  const defendants = await prisma.defendant.findMany();
-  const victims = await prisma.victim.findMany();
-  const taskNamesList = taskNames; // imported at the top
-  const taskTypesList = taskTypes; // imported at the top
-  const documentTypesList = documentTypes; // imported at the top
-
-  for (let i = 0; i < numCases; i++) {
-    const user = faker.helpers.arrayElement(users);
-    const unit = faker.helpers.arrayElement(units);
-    const assignedDefendants = faker.helpers.arrayElements(defendants, faker.number.int({ min: 1, max: 3 }));
-    const assignedVictims = faker.helpers.arrayElements(victims, faker.number.int({ min: 1, max: 3 }));
-
-    // Pick random tasks
-    const numTasks = faker.number.int({ min: 0, max: 3 });
-    const tasksData = faker.helpers.arrayElements(taskNamesList, numTasks).map(name => ({
-      name,
-      type: faker.helpers.arrayElement(taskTypesList),
-      assignedToUserId: faker.helpers.arrayElement(users).id,
-      dueDate: faker.date.future(),
-    }));
-
-    // Pick random documents
-    const numDocuments = faker.number.int({ min: 2, max: 5 });
-    const documentsData = Array.from({ length: numDocuments }).map((_, idx) => ({
-      name: `${faker.helpers.arrayElement(["Report", "Statement", "Evidence"])} ${idx + 1}`,
-      description: faker.lorem.sentence(),
-      type: faker.helpers.arrayElement(documentTypesList),
-      size: faker.number.int({ min: 50, max: 5000 }),
-    }));
-
-    await prisma.case.create({
-      data: {
-        reference: generateCaseReference(),
-        type: faker.helpers.arrayElement(types),
-        complexity: faker.helpers.arrayElement(complexities),
-        user: { connect: { id: user.id } },
-        unit: { connect: { id: unit.id } },
-        defendants: { connect: assignedDefendants.map(d => ({ id: d.id })) },
-        victims: { connect: assignedVictims.map(v => ({ id: v.id })) },
-        hearing: { create: { date: futureDateAt10am() } },
-        tasks: { createMany: { data: tasksData } },
-        documents: { createMany: { data: documentsData } },
-      },
-    });
-  }
-
-  console.log(`✅ ${numCases} extra cases seeded`);
-}
-
 
 main()
   .catch((e) => {

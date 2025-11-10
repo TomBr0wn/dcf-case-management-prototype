@@ -8,7 +8,7 @@ module.exports = router => {
   router.get('/reports/:caseId/dga-outcomes', async (req, res) => {
     const caseId = parseInt(req.params.caseId)
     
-    console.log('DGA Outcomes route hit! Case ID:', caseId)
+    // console.log('DGA Outcomes route hit! Case ID:', caseId)
 
     const caseData = await prisma.case.findUnique({
       where: { id: caseId },
@@ -21,12 +21,12 @@ module.exports = router => {
       }
     })
 
-    console.log('Case data found:', caseData ? 'Yes' : 'No')
-    console.log('Has DGA:', caseData?.dga ? 'Yes' : 'No')
-    console.log('Failure reasons:', caseData?.dga?.failureReasons?.length || 0)
+    // console.log('Case data found:', caseData ? 'Yes' : 'No')
+    // console.log('Has DGA:', caseData?.dga ? 'Yes' : 'No')
+    // console.log('Failure reasons:', caseData?.dga?.failureReasons?.length || 0)
 
     if (!caseData || !caseData.dga) {
-      console.log('Redirecting to reports - no case or DGA found')
+      // console.log('Redirecting to reports - no case or DGA found')
       return res.redirect('/reports')
     }
 
