@@ -90,6 +90,70 @@
     return '/public/' + u
   }
 
+    // ---- helper: set material status on the card, its embedded JSON, and any global model ----
+    function setMaterialStatus(card, status) {
+      // Update the embedded JSON blob in the card (<script.js-material-data type="application/json">…</script>)
+      var tag  = card.querySelector('script.js-material-data[type="application/json"]')
+      var data = null
+      try { data = tag ? JSON.parse(tag.textContent) : null } catch (e) { data = null }
+
+      if (data) {
+        // normalise common shapes: either top-level materialStatus or nested under Material
+        if ('materialStatus' in data) {
+          data.materialStatus = status
+        } else if (data.Material && typeof data.Material === 'object') {
+          data.Material.materialStatus = status
+        } else {
+          data.materialStatus = status
+        }
+        try { tag.textContent = JSON.stringify(data) } catch (e) {}
+      }
+
+      // Update visible badge on the card (adjust selector to your template)
+      var badge = card.querySelector('.dcf-material-card__badge')
+      if (badge) badge.textContent = status
+
+      // Store on the element for quick reads
+      card.dataset.materialStatus = status
+
+      // If you hydrate a global model, update that too (so lists/summaries stay in sync)
+      var itemId =
+        (data && (data.ItemId || (data.Material && data.Material.ItemId) || data.itemId)) ||
+        card.getAttribute('data-item-id')
+
+      if (itemId && window.caseMaterials && Array.isArray(window.caseMaterials.Material)) {
+        var m = window.caseMaterials.Material.find(x => (x.ItemId || x.itemId) === itemId)
+        if (m) {
+          // support either top-level or nested Material object shapes
+          if ('materialStatus' in m) m.materialStatus = status
+          else if (m.Material && typeof m.Material === 'object') m.Material.materialStatus = status
+          else m.materialStatus = status
+        }
+      }
+
+      // Optional: lightweight persistence across reloads for prototype use
+      try {
+        var caseId = (window.caseMaterials && window.caseMaterials.caseId) || card.getAttribute('data-case-id')
+        if (itemId && caseId) localStorage.setItem('matStatus:' + caseId + ':' + itemId, status)
+      } catch (e) {}
+    }
+
+
+    function updateOpsMenuForStatus(menuEl, status) {
+      if (!menuEl) return
+      var readItem   = menuEl.querySelector('[data-action="mark-read"]')
+      var unreadItem = menuEl.querySelector('[data-action="mark-unread"]')
+
+      // If it's Read → show "Mark as unread", hide "Mark as read"
+      // Otherwise (New/Unread/anything else) → show "Mark as read"
+      var isRead = String(status).toLowerCase() === 'read'
+      if (readItem)   readItem.closest('li').hidden   = isRead
+      if (unreadItem) unreadItem.closest('li').hidden = !isRead
+    }
+
+
+  
+
   // --------------------------------------
   // Meta panel builder
   // --------------------------------------
@@ -221,10 +285,10 @@
         '<div class="dcf-meta-actions">' +
           '<a href="#" class="govuk-link js-meta-toggle" ' +
             'data-action="toggle-meta" ' +
-            'aria-expanded="true" ' +
+            'aria-expanded="false" ' +
             'aria-controls="' + esc(bodyId) + '" ' +
             'data-controls="' + esc(bodyId) + '">' +
-            'Hide details</a>' +
+            'Show details</a>' +
         '</div>' +
       '</div>'
 
@@ -234,11 +298,11 @@
         '<a href="#" class="govuk-button govuk-button--primary dcf-meta-secondary" data-action="reclassify">Request reclassification</a>' +
       '</div>'
 
-    // Assemble full meta panel
+    // Assemble full meta panel metadate default set to hidden
     return '' +
       '<div class="dcf-viewer__meta">' +
         metaBar +
-        '<div id="' + esc(bodyId) + '" class="dcf-viewer__meta-body">' +
+        '<div id="' + esc(bodyId) + '" class="dcf-viewer__meta-body" hidden>' +
           inlineActions +
           // Material section rendered without a heading for a tighter top
           sectionHTMLNoHeading(materialRows) +
@@ -289,7 +353,7 @@
           '</a>' +
           '<div class="moj-button-menu" data-module="moj-button-menu">' +
             '<button type="button" class="govuk-button govuk-button--inverse moj-button-menu__toggle" aria-haspopup="true" aria-expanded="false">' +
-              'Edit Document <span class="moj-button-menu__icon" aria-hidden="true">▾</span>' +
+              'Document actions <span class="moj-button-menu__icon" aria-hidden="true">▾</span>' +
             '</button>' +
             '<div class="moj-button-menu__wrapper" hidden>' +
               '<ul class="moj-button-menu__list" role="menu">' +
@@ -298,7 +362,14 @@
                 '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Turn on potential redactions</a></li>' +
                 '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Rotate pages</a></li>' +
                 '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Discard pages</a></li>' +
-                '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Mark as read</a></li>' +
+                // Mark as read action
+                '<li class="moj-button-menu__item" role="none">' +
+                  '<a role="menuitem" href="#" class="moj-button-menu__link" data-action="mark-read">Mark as read</a>' +
+                '</li>' +
+                // Mark as Unread action
+                '<li class="moj-button-menu__item" role="none">' +
+                  '<a role="menuitem" href="#" class="moj-button-menu__link" data-action="mark-unread">Mark as unread</a>' +
+                '</li>' +
                 '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Rename</a></li>' +
               '</ul>' +
             '</div>' +
@@ -316,6 +387,27 @@
     viewer.setAttribute('tabindex', '-1')
     viewer.innerHTML = toolbar + buildDocTabs(title) + metaPanel + opsBar + iframe
 
+    // After rendering the viewer chrome:
+    var menu = viewer.querySelector('.moj-button-menu')
+    var currentCard =
+      (viewer && viewer._currentCard) ||
+      document.querySelector('.dcf-material-card--active')
+
+    var currentStatus =
+      (currentCard && (currentCard.dataset.materialStatus ||
+        (function () {
+          var t = currentCard.querySelector('script.js-material-data[type="application/json"]')
+          if (!t) return null
+          try {
+            var data = JSON.parse(t.textContent)
+            return (data && (data.materialStatus ||
+              (data.Material && data.Material.materialStatus))) || null
+          } catch (e) { return null }
+        })())) || 'New'
+
+    updateOpsMenuForStatus(menu, currentStatus)
+
+
     setActiveCard(link)
     viewer.focus({ preventScroll: false })
   }
@@ -332,8 +424,15 @@
 
     e.preventDefault()
     e.stopPropagation()
+
+    // 🔹 PART 2: remember the originating material card so ops menu actions
+    // (like "Mark as read") know which item to update.
+    var card = link.closest('.dcf-material-card')
+    if (card) viewer._currentCard = card
+
     openMaterialPreview(link)
-  }, true) // capture so we win against default navigation
+  }, true)
+
 
   // Allow opening materials from elsewhere (e.g. injected search results) via .dcf-viewer-link
   document.addEventListener('click', function (e) {
@@ -406,6 +505,72 @@
       console.log('toggle-meta -> hidden:', body.hidden)
       return
     }
+
+    // “Mark as read” from the Document actions menu
+    if (action === 'mark-read') {
+      // find the card that opened the viewer (preferred), or fall back to the active card
+      var card =
+        (viewer && viewer._currentCard) ||
+        viewer.querySelector('.dcf-material-card--active') ||
+        document.querySelector('.dcf-material-card--active') ||
+        null
+
+      if (card) {
+        setMaterialStatus(card, 'Read')
+        updateOpsMenuForStatus(menu, 'Read')
+      } else {
+        // No card found; nothing to update
+        console.warn('mark-read: could not resolve current card')
+      }
+
+      // close the MoJ menu politely and return focus to the toggle
+      var menu = a.closest('.moj-button-menu')
+      if (menu) {
+        var wrapper = menu.querySelector('.moj-button-menu__wrapper')
+        var toggle  = menu.querySelector('.moj-button-menu__toggle')
+        if (wrapper) wrapper.hidden = true
+        if (toggle)  toggle.setAttribute('aria-expanded', 'false')
+        if (toggle)  toggle.focus()
+      }
+
+      return
+    }
+
+    // “Mark as unread” from the Document actions menu
+    if (action === 'mark-unread') {
+      var card =
+        (viewer && viewer._currentCard) ||
+        viewer.querySelector('.dcf-material-card--active') ||
+        document.querySelector('.dcf-material-card--active') ||
+        null
+
+      if (card) {
+        setMaterialStatus(card, 'Unread')
+      } else {
+        console.warn('mark-unread: could not resolve current card')
+      }
+
+      // Close the menu + return focus to the toggle
+      var menu = a.closest('.moj-button-menu')
+      if (menu) {
+        var wrapper = menu.querySelector('.moj-button-menu__wrapper')
+        var toggle  = menu.querySelector('.moj-button-menu__toggle')
+        if (wrapper) wrapper.hidden = true
+        if (toggle)  toggle.setAttribute('aria-expanded', 'false')
+        if (toggle)  toggle.focus()
+        // Reflect the new status in which menu item is visible
+        updateOpsMenuForStatus(menu, 'Unread')
+      }
+
+      return
+    }
+
+    // Placeholder for future behaviour
+    if (action === 'reclassify') {
+      console.log('Reclassify clicked')
+      return
+    }
+
 
     // Placeholder for future behaviour
     if (action === 'reclassify') {

@@ -33,7 +33,7 @@
     <div class="dcf-material-card__main">
 
       {# --- status badge (show only when status is exactly "New") --- #}
-      {% set _status = m.materialStatus or m.MaterialStatus or m.Status %}
+      {% set _status = m.materialStatus  %}
         {% if _status and (_status | lower) == 'new' %}
           <span class="dcf-material-card__badge">New</span>
         {% endif %}
