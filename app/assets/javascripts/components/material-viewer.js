@@ -27,7 +27,148 @@
   }
 
   // Remove the search status banner (if present). Used when opening a document
-  function removeSearchStatus() {
+  
+  // --- Tab state for multi-document viewing ---
+  var _tabStore = { metaById: Object.create(null) };
+
+  function stableId(meta, url) {
+    var raw = (meta && (meta.ItemId || (meta.Material && meta.Material.Reference))) || url || Date.now().toString()
+    return String(raw).replace(/[^a-zA-Z0-9_-]/g, '-')
+  }
+
+  function ensureShell() {
+    var tabs = viewer.querySelector('#dcf-viewer-tabs')
+    if (tabs) return tabs
+
+    viewer.innerHTML = [
+      '<div class="dcf-viewer__toolbar govuk-!-margin-bottom-4">',
+        '<a href="#" class="govuk-link" data-action="close-viewer">Close preview</a>',
+        '<span aria-hidden="true" class="govuk-!-margin-horizontal-2">&nbsp;|&nbsp;</span>',
+        '<a href="#" class="govuk-link" data-action="toggle-full" aria-pressed="false">View full width</a>',
+      '</div>',
+
+      '<div id="dcf-viewer-tabs" class="dcf-viewer__tabs dcf-viewer__tabs--flush"></div>',
+      '<div class="dcf-viewer__meta" data-meta-root></div>',
+
+      // ✅ restore original ops-bar structure/classes and start hidden
+      '<div class="dcf-viewer__ops-bar" data-ops-root>',
+        '<div class="dcf-ops-actions">',
+          '<a href="#" class="govuk-button govuk-button--inverse dcf-ops-iconbtn" data-action="ops-icon">',
+            '<span class="dcf-ops-icon" aria-hidden="true">',
+              '<img src="/public/files/marquee-blue.svg" alt="" width="20" height="20" />',
+            '</span>',
+            '<span class="govuk-visually-hidden">Primary action</span>',
+          '</a>',
+          '<div class="moj-button-menu" data-module="moj-button-menu">',
+            '<button type="button" class="govuk-button govuk-button--inverse moj-button-menu__toggle" aria-haspopup="true" aria-expanded="false">',
+              'Edit Document <span class="moj-button-menu__icon" aria-hidden="true">▾</span>',
+            '</button>',
+            '<div class="moj-button-menu__wrapper" hidden>',
+              '<ul class="moj-button-menu__list" role="menu">',
+                '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Log an under or over redaction</a></li>',
+                '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">View redaction log history</a></li>',
+                '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Turn on potential redactions</a></li>',
+                '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Rotate pages</a></li>',
+                '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Discard pages</a></li>',
+                // ✅ keep these two wired to your JS by adding data-action
+                '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link" data-action="mark-read">Mark as read</a></li>',
+                '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link" data-action="mark-unread">Mark as unread</a></li>',
+                '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Rename</a></li>',
+              '</ul>',
+            '</div>',
+          '</div>',
+        '</div>',
+      '</div>',
+
+      '<iframe class="dcf-viewer__frame" src="" title="Preview" loading="lazy" referrerpolicy="no-referrer"></iframe>'
+    ].join('')
+
+    viewer.hidden = false
+    viewer.setAttribute('tabindex','-1')
+    return viewer.querySelector('#dcf-viewer-tabs')
+  }
+
+
+
+  function setActiveTab(tabEl) {
+    var tabs = viewer.querySelectorAll('#dcf-viewer-tabs .dcf-doc-tab')
+    Array.prototype.forEach.call(tabs, function(btn) {
+      btn.classList.toggle('is-active', btn === tabEl)
+      btn.setAttribute('aria-selected', String(btn === tabEl))
+      btn.setAttribute('tabindex', btn === tabEl ? '0' : '-1')
+    })
+  }
+
+  function renderMeta(meta) {
+    // Build a new meta panel and swap it into [data-meta-root]
+    var rawId = (meta && (meta.ItemId || (meta.Material && meta.Material.Reference))) || Date.now()
+    var bodyId = 'meta-' + String(rawId).replace(/[^a-zA-Z0-9_-]/g, '-')
+    var html = buildMetaPanel(meta || {}, bodyId)
+    var root = viewer.querySelector('[data-meta-root]')
+    if (root) {
+      // Replace the whole wrapper to keep toggle JS happy
+      root.outerHTML = html
+    }
+    // Update the toggle’s aria-controls to point at the current body id
+    var toggle = viewer.querySelector('[data-action="toggle-meta"]')
+    if (toggle) toggle.setAttribute('aria-controls', bodyId)
+  }
+
+  function switchToTabById(id) {
+    var tab = viewer.querySelector('#dcf-viewer-tabs .dcf-doc-tab[data-tab-id="'+ id +'"]')
+    if (!tab) return
+    var meta = _tabStore.metaById[id] || {}
+    var url  = tab.getAttribute('data-url') || ''
+    var title= tab.getAttribute('data-title') || 'Document'
+    var iframe = viewer.querySelector('.dcf-viewer__frame')
+    if (iframe && url) iframe.setAttribute('src', toPublic(url).match(/^https?:|^\//) ? toPublic(url) : toPublic(url))
+    setActiveTab(tab)
+    renderMeta(meta)
+
+    var menuEl = viewer.querySelector('.moj-button-menu')
+    var status = (viewer._currentCard && viewer._currentCard.dataset.materialStatus) || null
+    updateOpsMenuForStatus(menuEl, status)
+
+    try { tab.focus() } catch (e) {}
+  }
+
+  function addOrActivateTab(meta, url, title) {
+    var id = stableId(meta, url)
+    var tabs = ensureShell()
+    var existing = viewer.querySelector('#dcf-viewer-tabs .dcf-doc-tab[data-tab-id="'+ id +'"]')
+    if (!existing) {
+      var btn =
+        document.createElement('button')
+      btn.type = 'button'
+      btn.className = 'dcf-doc-tab'
+      btn.setAttribute('role', 'tab')
+      btn.setAttribute('aria-selected', 'false')
+      btn.setAttribute('data-tab-id', id)
+      btn.setAttribute('data-url', url || '')
+      btn.setAttribute('data-title', title || 'Document')
+      btn.title = title || 'Document'
+      btn.innerHTML =
+        '<span class="dcf-doc-tab__label"></span>' +
+        '<span class="dcf-doc-tab__close" aria-label="Close tab" role="button">×</span>' +
+        '<span class="dcf-doc-tab__bar" aria-hidden="true"></span>'
+      var label = btn.querySelector('.dcf-doc-tab__label')
+      if (label) label.textContent = title || 'Document'
+      tabs.appendChild(btn)
+      _tabStore.metaById[id] = meta || {}
+      existing = btn
+    } else {
+      // ensure latest meta stored (e.g., status changed)
+      _tabStore.metaById[id] = meta || _tabStore.metaById[id] || {}
+      existing.setAttribute('data-url', url || existing.getAttribute('data-url') || '')
+      existing.setAttribute('data-title', title || existing.getAttribute('data-title') || 'Document')
+    }
+    // Activate and render
+    setActiveTab(existing)
+    var iframe = viewer.querySelector('.dcf-viewer__frame')
+    if (iframe) iframe.setAttribute('src', toPublic(url))
+    renderMeta(meta)
+  }
+function removeSearchStatus() {
     var s = document.getElementById('search-status')
     if (s && s.parentNode) s.parentNode.removeChild(s)
   }
@@ -318,99 +459,42 @@
   // Preview builder (pdf.js + chrome)
   // --------------------------------------
   // Renders the full preview UI (toolbar, tab, meta panel, ops menu, iframe)
-  function openMaterialPreview(link) {
+  
+function openMaterialPreview(link) {
     // Clear any search “No results / N results” banner when opening a doc
     removeSearchStatus()
 
     // Pull JSON + core attributes from the clicked link
     var meta  = getMaterialJSONFromLink(link) || {}
     var url   = link.getAttribute('data-file-url') || link.getAttribute('href')
+
+    if (!url && meta && meta.Material && meta.Material.myFileUrl) {
+      url = meta.Material.myFileUrl
+    }
+
     var title = link.getAttribute('data-title') || (link.textContent || '').trim() || 'Selected file'
 
-    // Minimal toolbar with close + full-width toggle
-    var toolbar =
-      '<div class="dcf-viewer__toolbar govuk-!-margin-bottom-4">' +
-        '<a href="#" class="govuk-link" data-action="close-viewer">Close preview</a>' +
-        '<span aria-hidden="true" class="govuk-!-margin-horizontal-2">&nbsp;|&nbsp;</span>' +
-        '<a href="#" class="govuk-link" data-action="toggle-full" aria-pressed="false">View full width</a>' +
-      '</div>'
+    // Remember the originating material card so ops menu actions can update it
+    var card = link.closest('.dcf-material-card')
+    if (card) viewer._currentCard = card
 
-    // Generate a stable id for the meta body to wire up show/hide
-    var rawId = (meta.ItemId || (meta.Material && meta.Material.Reference) || Date.now()).toString()
-    var bodyId = 'meta-' + rawId.replace(/[^a-zA-Z0-9_-]/g, '-')
+    // Ensure viewer chrome exists
+    if (!viewer.querySelector('#dcf-viewer-tabs')) ensureShell()
 
-    var metaPanel = buildMetaPanel(meta, bodyId)
-
-    // “Edit document” ops menu and the primary icon button
-    var opsBar =
-      '<div class="dcf-viewer__ops-bar">' +
-        '<div class="dcf-ops-actions">' +
-          '<a href="#" class="govuk-button govuk-button--inverse dcf-ops-iconbtn" data-action="ops-icon">' +
-            '<span class="dcf-ops-icon" aria-hidden="true">' +
-              '<img src="/public/files/marquee-blue.svg" alt="" width="20" height="20" />' +
-            '</span>' +
-            '<span class="govuk-visually-hidden">Primary action</span>' +
-          '</a>' +
-          '<div class="moj-button-menu" data-module="moj-button-menu">' +
-            '<button type="button" class="govuk-button govuk-button--inverse moj-button-menu__toggle" aria-haspopup="true" aria-expanded="false">' +
-              'Document actions <span class="moj-button-menu__icon" aria-hidden="true">▾</span>' +
-            '</button>' +
-            '<div class="moj-button-menu__wrapper" hidden>' +
-              '<ul class="moj-button-menu__list" role="menu">' +
-                '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Log an under or over redaction</a></li>' +
-                '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">View redaction log history</a></li>' +
-                '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Turn on potential redactions</a></li>' +
-                '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Rotate pages</a></li>' +
-                '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Discard pages</a></li>' +
-                // Mark as read action
-                '<li class="moj-button-menu__item" role="none">' +
-                  '<a role="menuitem" href="#" class="moj-button-menu__link" data-action="mark-read">Mark as read</a>' +
-                '</li>' +
-                // Mark as Unread action
-                '<li class="moj-button-menu__item" role="none">' +
-                  '<a role="menuitem" href="#" class="moj-button-menu__link" data-action="mark-unread">Mark as unread</a>' +
-                '</li>' +
-                '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Rename</a></li>' +
-              '</ul>' +
-            '</div>' +
-          '</div>' +
-        '</div>' +
-      '</div>'
-
-    // Point pdf.js viewer at the file we want to display
-    var fileUrl      = toPublic(url)
-    var pdfViewerUrl = '/public/pdfjs/web/viewer.html?file=' + encodeURIComponent(fileUrl)
-    var iframe = '<iframe class="dcf-viewer__frame" src="' + esc(pdfViewerUrl) + '" title="Preview of ' + esc(title) + '" loading="lazy" referrerpolicy="no-referrer"></iframe>'
-
-    // Paint the viewer and focus it for keyboard users
-    viewer.hidden = false
-    viewer.setAttribute('tabindex', '-1')
-    viewer.innerHTML = toolbar + buildDocTabs(title) + metaPanel + opsBar + iframe
-
-    // After rendering the viewer chrome:
+    // Update ops menu initialised state (MoJ menu relies on DOM present)
     var menu = viewer.querySelector('.moj-button-menu')
-    var currentCard =
-      (viewer && viewer._currentCard) ||
-      document.querySelector('.dcf-material-card--active')
+    if (menu && window.MOJFrontend && MOJFrontend.ButtonMenu) {
+      try { new MOJFrontend.ButtonMenu({ container: menu }).init() } catch (e) {}
+    }
 
-    var currentStatus =
-      (currentCard && (currentCard.dataset.materialStatus ||
-        (function () {
-          var t = currentCard.querySelector('script.js-material-data[type="application/json"]')
-          if (!t) return null
-          try {
-            var data = JSON.parse(t.textContent)
-            return (data && (data.materialStatus ||
-              (data.Material && data.Material.materialStatus))) || null
-          } catch (e) { return null }
-        })())) || 'New'
+    // Add or activate tab for this document
+    addOrActivateTab(meta, url, title)
 
-    updateOpsMenuForStatus(menu, currentStatus)
+    // Focus viewer for keyboard users
+    viewer.hidden = false
+    try { viewer.focus({ preventScroll: true }) } catch (e) {}
+}
 
-
-    setActiveCard(link)
-    viewer.focus({ preventScroll: false })
-  }
 
   // --------------------------------------
   // Intercepts: open previews from cards/links
@@ -449,15 +533,45 @@
   // Viewer toolbar + meta actions
   // --------------------------------------
   viewer.addEventListener('click', function (e) {
-    // Close “×” inside the generated tab mirrors the main close action
+    // Close just the clicked tab (not the whole viewer)
     if (e.target && e.target.closest('.dcf-doc-tab__close')) {
       e.preventDefault()
-      var close = viewer.querySelector('[data-action="close-viewer"]')
-      if (close) close.click()
+      var btn = e.target.closest('.dcf-doc-tab')
+      if (!btn) return
+      var wasActive = btn.classList.contains('is-active')
+      var id = btn.getAttribute('data-tab-id')
+      if (id && _tabStore.metaById[id]) delete _tabStore.metaById[id]
+      btn.parentNode && btn.parentNode.removeChild(btn)
+      // If no tabs remain, close the viewer
+      var anyTab = viewer.querySelector('#dcf-viewer-tabs .dcf-doc-tab')
+      if (!anyTab) {
+        var close = viewer.querySelector('[data-action="close-viewer"]')
+        if (close) close.click()
+        return
+      }
+      // If we removed the active tab, switch to the last tab
+      if (wasActive) {
+        var last = Array.prototype.slice.call(viewer.querySelectorAll('#dcf-viewer-tabs .dcf-doc-tab')).pop()
+        if (last) {
+          switchToTabById(last.getAttribute('data-tab-id'))
+        }
+      }
       return
     }
 
-    var a = e.target.closest('a[data-action]')
+    
+    // Activate a tab when its button is clicked (excluding the close icon)
+    var tabBtn = e.target.closest('#dcf-viewer-tabs .dcf-doc-tab')
+    if (tabBtn && !e.target.closest('.dcf-doc-tab__close')) {
+      e.preventDefault()
+      var id = tabBtn.getAttribute('data-tab-id')
+      if (id) {
+        switchToTabById(id)
+      }
+      return
+    }
+
+var a = e.target.closest('a[data-action]')
     if (!a) return
     e.preventDefault()
 

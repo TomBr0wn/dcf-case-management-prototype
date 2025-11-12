@@ -240,18 +240,29 @@
 }
 .dcf-viewer__ops-bar .moj-button-menu__link:hover { background: #f3f2f1; }
 
+
+/* ----------------------------------------------------------------------
+   META BODY + INLINE ACTIONS
+   ---------------------------------------------------------------------- */
 .dcf-viewer__meta-body[hidden] {
   display: none !important;
+}
+
+/* Hide inline actions by default… */
+.dcf-meta-inline-actions {
+  display: none;              /* changed from display:block */
+  margin: 1rem 0 1rem;
+}
+
+/* …and only show them when the meta body is visible */
+.dcf-viewer__meta-body:not([hidden]) .dcf-meta-inline-actions {
+  display: block;
 }
 
 /* sits just under the blue meta bar, snug */
 .dcf-viewer__meta-body { padding-top: 0; }
 
-/* put the button on its own line without flex weirdness */
-.dcf-meta-inline-actions {
-  display: block;
-  margin: 1rem 0 1rem; /* small, consistent spacing */
-}
+
 
 /* kill the default GOV.UK button margins so the strip doesn’t grow */
 .dcf-meta-inline-actions .govuk-button {
