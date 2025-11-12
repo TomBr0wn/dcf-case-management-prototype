@@ -74,13 +74,13 @@ function getDateGroup(date, today) {
 function getDateGroupHeading(groupKey, sortBy) {
   const headings = {
     'Custody time limit': {
-      overdue: 'Custody time limit has ended',
+      overdue: 'Custody time limit expired',
       today: 'Custody time limit ends today',
       tomorrow: 'Custody time limit ends tomorrow',
       thisWeek: 'Custody time limit ends this week',
       nextWeek: 'Custody time limit ends next week',
       later: 'Custody time limit ends later',
-      noDate: 'No custody time limit set'
+      noDate: 'No custody time limit'
     },
     'Hearing date': {
       overdue: 'Hearing date has passed',
