@@ -48,7 +48,7 @@
             data-file-url="{{ m.myFileUrl }}"
             data-title="{{ linkText }}"
           >{{ linkText }}</a>
-
+ 
           {# meta must match buildMetaPanel(meta) #}
           {% set __meta__ = {
             ItemId: m.ItemId,
@@ -58,6 +58,7 @@
 
             Material: {
               Title: m.Title,
+              myFileUrl: m.myFileUrl,
               MaterialStatus: m.materialStatus,
               Reference: m.Reference,
               ProducedbyWitnessId: m.ProducedbyWitnessId,
@@ -70,6 +71,7 @@
               PeriodFrom: m.PeriodFrom,
               PeriodTo: m.PeriodTo
             },
+
 
             RelatedMaterials: cm.RelatedMaterials,
             DigitalRepresentation: cm.DigitalRepresentation,

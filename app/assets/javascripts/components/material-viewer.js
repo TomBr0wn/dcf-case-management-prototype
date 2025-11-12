@@ -26,6 +26,12 @@
       .replace(/"/g,'&quot;').replace(/'/g,'&#39;')
   }
 
+  function buildPdfViewerUrl(rawUrl) {
+    var fileUrl = toPublic(rawUrl || '')
+      return '/public/pdfjs/web/viewer.html?file=' + encodeURIComponent(fileUrl)
+    }
+
+
   // Remove the search status banner (if present). Used when opening a document
   
   // --- Tab state for multi-document viewing ---
@@ -120,8 +126,10 @@
     var meta = _tabStore.metaById[id] || {}
     var url  = tab.getAttribute('data-url') || ''
     var title= tab.getAttribute('data-title') || 'Document'
+
     var iframe = viewer.querySelector('.dcf-viewer__frame')
-    if (iframe && url) iframe.setAttribute('src', toPublic(url).match(/^https?:|^\//) ? toPublic(url) : toPublic(url))
+    if (iframe && url) iframe.setAttribute('src', buildPdfViewerUrl(url))
+
     setActiveTab(tab)
     renderMeta(meta)
 
@@ -165,7 +173,8 @@
     // Activate and render
     setActiveTab(existing)
     var iframe = viewer.querySelector('.dcf-viewer__frame')
-    if (iframe) iframe.setAttribute('src', toPublic(url))
+    if (iframe) iframe.setAttribute('src', buildPdfViewerUrl(url))
+
     renderMeta(meta)
   }
 function removeSearchStatus() {
@@ -489,6 +498,8 @@ function openMaterialPreview(link) {
 
     // Add or activate tab for this document
     addOrActivateTab(meta, url, title)
+
+    console.log('Opening', { url, title, itemId: meta && meta.ItemId })
 
     // Focus viewer for keyboard users
     viewer.hidden = false
