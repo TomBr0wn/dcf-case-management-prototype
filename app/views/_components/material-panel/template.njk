@@ -29,7 +29,7 @@
 {# Single card renderer so meta stays consistent for all sections #}
 {% macro renderCard(m, cm) %}
   {% set linkText = m.Title or filenameFromUrl(m.myFileUrl) %}
-  <article class="dcf-material-card">
+  <article class="dcf-material-card" data-item-id="{{ m.ItemId }}">
     <div class="dcf-material-card__main">
 
       {# --- status badge (show only when status is exactly "New") --- #}

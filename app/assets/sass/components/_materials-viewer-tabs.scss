@@ -42,12 +42,11 @@
   cursor: pointer;
   text-decoration: none;
   margin: 0;
-
   /* NEW */
   box-sizing: border-box;
   flex: 0 1 260px;   /* basis ~260px, can shrink; wraps when no space */
   min-width: 0;
-  max-width: 100%;
+  max-width: fit-content;
 }
 
 
@@ -105,6 +104,7 @@
 
 /* Optional: hide the tabs container when needed */
 .dcf-viewer__tabs--hidden { display: none; }
+
 
 
 @media (max-width: 640px) {

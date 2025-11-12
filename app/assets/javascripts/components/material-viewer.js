@@ -131,8 +131,16 @@
     if (iframe && url) iframe.setAttribute('src', buildPdfViewerUrl(url))
 
     setActiveTab(tab)
+    // point _currentCard to the card for this tab (so status/menu reflect correctly)
+    var itemId = tab.getAttribute('data-item-id')
+    if (itemId) {
+      viewer._currentCard = document.querySelector('.dcf-material-card[data-item-id="' + CSS.escape(itemId) + '"]') || null
+    }
+
+    // update meta
     renderMeta(meta)
 
+    // keep ops menu in sync
     var menuEl = viewer.querySelector('.moj-button-menu')
     var status = (viewer._currentCard && viewer._currentCard.dataset.materialStatus) || null
     updateOpsMenuForStatus(menuEl, status)
@@ -152,6 +160,7 @@
       btn.setAttribute('role', 'tab')
       btn.setAttribute('aria-selected', 'false')
       btn.setAttribute('data-tab-id', id)
+      btn.setAttribute('data-item-id', (meta && meta.ItemId) || '')
       btn.setAttribute('data-url', url || '')
       btn.setAttribute('data-title', title || 'Document')
       btn.title = title || 'Document'
@@ -450,7 +459,7 @@ function removeSearchStatus() {
 
     // Assemble full meta panel metadate default set to hidden
     return '' +
-      '<div class="dcf-viewer__meta">' +
+      '<div class="dcf-viewer__meta" data-meta-root>' +
         metaBar +
         '<div id="' + esc(bodyId) + '" class="dcf-viewer__meta-body" hidden>' +
           inlineActions +
