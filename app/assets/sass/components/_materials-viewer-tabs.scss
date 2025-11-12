@@ -9,9 +9,16 @@
   display: flex;
   gap: 0.5rem;
   align-items: flex-end;
-  margin: 0 !important;  /* defeats any govuk-! margin utilities */
+  margin: 0 !important;
   padding: 0;
+
+  /* NEW */
+  flex-wrap: wrap;    /* wrap to new lines */
+  width: 100%;
+  min-width: 0;       /* let children shrink */
+  align-items: stretch;
 }
+
 
 /* Ensure the meta block sits tight under the tabs */
 #dcf-viewer-tabs + .dcf-viewer__meta {
@@ -25,17 +32,24 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 0.5rem 0.375rem;
-  background: #ffffff;   /* GOV.UK light grey */
+  background: #ffffff;
   border: 1px solid #1d70b8;
   border-bottom: 0;
-  border-radius: 0 !important;  /* force square corners */
+  border-radius: 0 !important;
   font-weight: 500;
   line-height: 2.25;
   color: #0b0c0c;
   cursor: pointer;
   text-decoration: none;
   margin: 0;
+
+  /* NEW */
+  box-sizing: border-box;
+  flex: 0 1 260px;   /* basis ~260px, can shrink; wraps when no space */
+  min-width: 0;
+  max-width: 100%;
 }
+
 
 .dcf-doc-tab:hover { background: #ebf2fd; }
 .dcf-doc-tab:focus {
@@ -49,7 +63,10 @@
   overflow: hidden;
   text-overflow: ellipsis;
 
+  /* NEW */
+  min-width: 0;      /* needed for ellipsis inside flex */
 }
+
 
 /* Close glyph: perfectly centred, circular */
 .dcf-doc-tab__close {
@@ -88,3 +105,8 @@
 
 /* Optional: hide the tabs container when needed */
 .dcf-viewer__tabs--hidden { display: none; }
+
+
+@media (max-width: 640px) {
+  .dcf-doc-tab { flex-basis: 180px; }
+}
