@@ -133,6 +133,7 @@
   display: flex;              /* host flex just to contain the row */
 }
 
+
 /* Row that holds the two controls */
 .dcf-meta-actions {
   display: flex;
@@ -164,6 +165,16 @@
 .dcf-meta-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
 .dcf-meta-sep { opacity: .85; }
 
+/* Caret before “Show/Hide details” */
+.dcf-caret {
+  display: inline-block;
+  margin-right: 6px;
+  transform: translateY(-0.5px); /* tiny optical nudge */
+  font-size: 0.9em;              /* match text size */
+  line-height: 1;
+}
+
+
 
 
 /* ----------------------------------------------------------------------
@@ -175,7 +186,7 @@
   color: #fff;
   margin: 0;
   padding: 12px;
-  border-top: #fff 2px solid;
+  // border-top: #fff 2px solid;
 }
 
 .dcf-ops-actions {

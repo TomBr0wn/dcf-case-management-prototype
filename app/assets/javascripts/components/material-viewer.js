@@ -440,20 +440,25 @@ function removeSearchStatus() {
 
     // Meta bar: only the show/hide details control now
     var metaBar =
-    '<div class="dcf-viewer__meta-bar">' +
-      '<div class="dcf-meta-actions">' +
-        '<div class="dcf-meta-right">' +
-          '<a href="#" class="govuk-link" data-action="add-note">Add a note</a>' +
-          '<span class="dcf-meta-sep" aria-hidden="true"> | </span>' +
-          '<a href="#" class="govuk-link js-meta-toggle" ' +
-            'data-action="toggle-meta" aria-expanded="false" ' +
-            'aria-controls="' + esc(bodyId) + '" data-controls="' + esc(bodyId) + '">' +
-            'Show details</a>' +
+      '<div class="dcf-viewer__meta-bar">' +
+        '<div class="dcf-meta-actions">' +
+          '<div class="dcf-meta-right">' + // ✅ new wrapper pushed to the right
+            '<a href="#" class="govuk-link" data-action="add-note">Add a note</a>' +
+            '<span class="dcf-meta-sep" aria-hidden="true"> | </span>' +
+            '<a href="#" class="govuk-link js-meta-toggle dcf-meta-toggle" ' +
+              'data-action="toggle-meta" ' +
+              'aria-expanded="false" ' +
+              'aria-controls="' + esc(bodyId) + '" ' +
+              'data-controls="' + esc(bodyId) + '">' +
+              '<span class="dcf-caret" aria-hidden="true">▸</span>' +
+              '<span class="dcf-meta-linktext">Show details</span>' +
+            '</a>' +
+          '</div>' +
         '</div>' +
-      '</div>' +
-    '</div>'
+      '</div>'
 
-    
+
+
 
     // Inline actions (reclassify) – placed inside the meta body before first section
     var inlineActions =
@@ -624,25 +629,31 @@ var a = e.target.closest('a[data-action]')
     if (action === 'toggle-meta') {
       var metaWrap = a.closest('.dcf-viewer__meta')
       var body =
-        // 1) Try the explicitly referenced element within the same meta wrapper
         (function () {
           var id = a.getAttribute('aria-controls') || a.getAttribute('data-controls')
           if (!metaWrap || !id) return null
           try { return metaWrap.querySelector('#' + CSS.escape(id)) } catch (e) { return null }
         })()
-        // 2) Fallback to the first meta body in the wrapper
         || (metaWrap && metaWrap.querySelector('.dcf-viewer__meta-body'))
 
       if (!body) return
 
       // Toggle using the DOM state and keep the control’s text/aria in sync
-      var willHide = !body.hidden          // visible -> hide; hidden -> show
+      var willHide = !body.hidden    // visible -> hide; hidden -> show
       body.hidden = willHide
       a.setAttribute('aria-expanded', String(!willHide))
-      a.textContent = willHide ? 'Show details' : 'Hide details'
-      console.log('toggle-meta -> hidden:', body.hidden)
+
+      // Update only the inner text span (avoid nuking the caret span)
+      var textSpan = a.querySelector('.dcf-meta-linktext')
+      if (textSpan) textSpan.textContent = willHide ? 'Show details' : 'Hide details'
+
+      // Flip the caret glyph
+      var caret = a.querySelector('.dcf-caret')
+      if (caret) caret.textContent = willHide ? '▸' : '▾'
+
       return
     }
+
 
     // “Mark as read” from the Document actions menu
     if (action === 'mark-read') {
