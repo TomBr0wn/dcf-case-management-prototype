@@ -46,13 +46,16 @@
   overflow: visible;
 }
 
-/* Single, definitive rule for the iframe */
+/* Single, definitive rule for the iframe
+   TIP: you can tune the chrome offset using:
+   #material-viewer { --dcf-viewer-offset: 12rem; }
+*/
 .dcf-viewer__frame {
   display: block;             /* avoid inline whitespace quirks */
   box-sizing: border-box;     /* width includes padding/border */
   width: 100%;
   max-width: 100%;            /* never exceed the column */
-  height: calc(100vh - 20px);/* adjust to taste */
+  height: calc(100vh - var(--dcf-viewer-offset, 20px));
   border: 0;
 }
 
@@ -66,6 +69,120 @@
 .dcf-viewer__ops-bar {
   box-sizing: border-box;
   width: 100%;
+}
+
+/* ----------------------------------------------------------------------
+   NEW: VIEWER HEADER + TABLIST
+   ---------------------------------------------------------------------- */
+
+/* Sticky header that contains: title/status (left) + actions (right) + tablist */
+.dcf-viewer__header {
+  position: sticky;
+  top: 0;
+  z-index: 10;               /* above the iframe/pages but below any global nav */
+  background: #fff;
+  border-bottom: 1px solid #b1b4b6;
+}
+
+/* Top bar row */
+.dcf-viewer__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: .5rem 0;
+}
+
+/* Title group */
+.dcf-viewer__title {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  min-width: 0;              /* allow ellipsis to work */
+}
+.dcf-doc-title {
+  display: inline-block;
+  max-width: 60ch;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Right-side actions */
+.dcf-viewer__actions {
+  display: inline-flex;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+/* Button that looks like a link (used for View full width / Close) */
+.dcf-btn-link {
+  background: none;
+  border: 0;
+  padding: 0;
+  text-decoration: underline;
+  color: #1d70b8;            /* GOV.UK blue */
+  cursor: pointer;
+  font: inherit;             /* inherit size/line-height */
+}
+.dcf-btn-link:hover { text-decoration-thickness: .16em; }
+.dcf-btn-link:focus {
+  outline: none;
+  box-shadow: 0 -2px #fff, 0 4px #0b0c0c; /* GOV.UK underline-style focus */
+  text-decoration: none;
+}
+
+/* Tablist (single container with horizontal scroll if needed) */
+.dcf-viewer__tabs[role="tablist"] {
+  display: flex;
+  gap: .25rem;
+  overflow: auto hidden;     /* horizontal scroll on overflow */
+  padding: .25rem 0 .5rem 0;
+  scroll-snap-type: x proximity;
+}
+
+/* Individual tab buttons */
+.dcf-doc-tab {
+  position: relative;
+  border: 1px solid #b1b4b6;
+  background: #f3f2f1;
+  padding: .4rem .6rem;
+  border-radius: 0;
+  scroll-snap-align: start;
+}
+.dcf-doc-tab:focus {
+  outline: 3px solid transparent;
+  box-shadow: 0 0 0 3px #fd0;   /* GOV.UK yellow focus ring */
+}
+.dcf-doc-tab.is-active {
+  background: #fff;
+  border-bottom-color: #fff;    /* visually joins to content below */
+}
+
+/* Tab label truncation */
+.dcf-doc-tab__label {
+  display: inline-block;
+  max-width: 30ch;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Small close affordance */
+.dcf-doc-tab__close {
+  display: inline-block;
+  margin-left: .5rem;
+  padding: 0 .15rem;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Small screens */
+@media (max-width: 40.0625em) { /* GOV.UK mobile breakpoint ~640px */
+  .dcf-doc-title { max-width: 42vw; }
+  .dcf-viewer__actions { gap: .75rem; }
+  .dcf-doc-tab__label { max-width: 18ch; }
 }
 
 /* ----------------------------------------------------------------------
@@ -133,7 +250,6 @@
   display: flex;              /* host flex just to contain the row */
 }
 
-
 /* Row that holds the two controls */
 .dcf-meta-actions {
   display: flex;
@@ -173,9 +289,6 @@
   font-size: 0.9em;              /* match text size */
   line-height: 1;
 }
-
-
-
 
 /* ----------------------------------------------------------------------
    OPS BAR (below meta, above iframe)
@@ -256,7 +369,6 @@
 }
 .dcf-viewer__ops-bar .moj-button-menu__link:hover { background: #f3f2f1; }
 
-
 /* ----------------------------------------------------------------------
    META BODY + INLINE ACTIONS
    ---------------------------------------------------------------------- */
@@ -278,8 +390,6 @@
 /* sits just under the blue meta bar, snug */
 .dcf-viewer__meta-body { padding-top: 0; }
 
-
-
 /* kill the default GOV.UK button margins so the strip doesn’t grow */
 .dcf-meta-inline-actions .govuk-button {
   margin: 0;
@@ -289,4 +399,3 @@
 .dcf-viewer__meta-body > h3:first-of-type {
   margin-top: 0.5rem !important;
 }
-
