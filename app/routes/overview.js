@@ -38,10 +38,10 @@ module.exports = router => {
 
     // Calculate severity for each task and group by severity
     const tasksBySeverity = {
-      Escalated: [],
-      Overdue: [],
-      Due: [],
-      Pending: []
+      'Critically overdue': [],
+      'Overdue': [],
+      'Due soon': [],
+      'Not due yet': []
     }
 
     tasks.forEach(task => {
@@ -54,10 +54,10 @@ module.exports = router => {
     res.render('overview/index', {
       unassignedCaseCount,
       needsDGAReviewCount,
-      escalatedTaskCount: tasksBySeverity.Escalated.length,
-      overdueTaskCount: tasksBySeverity.Overdue.length,
-      dueTaskCount: tasksBySeverity.Due.length,
-      pendingTaskCount: tasksBySeverity.Pending.length
+      criticallyOverdueTaskCount: tasksBySeverity['Critically overdue'].length,
+      overdueTaskCount: tasksBySeverity['Overdue'].length,
+      dueSoonTaskCount: tasksBySeverity['Due soon'].length,
+      notDueYetTaskCount: tasksBySeverity['Not due yet'].length
     })
   })
 

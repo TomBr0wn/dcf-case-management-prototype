@@ -1,7 +1,7 @@
 /**
  * Calculate the severity of a task based on its dates
  * @param {Object} task - Task object with reminderDate, dueDate, escalationDate, completedDate
- * @returns {string} - One of: 'Completed', 'Escalated', 'Overdue', 'Due', 'Pending'
+ * @returns {string} - One of: 'Completed', 'Critically overdue', 'Overdue', 'Due soon', 'Not due yet'
  */
 function getTaskSeverity(task) {
   const now = new Date();
@@ -11,9 +11,9 @@ function getTaskSeverity(task) {
     return 'Completed';
   }
 
-  // Check dates in order of priority: Escalated > Overdue > Due > Pending
+  // Check dates in order of priority: Critically overdue > Overdue > Due soon > Not due yet
   if (new Date(task.escalationDate) <= now) {
-    return 'Escalated';
+    return 'Critically overdue';
   }
 
   if (new Date(task.dueDate) <= now) {
@@ -21,10 +21,10 @@ function getTaskSeverity(task) {
   }
 
   if (new Date(task.reminderDate) <= now) {
-    return 'Due';
+    return 'Due soon';
   }
 
-  return 'Pending';
+  return 'Not due yet';
 }
 
 module.exports = {

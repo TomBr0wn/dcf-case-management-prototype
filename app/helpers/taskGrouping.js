@@ -6,15 +6,15 @@ const { getTaskSeverity } = require('./taskState');
 
 /**
  * Get the sort order for severity groups
- * @param {string} severity - The task severity ('Escalated', 'Overdue', 'Due', 'Pending')
+ * @param {string} severity - The task severity ('Critically overdue', 'Overdue', 'Due soon', 'Not due yet')
  * @returns {number} - Sort priority (lower = higher priority)
  */
 function getSeveritySortOrder(severity) {
   const order = {
-    'Escalated': 1,
+    'Critically overdue': 1,
     'Overdue': 2,
-    'Due': 3,
-    'Pending': 4
+    'Due soon': 3,
+    'Not due yet': 4
   };
 
   return order[severity] || 999;

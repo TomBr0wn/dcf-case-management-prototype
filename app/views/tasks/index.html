@@ -98,7 +98,7 @@
                     } if 1==2,
                     {
                       key: {
-                        text: 'Custody release date'
+                        text: 'Custody time limit'
                       },
                       value: {
                         html: (task.case.soonestCTL | isoDateString | govukDateTime) + ' (' + (task.case.soonestCTL | daysUntil) + ')'

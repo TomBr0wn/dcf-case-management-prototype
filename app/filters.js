@@ -20,13 +20,13 @@ addFilter('priorityTagClass', status => {
 
 addFilter('severityTagClass', severity => {
   switch(severity) {
-    case 'Escalated':
+    case 'Critically overdue':
       return 'govuk-tag--red'
     case 'Overdue':
       return 'govuk-tag--orange'
-    case 'Due':
+    case 'Due soon':
       return 'govuk-tag--yellow'
-    case 'Pending':
+    case 'Not due yet':
       return 'govuk-tag--blue'
     default:
       return ''

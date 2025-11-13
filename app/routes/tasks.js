@@ -16,6 +16,30 @@ function resetFilters(req) {
 
 module.exports = router => {
 
+  router.get('/tasks/shortcut/critically-overdue', (req, res) => {
+    const currentUser = req.session.data.user
+    resetFilters(req)
+    res.redirect(`/tasks?taskListFilters[owner][]=user-${currentUser.id}&taskListFilters[severities][]=Critically overdue`)
+  })
+
+  router.get('/tasks/shortcut/overdue', (req, res) => {
+    const currentUser = req.session.data.user
+    resetFilters(req)
+    res.redirect(`/tasks?taskListFilters[owner][]=user-${currentUser.id}&taskListFilters[severities][]=Overdue`)
+  })
+
+  router.get('/tasks/shortcut/due-soon', (req, res) => {
+    const currentUser = req.session.data.user
+    resetFilters(req)
+    res.redirect(`/tasks?taskListFilters[owner][]=user-${currentUser.id}&taskListFilters[severities][]=Due soon`)
+  })
+
+  router.get('/tasks/shortcut/not-due-yet', (req, res) => {
+    const currentUser = req.session.data.user
+    resetFilters(req)
+    res.redirect(`/tasks?taskListFilters[owner][]=user-${currentUser.id}&taskListFilters[severities][]=Not due yet`)
+  })
+
   router.get("/tasks", async (req, res) => {
     const currentUser = req.session.data.user
 
@@ -149,11 +173,11 @@ module.exports = router => {
     // Severity filter display
     if (selectedSeverityFilters?.length) {
       selectedSeverityItems = selectedSeverityFilters.map(function(severity) {
-        return { text: severity, href: '/tasks/remove-severity/' + severity }
+        return { text: severity, href: '/tasks/remove-severity/' + encodeURIComponent(severity) }
       })
 
       selectedFilters.categories.push({
-        heading: { text: 'Severity' },
+        heading: { text: 'Due' },
         items: selectedSeverityItems
       })
     }
@@ -340,10 +364,10 @@ module.exports = router => {
 
     // Severity items
     let severityItems = [
-      { text: 'Not due yet', value: 'Pending' },
-      { text: 'Due soon', value: 'Due' },
+      { text: 'Not due yet', value: 'Not due yet' },
+      { text: 'Due soon', value: 'Due soon' },
       { text: 'Overdue', value: 'Overdue' },
-      { text: 'Critically overdue', value: 'Escalated' }
+      { text: 'Critically overdue', value: 'Critically overdue' }
     ]
 
     // Handle sorting
@@ -377,7 +401,7 @@ module.exports = router => {
         return aDate - bDate
       })
     } else {
-      // Default 'Due date' - sort by severity priority (Escalated > Overdue > Due > Pending), then by date
+      // Default 'Due date' - sort by severity priority (Critically overdue > Overdue > Due soon > Not due yet), then by date
       tasks.sort((a, b) => {
         // First sort by severity sortOrder
         if (a.sortOrder !== b.sortOrder) {
@@ -443,7 +467,8 @@ module.exports = router => {
 
   router.get('/tasks/remove-severity/:severity', (req, res) => {
     const currentFilters = _.get(req, 'session.data.taskListFilters.severities', [])
-    _.set(req, 'session.data.taskListFilters.severities', _.pull(currentFilters, req.params.severity))
+    const severity = decodeURIComponent(req.params.severity)
+    _.set(req, 'session.data.taskListFilters.severities', _.pull(currentFilters, severity))
     res.redirect('/tasks')
   })
 
