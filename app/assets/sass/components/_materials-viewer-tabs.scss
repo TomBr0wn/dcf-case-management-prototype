@@ -56,6 +56,24 @@
   outline-offset: 1px;
 }
 
+/* Active tab uses the same pale blue as hover */
+.dcf-doc-tab.is-active {
+  background: #ebf2fd;       /* pale blue */
+  color: #0b0c0c;            /* keep GOV.UK body text colour */
+  border-color: #1d70b8;     /* GOV.UK blue border */
+}
+
+/* keep it pale blue even when hovered */
+.dcf-doc-tab.is-active:hover {
+  background: #ebf2fd;
+}
+
+/* (optional) show a blue bar only on the active tab */
+.dcf-doc-tab.is-active .dcf-doc-tab__bar {
+  background: #1d70b8;       /* or #3B64AC to match your meta bar */
+  height: 4px;
+}
+
 .dcf-doc-tab__label {
   white-space: nowrap;
   max-width: 28ch;
