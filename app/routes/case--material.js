@@ -23,6 +23,26 @@ async function listFilesIn(dir) {
   }
 }
 
+// Put near the top of case--materials-search.js
+function normaliseRecord(m) {
+  // If m already has Material / RelatedMaterials / etc, keep them.
+  if (m && m.Material) {
+    // Ensure myFileUrl is present on Material (copy through if you store it top-level)
+    if (!m.Material.myFileUrl && m.myFileUrl) m.Material.myFileUrl = m.myFileUrl;
+    return m;
+  }
+
+  // If the array holds just the Material fields flat, wrap them.
+  return {
+    Material: Object.assign({}, m),
+    RelatedMaterials: m.RelatedMaterials || {},
+    DigitalRepresentation: m.DigitalRepresentation || {},
+    PoliceMaterial: m.PoliceMaterial || {},
+    CPSMaterial: m.CPSMaterial || {}
+  };
+}
+
+
 //////////////////////////////////////////////////////////////////
 
 module.exports = router => {
@@ -164,5 +184,102 @@ module.exports = router => {
     _.set(req, 'session.data.documentSearch.keywords', '')
     res.redirect(`/cases/${req.params.caseId}/material`)
   })
+
+
+   // --- tiny esc helper ---
+  const esc = s => (s == null ? '' : String(s))
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+
+  function getCurrentCaseMaterials(req, caseId) {
+    const cm = req.session?.data?.caseMaterials;
+    if (cm && Array.isArray(cm.Material)) {
+      if (caseId && String(cm.caseId) !== String(caseId)) return [];
+      return cm.Material;
+    }
+    if (Array.isArray(cm)) {
+      const found = caseId ? cm.find(c => String(c.caseId) === String(caseId)) : cm[0];
+      return Array.isArray(found?.Material) ? found.Material : [];
+    }
+    return [];
+  }
+
+  /// builds the search resulst in material viewer  
+  function oneSummaryListBlock(m) {
+    // Full record for the viewer/meta panel
+    const meta = normaliseRecord(m);
+    const mat  = meta.Material || {};
+
+    const title  = mat.Title || m.Title || '';
+    const type   = mat.Type  || m.Type  || '';
+    const status = mat.materialStatus || m.materialStatus || m.Status || '';
+    const date   = mat.Date || m.Date || m.date || '';
+    const href   = mat.myFileUrl || m.myFileUrl || '';
+
+    const titleHtml = href
+      ? `<a href="${esc(href)}" class="govuk-link dcf-viewer-link">${esc(title)}</a>`
+      : esc(title);
+
+  return `
+    <section class="dcf-search-hit dcf-material-card dcf-material-card--unstyled">
+
+      <dl class="govuk-summary-list dcf-summary dcf-summary--results govuk-!-margin-bottom-0">
+        <h3 class="govuk-heading-s govuk-!-margin-bottom-2">${titleHtml}</h3>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Type</dt>
+          <dd class="govuk-summary-list__value">${esc(m.Type || '')}</dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Status</dt>
+          <dd class="govuk-summary-list__value">${esc(m.materialStatus || '')}</dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Date</dt>
+          <dd class="govuk-summary-list__value">${esc(m.date || m.Date || '')}</dd>
+        </div>
+      </dl>
+
+      <!-- RAW JSON (not escaped) so getMaterialJSONFromLink can parse it -->
+      <script type="application/json" class="js-material-data">${JSON.stringify(meta)}</script>
+    </section>`;
+  }
+
+
+
+
+  function fragmentHTML(matches, q) {
+    const count = matches.length;
+    return `<div class="dcf-search-results" role="region" aria-label="Search results" data-results-count="${count}">
+      ${count ? matches.map(oneSummaryListBlock).join('\n') : ''}
+    </div>`;
+  }
+
+
+  router.get('/materials/search', (req, res) => {
+    const qRaw = (req.query.q || '').trim();
+    const caseId = (req.query.caseId || req.session?.data?.currentCaseId || '').toString();
+    const wantsFragment = req.query.fragment === '1' || req.get('X-Requested-With') === 'fetch';
+
+    if (!qRaw) {
+      const html = `<p class="govuk-hint govuk-!-margin-bottom-0">Enter a title to search materials.</p>`;
+      return wantsFragment ? res.send(html) : res.render('materials/search', { q: qRaw, results: [], prebuilt: html });
+    }
+
+    const materials = getCurrentCaseMaterials(req, caseId);
+    const q = qRaw.toLowerCase();
+    const results = materials.filter(m => {
+    
+    const t = (m.Title || (m.Material && m.Material.Title) || '').toLowerCase();
+      return t.includes(q);
+    });
+
+
+    if (wantsFragment) {
+      return res.send(fragmentHTML(results, qRaw));
+    }
+
+    // Full page render via Nunjucks (styled)
+    res.render('cases/materials/search', { q: qRaw, results, prebuilt: fragmentHTML(results, qRaw) });
+  });
 
 }

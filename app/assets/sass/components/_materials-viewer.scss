@@ -127,7 +127,7 @@
 .dcf-viewer__meta-bar {
   /* make it touch the blue border of .dcf-viewer__meta */
   margin: -12px -12px 0;      /* top/left/right = -meta padding */
-  padding: 4px 0 16px 0;      /* vertical padding only */
+  padding: 0px 0 10px 0;      /* vertical padding only */
   background: #3B64AC;
   color: #fff;
   display: flex;              /* host flex just to contain the row */
@@ -161,12 +161,17 @@
 /* Remove default button bottom margin if any */
 .dcf-viewer__meta-bar .dcf-meta-secondary { margin: 0; }
 
+.dcf-meta-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.dcf-meta-sep { opacity: .85; }
+
+
+
 /* ----------------------------------------------------------------------
    OPS BAR (below meta, above iframe)
    ---------------------------------------------------------------------- */
 
 .dcf-viewer__ops-bar {
-  background: #3B64AC;
+  background: #2a2a2e;
   color: #fff;
   margin: 0;
   padding: 12px;
@@ -175,7 +180,7 @@
 
 .dcf-ops-actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
   align-items: center;
   gap: 12px;
 }
@@ -239,3 +244,38 @@
   display: block; padding: 8px 12px; text-decoration: none; color: #0b0c0c;
 }
 .dcf-viewer__ops-bar .moj-button-menu__link:hover { background: #f3f2f1; }
+
+
+/* ----------------------------------------------------------------------
+   META BODY + INLINE ACTIONS
+   ---------------------------------------------------------------------- */
+.dcf-viewer__meta-body[hidden] {
+  display: none !important;
+}
+
+/* Hide inline actions by default… */
+.dcf-meta-inline-actions {
+  display: none;              /* changed from display:block */
+  margin: 1rem 0 1rem;
+}
+
+/* …and only show them when the meta body is visible */
+.dcf-viewer__meta-body:not([hidden]) .dcf-meta-inline-actions {
+  display: block;
+}
+
+/* sits just under the blue meta bar, snug */
+.dcf-viewer__meta-body { padding-top: 0; }
+
+
+
+/* kill the default GOV.UK button margins so the strip doesn’t grow */
+.dcf-meta-inline-actions .govuk-button {
+  margin: 0;
+}
+
+/* the first section heading doesn’t need big top margin now */
+.dcf-viewer__meta-body > h3:first-of-type {
+  margin-top: 0.5rem !important;
+}
+
