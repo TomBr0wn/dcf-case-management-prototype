@@ -1,7 +1,7 @@
 {% extends "layouts/main.html" %}
 
 {% set navId = 'tasks' %}
-{% set pageName = "Tasks (:total)" | replace(':total', totalTasks) %}
+{% set pageName = "Tasks (:total)" | replace(':total', totalTasks | formatNumber) %}
 
 {% block content %}
     <h1 class="govuk-heading-l">
@@ -24,10 +24,19 @@
         {% if tasks.length %}
           <div class="app-list">
             {% for task in tasks %}
+            {# Show group heading when group changes or on first task #}
+            {% if loop.first or task.groupKey != tasks[loop.index0 - 1].groupKey %}
+              <h2 class="govuk-heading-m govuk-!-margin-top-7 govuk-!-margin-bottom-0">{{task.groupHeading}}</h2>
+            {% endif %}
             <div class="app-list__item">
-                <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
+                <h3 class="govuk-heading-s govuk-!-margin-bottom-1">
                   <a href="/cases/{{task.case.id}}/tasks/{{task.id}}" class="govuk-link--no-visited-state">{{task.name}}</a>
-                </h2>
+
+                  <div class="app-list__tag">
+                    {{ govukTag({ text: task.severity, classes: task.severity | severityTagClass })}}
+                  </div>
+
+                </h3>
 
                 {% set defendantsValue %}
                   {{task.case.defendants[0].firstName}} {{task.case.defendants[0].lastName}}
@@ -36,28 +45,28 @@
                   {% endif %}
                 {% endset %}
 
+                {% set ownerValue %}
+                  {% if task.assignedToUser %}
+                    {{task.assignedToUser.firstName}} {{task.assignedToUser.lastName}}
+                  {% elif task.assignedToTeam %}
+                    {{task.assignedToTeam.name}} ({{task.assignedToTeam.unit.name}})
+                  {% endif %}
+                {% endset %}
+
                 {{ govukSummaryList({
                   classes: 'govuk-summary-list--no-border app-summary-list--compact app-summary-list--small-text',
                   rows: [
                     {
                       key: {
-                        html: 'Due date'
+                        text: 'Case reference number'
                       },
                       value: {
-                        html: task.dueDate | isoDateString | govukDateTime
+                        text: task.case.reference
                       }
                     },
                     {
                       key: {
-                        html: 'Case reference'
-                      },
-                      value: {
-                        html: task.case.reference
-                      }
-                    },
-                    {
-                      key: {
-                        html: 'Defendant'
+                        text: 'Defendant'
                       },
                       value: {
                         html: defendantsValue
@@ -65,12 +74,60 @@
                     },
                     {
                       key: {
-                        html: 'Type'
+                        text: 'Reminder date'
+                      },
+                      value: {
+                        html: (task.reminderDate | isoDateString | govukDateTime)
+                      }
+                    } if 1==2,
+                    {
+                      key: {
+                        text: 'Due date'
+                      },
+                      value: {
+                        html: (task.dueDate | isoDateString | govukDateTime)
+                      }
+                    },
+                    {
+                      key: {
+                        text: 'Escalation date'
+                      },
+                      value: {
+                        html: (task.escalationDate | isoDateString | govukDateTime)
+                      }
+                    } if 1==2,
+                    {
+                      key: {
+                        text: 'Custody release date'
+                      },
+                      value: {
+                        html: (task.case.soonestCTL | isoDateString | govukDateTime) + ' (' + (task.case.soonestCTL | daysUntil) + ')'
+                      }
+                    } if task.case.hasCTL,
+                    {
+                      key: {
+                        html: 'Owner'
+                      },
+                      value: {
+                        html: ownerValue
+                      }
+                    },
+                    {
+                      key: {
+                        html: 'Unit'
+                      },
+                      value: {
+                        html: task.case.unit.name
+                      }
+                    },
+                    {
+                      key: {
+                        html: 'Task type'
                       },
                       value: {
                         html: task.type
                       }
-                    }                
+                    }
                   ]
                 })}}
 
@@ -86,4 +143,41 @@
       </div>
     </div>
   </div>
+{% endblock %}
+
+{% block scripts %}
+  {{super()}}
+  <script>
+    new App.FilterToggleButton({
+      bigModeMediaQuery: '(min-width: 48.063em)',
+      startHidden: false,
+      toggleButton: {
+        container: $('.app-action-bar__filter'),
+        showText: 'Show filter',
+        hideText: 'Hide filter',
+        classes: 'govuk-button--secondary govuk-!-margin-bottom-3'
+      },
+      closeButton: {
+        container: $('.app-filter__header-action'),
+        text: 'Close'
+      },
+      filter: {
+        container: $('.app-filter-layout__filter')
+      }
+    })
+
+    new App.ListFilter({
+      container: $('.owner-filter'),
+      textBox: {
+        label: 'Find owner'
+      }
+    })
+
+    new App.ListFilter({
+      container: $('.task-name-filter'),
+      textBox: {
+        label: 'Find task'
+      }
+    })
+  </script>
 {% endblock %}

@@ -1,16 +1,16 @@
 <div class="app-sort">
   <p>
     <b class="govuk-!-margin-right-1">Sort by:</b>
-    {% if data.taskSort == 'Due date' %}
+    {% if data.taskSort == 'Due date' or not data.taskSort %}
       <span class="">Due date</span>
     {% else %}
       <a  href="?taskSort=Due date">Due date</a>
     {% endif %}
     <span class="govuk-!-margin-left-1 govuk-!-margin-right-1">|</span>
-    {% if data.taskSort == 'Days left in custody' %}
-      <span>Days left in custody</span>
+    {% if data.taskSort == 'Custody time limit' %}
+      <span>Custody time limit</span>
     {% else %}
-      <a href="?taskSort=Days left in custody">Days left in custody</a>
+      <a href="?taskSort=Custody time limit">Custody time limit</a>
     {% endif %}
     <span class="govuk-!-margin-left-1 govuk-!-margin-right-1">|</span>
     {% if data.taskSort == 'Hearing date' %}

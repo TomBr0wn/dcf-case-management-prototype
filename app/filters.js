@@ -18,6 +18,48 @@ addFilter('priorityTagClass', status => {
   }
 })
 
+addFilter('severityTagClass', severity => {
+  switch(severity) {
+    case 'Escalated':
+      return 'govuk-tag--red'
+    case 'Overdue':
+      return 'govuk-tag--orange'
+    case 'Due':
+      return 'govuk-tag--yellow'
+    case 'Pending':
+      return 'govuk-tag--blue'
+    default:
+      return ''
+  }
+})
+
+addFilter('capitalize', str => {
+  if (!str) return str
+  return str.charAt(0).toUpperCase() + str.slice(1)
+})
+
 addFilter('isoDateString', date => {
   return date.toISOString()
+})
+
+addFilter('formatNumber', number => {
+  return Number(number).toLocaleString('en-GB')
+})
+
+addFilter('daysUntil', date => {
+  const now = new Date()
+  now.setHours(0, 0, 0, 0)
+  const targetDate = new Date(date)
+  targetDate.setHours(0, 0, 0, 0)
+  const diffTime = targetDate - now
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+  if (diffDays < 0) {
+    return 'overdue'
+  } else if (diffDays === 0) {
+    return 'today'
+  } else if (diffDays === 1) {
+    return 'tomorrow'
+  }
+  return `${diffDays} days`
 })

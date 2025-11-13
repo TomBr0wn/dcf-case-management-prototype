@@ -10,7 +10,12 @@ module.exports = router => {
         user: true,
         witnesses: true,
         lawyers: true,
-        defendants: true,
+        defendants: {
+          include: {
+            charges: true,
+            defenceLawyer: true
+          }
+        },
         hearing: true,
         location: true,
         tasks: true,

@@ -1,7 +1,7 @@
 {% extends "layouts/main.html" %}
 {% set navId = 'cases' %}
 {% set secondaryNavId = 'tasks' %}
-{% set pageName = "Tasks (:total)" | replace(':total', _case.tasks.length) %}
+{% set pageName = "Tasks (:total)" | replace(':total', _case.tasks.length | formatNumber) %}
 
 {% block beforeContent %}
   {% include "_includes/case/identity-bar.njk" %}
@@ -15,19 +15,24 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       <h1 class="govuk-heading-l">{{pageName}}</h1>
-      
+
       {% if _case.tasks.length %}
         <div class="app-list">
           {% for task in _case.tasks %}
           <div class="app-list__item">
-              <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
+              <h3 class="govuk-heading-s govuk-!-margin-bottom-1">
                 <a href="/cases/{{_case.id}}/tasks/{{task.id}}" class="govuk-link--no-visited-state">{{task.name}}</a>
-              </h2>
 
-              {% set defendantsValue %}
-                {{task.case.defendants[0].firstName}} {{task.case.defendants[0].lastName}}
-                {% if task.case.defendants.length > 1 %}
-                  and {{task.case.defendants.length - 1}} more
+                <div class="app-list__tag">
+                    {{ govukTag({ text: task.severity, classes: task.severity | severityTagClass })}}
+                  </div>
+              </h3>
+
+              {% set ownerValue %}
+                {% if task.assignedToUser %}
+                  {{task.assignedToUser.firstName}} {{task.assignedToUser.lastName}}
+                {% elif task.assignedToTeam %}
+                  {{task.assignedToTeam.name}} ({{task.assignedToTeam.unit.name}})
                 {% endif %}
               {% endset %}
 
@@ -36,15 +41,47 @@
                 rows: [
                   {
                     key: {
-                      html: 'Due date'
+                      text: 'Reminder date'
                     },
                     value: {
-                      html: task.dueDate | isoDateString | govukDateTime
+                      html: (task.reminderDate | isoDateString | govukDateTime)
+                    }
+                  } if 1==2,
+                  {
+                    key: {
+                      text: 'Due date'
+                    },
+                    value: {
+                      html: (task.dueDate | isoDateString | govukDateTime)
                     }
                   },
                   {
                     key: {
-                      html: 'Type'
+                      text: 'Escalation date'
+                    },
+                    value: {
+                      html: (task.escalationDate | isoDateString | govukDateTime)
+                    }
+                  } if 1==2,
+                  {
+                    key: {
+                      text: 'Custody release date'
+                    },
+                    value: {
+                      html: (_case.soonestCTL | isoDateString | govukDateTime) + ' (' + (_case.soonestCTL | daysUntil) + ')'
+                    }
+                  } if _case.hasCTL,
+                  {
+                    key: {
+                      html: 'Owner'
+                    },
+                    value: {
+                      html: ownerValue
+                    }
+                  },
+                  {
+                    key: {
+                      html: 'Task type'
                     },
                     value: {
                       html: task.type

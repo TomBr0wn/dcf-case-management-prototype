@@ -94,13 +94,27 @@ module.exports = router => {
           }
         },
         cases: {
-          select: { id: true, complexity: true, isCTL: true }
+          select: {
+            id: true,
+            complexity: true,
+            defendants: {
+              select: {
+                charges: {
+                  select: {
+                    custodyTimeLimit: true
+                  }
+                }
+              }
+            }
+          }
         }
       }
     })
 
     lawyers = lawyers.map((lawyer, index) => {
-      const ctlCases = lawyer.cases?.filter(c => c.isCTL) || []
+      const ctlCases = lawyer.cases?.filter(c => {
+        return c.defendants.some(d => d.charges.some(ch => ch.custodyTimeLimit !== null))
+      }) || []
 
       const level1Cases = lawyer.cases?.filter(c => c.complexity === "Level 1") || []
       const level2Cases = lawyer.cases?.filter(c => c.complexity === "Level 2") || []

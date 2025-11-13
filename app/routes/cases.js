@@ -28,6 +28,11 @@ module.exports = router => {
   })
 
   router.get("/cases", async (req, res) => {
+    const currentUser = req.session.data.user
+
+    // Get user's unit IDs for filtering
+    const userUnitIds = currentUser?.units?.map(uu => uu.unitId) || []
+
     let selectedDgaFilters = _.get(req.session.data.caseListFilters, 'dga', [])
     let selectedCtlFilters = _.get(req.session.data.caseListFilters, 'isCTL', [])
     let selectedUnitFilters = _.get(req.session.data.caseListFilters, 'unit', [])
@@ -36,6 +41,7 @@ module.exports = router => {
     let selectedLawyerFilters = _.get(req.session.data.caseListFilters, 'lawyers', [])
 
     let selectedFilters = { categories: [] }
+    let selectedLawyerItems = []
 
     // Priority filter display
     if (selectedDgaFilters?.length) {
@@ -50,7 +56,7 @@ module.exports = router => {
     // CTL filter display
     if (selectedCtlFilters?.length) {
       selectedFilters.categories.push({
-        heading: { text: 'CTL' },
+        heading: { text: 'Custody time limit' },
         items: selectedCtlFilters.map(function(label) {
           return { text: label, href: '/cases/remove-ctl/' + label }
         })
@@ -87,7 +93,7 @@ module.exports = router => {
     // Type filter display
     if (selectedTypeFilters?.length) {
       selectedFilters.categories.push({
-        heading: { text: 'Type' },
+        heading: { text: 'Hearing type' },
         items: selectedTypeFilters.map(function(label) {
           return { text: label, href: '/cases/remove-type/' + label }
         })
@@ -110,18 +116,28 @@ module.exports = router => {
         })
       }
 
-      let items = selectedLawyerFilters.map(function(selectedLawyer) {
+      selectedLawyerItems = selectedLawyerFilters.map(function(selectedLawyer) {
         if (selectedLawyer === "Unassigned") return { text: "Unassigned", href: '/cases/remove-lawyer/' + selectedLawyer }
 
         let lawyer = fetchedLawyers.find(function(lawyer) { return lawyer.id === Number(selectedLawyer) })
         return { text: lawyer ? lawyer.firstName + " " + lawyer.lastName : selectedLawyer, href: '/cases/remove-lawyer/' + selectedLawyer }
       })
 
-      selectedFilters.categories.push({ heading: { text: 'Prosecutor' }, items: items })
+      selectedFilters.categories.push({ heading: { text: 'Prosecutor' }, items: selectedLawyerItems })
     }
 
     // Build Prisma where clause
     let where = { AND: [] }
+
+    // MANDATORY: Restrict to cases in user's units only
+    // If specific units are selected, use those (they're already a subset of user's units)
+    // Otherwise, use all of the user's units
+    if (selectedUnitFilters?.length) {
+      const unitIds = selectedUnitFilters.map(Number)
+      where.AND.push({ unitId: { in: unitIds } })
+    } else if (userUnitIds.length) {
+      where.AND.push({ unitId: { in: userUnitIds } })
+    }
 
     if (selectedDgaFilters?.length) {
       const reviewFilters = []
@@ -138,27 +154,42 @@ module.exports = router => {
         where.AND.push({ OR: reviewFilters })
       }
     }
-  
+
 
     if (selectedCtlFilters?.length) {
       const ctlFilters = []
 
-      if (selectedCtlFilters.includes('CTL')) {
-        ctlFilters.push({ isCTL: true })
+      if (selectedCtlFilters.includes('Has custody time limit')) {
+        ctlFilters.push({
+          defendants: {
+            some: {
+              charges: {
+                some: {
+                  custodyTimeLimit: { not: null }
+                }
+              }
+            }
+          }
+        })
       }
 
-      if (selectedCtlFilters.includes('Not CTL')) {
-        ctlFilters.push({ isCTL: false })
+      if (selectedCtlFilters.includes('Does not have custody time limit')) {
+        ctlFilters.push({
+          defendants: {
+            every: {
+              charges: {
+                every: {
+                  custodyTimeLimit: null
+                }
+              }
+            }
+          }
+        })
       }
 
       if (ctlFilters.length) {
         where.AND.push({ OR: ctlFilters })
       }
-    }
-
-    if (selectedUnitFilters?.length) {
-      const unitIds = selectedUnitFilters.map(Number) // convert to Int
-      where.AND.push({ unitId: { in: unitIds } })
     }
 
     if (selectedComplexityFilters?.length) {
@@ -191,10 +222,49 @@ module.exports = router => {
 
     let cases = await prisma.case.findMany({
       where: where,
-      include: { unit: true, user: true, lawyers: true, defendants: true, hearing: true, location: true, tasks: true, dga: true },
-      orderBy: {
-        isCTL: 'desc', // true values first
+      include: {
+        unit: true,
+        user: true,
+        lawyers: true,
+        defendants: {
+          include: {
+            charges: true,
+            defenceLawyer: true
+          }
+        },
+        hearing: true,
+        location: true,
+        tasks: true,
+        dga: true
       }
+    })
+
+    // Add CTL information to each case and sort by soonest CTL
+    cases = cases.map(_case => {
+      let allCtlDates = []
+      _case.defendants.forEach(defendant => {
+        defendant.charges.forEach(charge => {
+          if (charge.custodyTimeLimit) {
+            allCtlDates.push(new Date(charge.custodyTimeLimit))
+          }
+        })
+      })
+
+      _case.hasCTL = allCtlDates.length > 0
+      _case.soonestCTL = allCtlDates.length > 0 ? new Date(Math.min(...allCtlDates)) : null
+      _case.ctlCount = allCtlDates.length
+
+      return _case
+    })
+
+    // Sort: CTL cases first (by soonest date), then non-CTL cases
+    cases.sort((a, b) => {
+      if (a.hasCTL && !b.hasCTL) return -1
+      if (!a.hasCTL && b.hasCTL) return 1
+      if (a.hasCTL && b.hasCTL) {
+        return a.soonestCTL - b.soonestCTL // soonest first
+      }
+      return 0
     })
 
     let keywords = _.get(req.session.data.caseSearch, 'keywords')
@@ -213,8 +283,8 @@ module.exports = router => {
       value: dgaStatus
     }))
 
-    let ctlItems = ['CTL', 'Not CTL'].map(ctl => ({ 
-      text: ctl, 
+    let ctlItems = ['Has custody time limit', 'Does not have custody time limit'].map(ctl => ({
+      text: ctl,
       value: ctl
     }))
 
@@ -223,20 +293,25 @@ module.exports = router => {
       value: complexity
     }))
 
-    let typeItems = types.map(type => ({ 
-      text: type, 
+    let typeItems = types.map(type => ({
+      text: type,
       value: type
     }))
-    
-    let units = await prisma.unit.findMany()
+
+    // Fetch only user's units for the filter
+    let units = await prisma.unit.findMany({
+      where: { id: { in: userUnitIds } }
+    })
 
     let unitItems = units.map(unit => ({
       text: `${unit.name}`,
       value: `${unit.id}`
     }))
 
-
-    let lawyers = await prisma.lawyer.findMany()
+    // Fetch only lawyers from user's units
+    let lawyers = await prisma.lawyer.findMany({
+      where: { unitId: { in: userUnitIds } }
+    })
 
     let lawyerItems = [
       { text: 'Unassigned', value: 'Unassigned' },
@@ -252,14 +327,15 @@ module.exports = router => {
     cases = pagination.getData()
 
     res.render('cases/index', {
-      totalCases, 
+      totalCases,
       cases,
       dgaItems,
       ctlItems,
       unitItems,
-      complexityItems, 
-      typeItems, 
+      complexityItems,
+      typeItems,
       lawyerItems,
+      selectedLawyerItems,
       selectedFilters,
       pagination
     })

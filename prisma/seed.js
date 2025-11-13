@@ -6,15 +6,201 @@ const firstNames = require("../app/data/first-names.js");
 const lastNames = require("../app/data/last-names.js");
 const types = require("../app/data/types.js");
 const taskTypes = require("../app/data/task-types.js");
+const taskNames = require("../app/data/task-names.js");
 const documentTypes = require("../app/data/document-types.js");
 const specialisms = require("../app/data/specialisms.js");
 
 const prisma = new PrismaClient();
 
+const ukCities = [
+  "London", "Birmingham", "Manchester", "Leeds", "Glasgow", "Liverpool",
+  "Newcastle", "Sheffield", "Bristol", "Edinburgh", "Leicester", "Coventry",
+  "Bradford", "Cardiff", "Belfast", "Nottingham", "Kingston upon Hull",
+  "Plymouth", "Stoke-on-Trent", "Wolverhampton", "Derby", "Southampton",
+  "Portsmouth", "Brighton", "Reading", "Northampton", "Luton", "Bolton",
+  "Aberdeen", "Sunderland", "Dundee", "Norwich", "Ipswich", "York",
+  "Swansea", "Oxford", "Cambridge", "Peterborough", "Gloucester", "Chester"
+];
+
+const religions = [
+  "Christianity", "Islam", "Hinduism", "Sikhism", "Judaism", "Buddhism",
+  "No religion", "Not stated", "Other"
+];
+
+const occupations = [
+  "Unemployed", "Student", "Retail worker", "Construction worker", "Teacher",
+  "Healthcare worker", "Office worker", "Self-employed", "Driver", "Engineer",
+  "Hospitality worker", "Tradesperson", "IT professional", "Manager", "Retired"
+];
+
+const remandStatuses = [
+  "UNCONDITIONAL_BAIL", "CONDITIONAL_BAIL", "REMANDED_IN_CUSTODY", "REMANDED_IN_SECURE_UNIT"
+];
+
+const charges = [
+  { code: "B10", description: "THEFT, contrary to section 1(1) of the Theft Act 1968" },
+  { code: "A01", description: "ASSAULT BY BEATING, contrary to section 39 of the Criminal Justice Act 1988" },
+  { code: "C03", description: "CRIMINAL DAMAGE, contrary to section 1(1) of the Criminal Damage Act 1971" },
+  { code: "D05", description: "POSSESSION OF A CONTROLLED DRUG (Class B), contrary to section 5(2) of the Misuse of Drugs Act 1971" },
+  { code: "D06", description: "POSSESSION WITH INTENT TO SUPPLY A CONTROLLED DRUG (Class A), contrary to section 5(3) of the Misuse of Drugs Act 1971" },
+  { code: "F02", description: "FRAUD BY FALSE REPRESENTATION, contrary to section 1 of the Fraud Act 2006" },
+  { code: "H01", description: "HARASSMENT, contrary to section 2 of the Protection from Harassment Act 1997" },
+  { code: "M01", description: "COMMON ASSAULT, contrary to section 39 of the Criminal Justice Act 1988" },
+  { code: "R01", description: "ROBBERY, contrary to section 8(1) of the Theft Act 1968" },
+  { code: "V01", description: "DRIVING WHILST DISQUALIFIED, contrary to section 103(1)(b) of the Road Traffic Act 1988" },
+  { code: "W01", description: "POSSESSION OF AN OFFENSIVE WEAPON, contrary to section 1 of the Prevention of Crime Act 1953" },
+  { code: "B11", description: "BURGLARY, contrary to section 9(1)(a) of the Theft Act 1968" },
+  { code: "A02", description: "ACTUAL BODILY HARM, contrary to section 47 of the Offences Against the Person Act 1861" },
+  { code: "T01", description: "THREATENING BEHAVIOUR, contrary to section 4 of the Public Order Act 1986" }
+];
+
+const chargeStatuses = [
+  "Charged", "Under review", "Proceeded", "Discontinued", "Amended"
+];
+
+const pleas = ["NOT_GUILTY", "GUILTY", "NO_PLEA", "NOT_INDICATED"];
+
+const defenceLawyerOrganisations = [
+  "Smith & Co Solicitors", "Jones Legal LLP", "Brown Associates", "Wilson & Partners",
+  "Taylor Law Firm", "Davies Solicitors", "Evans Legal Services", "Thomas & Associates",
+  "Roberts Law", "Johnson Legal LLP", "Williams Solicitors", "Anderson & Co",
+  "White Legal Services", "Martin & Partners", "Thompson Law Firm", "Jackson Solicitors"
+];
+
+function generateUKMobileNumber() {
+  // UK mobile numbers: 07 + 9 digits (07XXXXXXXXX)
+  return `07${faker.string.numeric(9)}`;
+}
+
+function generateUKLandlineNumber() {
+  // Mix of geographic (01XXX XXXXXX) and major city (020 XXXX XXXX) numbers
+  const type = faker.helpers.arrayElement(['geographic', 'london', 'major']);
+
+  if (type === 'london') {
+    // London: 020 + 8 digits
+    return `020${faker.string.numeric(8)}`;
+  } else if (type === 'major') {
+    // Major cities (Manchester 0161, Birmingham 0121, etc.): 01XX + 7 digits
+    const areaCode = faker.helpers.arrayElement(['0161', '0121', '0131', '0141', '0113', '0114', '0117', '0151']);
+    return `${areaCode}${faker.string.numeric(7)}`;
+  } else {
+    // Geographic: 01XXX + 6 digits
+    return `01${faker.string.numeric(3)}${faker.string.numeric(6)}`;
+  }
+}
+
+function generateUKPhoneNumber() {
+  // Mix of mobile and landline for general phone numbers
+  return faker.helpers.arrayElement([generateUKMobileNumber(), generateUKLandlineNumber()]);
+}
+
 function futureDateAt10am() {
   const d = faker.date.future();
   d.setHours(10, 0, 0, 0);
   return d;
+}
+
+function getOverdueDate() {
+  // Returns a date 2-7 days in the past at 23:59:59.999 UTC
+  const daysAgo = faker.number.int({ min: 2, max: 7 });
+  const d = new Date();
+  d.setDate(d.getDate() - daysAgo);
+  d.setUTCHours(23, 59, 59, 999);
+  return d;
+}
+
+function getTodayDate() {
+  // Returns today at 23:59:59.999 UTC
+  const d = new Date();
+  d.setUTCHours(23, 59, 59, 999);
+  return d;
+}
+
+function getTomorrowDate() {
+  // Returns tomorrow at 23:59:59.999 UTC
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  d.setUTCHours(23, 59, 59, 999);
+  return d;
+}
+
+// Helper functions for generating task dates in different states
+function generatePendingTaskDates() {
+  // Pending: all dates in the future
+  const reminderDate = faker.date.soon({ days: 14 }); // 0-14 days from now
+  const daysUntilDue = faker.number.int({ min: 3, max: 7 });
+  const dueDate = new Date(reminderDate);
+  dueDate.setDate(dueDate.getDate() + daysUntilDue);
+
+  const daysUntilEscalation = faker.number.int({ min: 3, max: 7 });
+  const escalationDate = new Date(dueDate);
+  escalationDate.setDate(escalationDate.getDate() + daysUntilEscalation);
+
+  reminderDate.setUTCHours(23, 59, 59, 999);
+  dueDate.setUTCHours(23, 59, 59, 999);
+  escalationDate.setUTCHours(23, 59, 59, 999);
+
+  return { reminderDate, dueDate, escalationDate };
+}
+
+function generateDueTaskDates() {
+  // Due: reminder date has passed, due date in future
+  const daysAgo = faker.number.int({ min: 1, max: 3 });
+  const reminderDate = new Date();
+  reminderDate.setDate(reminderDate.getDate() - daysAgo);
+
+  const daysUntilDue = faker.number.int({ min: 2, max: 5 });
+  const dueDate = new Date();
+  dueDate.setDate(dueDate.getDate() + daysUntilDue);
+
+  const daysUntilEscalation = faker.number.int({ min: 3, max: 7 });
+  const escalationDate = new Date(dueDate);
+  escalationDate.setDate(escalationDate.getDate() + daysUntilEscalation);
+
+  reminderDate.setUTCHours(23, 59, 59, 999);
+  dueDate.setUTCHours(23, 59, 59, 999);
+  escalationDate.setUTCHours(23, 59, 59, 999);
+
+  return { reminderDate, dueDate, escalationDate };
+}
+
+function generateOverdueTaskDates() {
+  // Overdue: due date has passed, escalation date in future
+  const daysAgo = faker.number.int({ min: 2, max: 7 });
+  const reminderDate = new Date();
+  reminderDate.setDate(reminderDate.getDate() - daysAgo - 5);
+
+  const dueDate = new Date();
+  dueDate.setDate(dueDate.getDate() - daysAgo);
+
+  const daysUntilEscalation = faker.number.int({ min: 2, max: 5 });
+  const escalationDate = new Date();
+  escalationDate.setDate(escalationDate.getDate() + daysUntilEscalation);
+
+  reminderDate.setUTCHours(23, 59, 59, 999);
+  dueDate.setUTCHours(23, 59, 59, 999);
+  escalationDate.setUTCHours(23, 59, 59, 999);
+
+  return { reminderDate, dueDate, escalationDate };
+}
+
+function generateEscalatedTaskDates() {
+  // Escalated: all dates have passed
+  const daysAgo = faker.number.int({ min: 3, max: 10 });
+  const reminderDate = new Date();
+  reminderDate.setDate(reminderDate.getDate() - daysAgo - 7);
+
+  const dueDate = new Date();
+  dueDate.setDate(dueDate.getDate() - daysAgo - 3);
+
+  const escalationDate = new Date();
+  escalationDate.setDate(escalationDate.getDate() - daysAgo);
+
+  reminderDate.setUTCHours(23, 59, 59, 999);
+  dueDate.setUTCHours(23, 59, 59, 999);
+  escalationDate.setUTCHours(23, 59, 59, 999);
+
+  return { reminderDate, dueDate, escalationDate };
 }
 
 function generateCaseReference() {
@@ -31,32 +217,101 @@ async function main() {
   // -------------------- Units --------------------
   await prisma.unit.createMany({
     data: [
-      { name: "Magistrates" },
-      { name: "Crown Court" },
-      { name: "Rape and serious sexual offences " },
-      { name: "Complex casework unit" },
+      // Wessex area units
+      { name: "Dorset Magistrates Court" },
+      { name: "Hampshire Magistrates Court" },
+      { name: "Wessex Crown Court" },
+      { name: "Wessex RASSO" },
+      { name: "Wessex CCU" },
+      { name: "Wessex Fraud" },
+      { name: "Wiltshire Magistrates Court" },
+      // Yorkshire and Humberside area units
+      { name: "North Yorkshire Crown Court" },
+      { name: "North Yorkshire Magistrates Court" },
+      { name: "South Yorkshire Crown Court" },
+      { name: "South Yorkshire Magistrates Court" },
+      { name: "West Yorkshire Crown Court" },
+      { name: "West Yorkshire Magistrates Court" },
+      { name: "Yorkshire and Humberside CCU" },
+      { name: "Yorkshire and Humberside RASSO" },
+      { name: "Humberside South Yorkshire RASSO" },
+      { name: "Humberside Crown Court" },
+      { name: "Humberside Magistrates Court" },
     ],
   });
-  console.log("✅ Units seeded");
+  console.log("✅ 18 units seeded");
+
+  // -------------------- Teams --------------------
+  const standardTeamNames = [
+    "Admin pool",
+    "Crown Court",
+    "Magistrates Court General",
+    "Magistrates Court Contested"
+  ];
+
+  for (let unitId = 1; unitId <= 18; unitId++) {
+    await prisma.team.createMany({
+      data: standardTeamNames.map(name => ({
+        name,
+        unitId,
+        isStandard: true
+      }))
+    });
+  }
+  console.log("✅ 72 standard teams created (4 per unit)");
 
   // -------------------- Users --------------------
   const users = [];
   const userData = [
     {
-      email: "admin@example.com",
+      email: "reporting.admin@cps.gov.uk",
       password: "password123",
-      role: "ADMIN",
+      role: "Reporting admin",
+      firstName: "Veronica",
+      lastName: "Mars",
+    },
+    {
+      email: "adam@cps.gov.uk",
+      password: "password123",
+      role: "Paralegal officer",
+      firstName: "Adam",
+      lastName: "Silver",
+    },
+    {
+      email: "rachael@cps.gov.uk",
+      password: "password123",
+      role: "Paralegal officer",
       firstName: "Rachael",
       lastName: "Harvey",
     },
     {
-      email: "user@example.com",
+      email: "simon@cps.gov.uk",
       password: "password123",
-      role: "USER",
+      role: "Prosecutor",
       firstName: "Simon",
       lastName: "Whatley",
     },
+    {
+      email: "tony@cps.gov.uk",
+      password: "password123",
+      role: "Casework assistant",
+      firstName: "Tony",
+      lastName: "Stark",
+    },
   ];
+
+  // Generate 16 additional users to reach 20 total
+  for (let i = 0; i < 16; i++) {
+    const firstName = faker.helpers.arrayElement(firstNames);
+    const lastName = faker.helpers.arrayElement(lastNames);
+    userData.push({
+      email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}@example.com`,
+      password: "password123",
+      role: "USER",
+      firstName: firstName,
+      lastName: lastName,
+    });
+  }
 
   for (const u of userData) {
     const hashedPassword = await bcrypt.hash(u.password, 10);
@@ -68,7 +323,39 @@ async function main() {
     });
     users.push(user);
   }
-  console.log("✅ Users seeded");
+  console.log(`✅ ${users.length} users seeded`);
+
+  // -------------------- User-Unit Assignments --------------------
+  // Assign each user to 1-3 random units
+  for (const user of users) {
+    let selectedUnits;
+
+    // Rachael Harvey gets specific units
+    if (user.firstName === "Rachael" && user.lastName === "Harvey") {
+      selectedUnits = [3, 4]; // Wessex Crown Court, Wessex RASSO
+    } else if (user.firstName === "Simon" && user.lastName === "Whatley") {
+      selectedUnits = [9, 11, 13, 18]; // North Yorkshire Magistrates Court, South Yorkshire Magistrates Court, West Yorkshire Magistrates Court, Humberside Magistrates Court
+    } else if (user.firstName === "Tony" && user.lastName === "Stark") {
+      selectedUnits = [1, 2, 3, 4, 5, 6, 7]; // All Wessex units: Dorset Magistrates Court, Hampshire Magistrates Court, Wessex Crown Court, Wessex RASSO, Wessex CCU, Wessex Fraud, Wiltshire Magistrates Court
+    } else if (user.firstName === "Veronica" && user.lastName === "Mars") {
+      selectedUnits = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]; // All Yorkshire and Humberside units
+    }
+    else {
+      const numUnits = faker.number.int({ min: 1, max: 3 });
+      selectedUnits = faker.helpers.arrayElements(
+        Array.from({ length: 18 }, (_, i) => i + 1),
+        numUnits
+      );
+    }
+
+    await prisma.userUnit.createMany({
+      data: selectedUnits.map(unitId => ({
+        userId: user.id,
+        unitId
+      }))
+    });
+  }
+  console.log(`✅ Users assigned to units`);
 
   // -------------------- Specialisms --------------------
   await prisma.specialism.createMany({
@@ -82,7 +369,7 @@ async function main() {
     data: {
       firstName: "Tony",
       lastName: "Stark",
-      unit: { connect: { id: faker.number.int({ min: 1, max: 4 }) } },
+      unit: { connect: { id: faker.number.int({ min: 1, max: 18 }) } },
     },
   });
   lawyers.push(tony);
@@ -111,7 +398,7 @@ async function main() {
       data: {
         firstName: faker.helpers.arrayElement(firstNames),
         lastName: faker.helpers.arrayElement(lastNames),
-        unit: { connect: { id: faker.number.int({ min: 1, max: 4 }) } },
+        unit: { connect: { id: faker.number.int({ min: 1, max: 18 }) } },
         specialistAreas: { connect: specialistAreas.map((name) => ({ name })) },
         preferredAreas: { connect: preferredAreas.map((name) => ({ name })) },
         restrictedAreas: { connect: restrictedAreas.map((name) => ({ name })) },
@@ -121,18 +408,102 @@ async function main() {
   }
   console.log("✅ Lawyers seeded");
 
-  // -------------------- Defendants --------------------
+  // -------------------- Defence Lawyers --------------------
+  const defenceLawyers = [];
+  for (let i = 0; i < 100; i++) {
+    const dl = await prisma.defenceLawyer.create({
+      data: {
+        firstName: faker.helpers.arrayElement(firstNames),
+        lastName: faker.helpers.arrayElement(lastNames),
+        organisation: faker.helpers.arrayElement(defenceLawyerOrganisations),
+      },
+    });
+    defenceLawyers.push(dl);
+  }
+  console.log("✅ Defence lawyers seeded");
+
+  // -------------------- Defendants with Charges --------------------
   const defendants = [];
   for (let i = 0; i < 200; i++) {
+    // Decide how many charges this defendant has (1-4, weighted towards 1-2)
+    const numCharges = faker.helpers.weightedArrayElement([
+      { weight: 50, value: 1 },
+      { weight: 30, value: 2 },
+      { weight: 15, value: 3 },
+      { weight: 5, value: 4 }
+    ]);
+
+    // Select random charges
+    const selectedCharges = faker.helpers.arrayElements(charges, numCharges);
+
+    // Determine if any charges will have CTL (50% chance)
+    const hasAnyCTL = faker.datatype.boolean();
+
+    let ctlDate = null;
+    if (hasAnyCTL) {
+      // Generate a CTL date within the next 30 days
+      ctlDate = faker.date.soon({ days: 30 });
+      ctlDate.setUTCHours(23, 59, 59, 999);
+    }
+
+    // Build charges data
+    const chargesData = selectedCharges.map((charge, index) => {
+      // 50% of charges should have CTL overall
+      const thisChargeHasCTL = faker.datatype.boolean();
+
+      let thisCtlDate = null;
+      if (thisChargeHasCTL && hasAnyCTL) {
+        // If this is the first charge or 75% chance, use the same CTL
+        if (index === 0 || Math.random() < 0.75) {
+          thisCtlDate = ctlDate;
+        } else {
+          // 25% chance of different CTL within the next 30 days
+          thisCtlDate = faker.date.soon({ days: 30 });
+          thisCtlDate.setUTCHours(23, 59, 59, 999);
+        }
+      }
+
+      // Generate particulars with random date and victim
+      const offenceDate = faker.date.past();
+      const particularsDate = offenceDate.toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
+      const victimName = `${faker.helpers.arrayElement(firstNames)} ${faker.helpers.arrayElement(lastNames)}`;
+
+      return {
+        chargeCode: charge.code,
+        description: charge.description,
+        status: faker.helpers.arrayElement(chargeStatuses),
+        offenceDate: offenceDate,
+        plea: faker.helpers.arrayElement(pleas),
+        particulars: `On the ${particularsDate} ${charge.code === 'B10' ? 'stole' : charge.code === 'A01' ? 'assaulted' : charge.code === 'C03' ? 'damaged property belonging to' : 'committed an offence against'} ${victimName}.`,
+        custodyTimeLimit: thisCtlDate,
+        isCount: faker.datatype.boolean(0.3), // 30% are counts
+      };
+    });
+
     const d = await prisma.defendant.create({
       data: {
         firstName: faker.helpers.arrayElement(firstNames),
         lastName: faker.helpers.arrayElement(lastNames),
+        gender: faker.helpers.arrayElement(["Male", "Female", "Unknown"]),
+        religion: faker.helpers.arrayElement([...religions, null]), // Some nulls
+        occupation: faker.helpers.arrayElement([...occupations, null]), // Some nulls
+        dateOfBirth: faker.date.birthdate({ min: 18, max: 75, mode: "age" }),
+        remandStatus: faker.helpers.arrayElement(remandStatuses),
+        defenceLawyer: {
+          connect: { id: faker.helpers.arrayElement(defenceLawyers).id }
+        },
+        charges: {
+          create: chargesData
+        }
       },
     });
     defendants.push(d);
   }
-  console.log("✅ Defendants seeded");
+  console.log("✅ Defendants and charges seeded");
 
   // -------------------- Victims --------------------
   const victims = [];
@@ -153,18 +524,6 @@ async function main() {
   const DGA_TARGET = 50; // set desired number of DGAs
 
   const createdCases = [];
-
-  // Define a pool of possible task names
-  const taskNames = [
-    "Retrieve core details",
-    "Check communications",
-    "Review disclosure",
-    "Prepare witness briefing",
-    "Schedule pre-trial meeting",
-    "Draft opening statement",
-    "Submit evidence bundle",
-    "Confirm hearing date",
-  ];
 
   // Define a pool of possible document names
   const documentNames = [
@@ -195,17 +554,71 @@ async function main() {
       faker.number.int({ min: 1, max: 3 })
     );
 
-    const caseUnitId = faker.number.int({ min: 1, max: 4 });
+    const caseUnitId = faker.number.int({ min: 1, max: 18 });
 
     // Pick between 0 and 5 unique task names
     const numTasks = faker.number.int({ min: 0, max: 5 });
     const chosenTaskNames = faker.helpers.arrayElements(taskNames, numTasks);
 
-    const tasksData = chosenTaskNames.map((name) => ({
-      name,
-      type: faker.helpers.arrayElement(taskTypes),
-      dueDate: faker.date.future(),
-    }));
+    const tasksData = chosenTaskNames.map((name) => {
+      // 75% assigned to users, 25% assigned to teams
+      const assignmentType = faker.helpers.weightedArrayElement([
+        { weight: 75, value: 'user' },
+        { weight: 25, value: 'team' }
+      ]);
+
+      let assignedToUserId = null;
+      let assignedToTeamId = null;
+
+      if (assignmentType === 'user') {
+        // Exclude Tony Stark (casework assistant) from task assignments
+        const usersExcludingTony = users.filter(u => u.email !== 'tony@cps.gov.uk');
+        assignedToUserId = faker.helpers.arrayElement(usersExcludingTony).id;
+      } else if (assignmentType === 'team') {
+        // Pick a random team from the case's unit (4 teams per unit)
+        const unitTeamOffset = (caseUnitId - 1) * 4;
+        assignedToTeamId = faker.number.int({ min: unitTeamOffset + 1, max: unitTeamOffset + 4 });
+      }
+
+      // Generate task dates based on random state
+      // 40% pending, 30% due, 20% overdue, 10% escalated
+      const stateType = faker.helpers.weightedArrayElement([
+        { weight: 40, value: 'pending' },
+        { weight: 30, value: 'due' },
+        { weight: 20, value: 'overdue' },
+        { weight: 10, value: 'escalated' }
+      ]);
+
+      let dates;
+      switch (stateType) {
+        case 'pending':
+          dates = generatePendingTaskDates();
+          break;
+        case 'due':
+          dates = generateDueTaskDates();
+          break;
+        case 'overdue':
+          dates = generateOverdueTaskDates();
+          break;
+        case 'escalated':
+          dates = generateEscalatedTaskDates();
+          break;
+      }
+
+      // 5% chance task is completed
+      const completedDate = faker.datatype.boolean({ probability: 0.05 }) ? faker.date.recent({ days: 30 }) : null;
+
+      return {
+        name,
+        type: faker.helpers.arrayElement(taskTypes),
+        reminderDate: dates.reminderDate,
+        dueDate: dates.dueDate,
+        escalationDate: dates.escalationDate,
+        completedDate,
+        assignedToUserId,
+        assignedToTeamId,
+      };
+    });
 
     // Pick between 5 and 15 documents
     const numDocuments = faker.number.int({ min: 5, max: 15 });
@@ -227,10 +640,9 @@ async function main() {
         type: faker.helpers.arrayElement(types),
         user: {
           connect: {
-            id: faker.helpers.arrayElement([users[0].id, users[1].id]),
+            id: faker.helpers.arrayElement(users).id,
           },
         },
-        isCTL: faker.datatype.boolean(),
         complexity: faker.helpers.arrayElement(complexities),
         unit: { connect: { id: caseUnitId } },
         defendants: { connect: assignedDefendants.map((d) => ({ id: d.id })) },
@@ -241,7 +653,7 @@ async function main() {
             name: faker.company.name(),
             line1: faker.location.streetAddress(),
             line2: faker.location.secondaryAddress(),
-            town: faker.location.city(),
+            town: faker.helpers.arrayElement(ukCities),
             postcode: faker.location.zipCode("WD# #SF"),
           },
         },
@@ -325,15 +737,15 @@ async function main() {
           isCpsContactAllowed: faker.datatype.boolean(),
           addressLine1: faker.helpers.arrayElement([null, faker.location.streetAddress()]),
           addressLine2: faker.helpers.arrayElement([null, faker.location.secondaryAddress()]),
-          addressTown: faker.helpers.arrayElement([null, faker.location.city()]),
+          addressTown: faker.helpers.arrayElement([null, faker.helpers.arrayElement(ukCities)]),
           addressPostcode: faker.helpers.arrayElement([null, faker.location.zipCode("WD# #SF")]),
-          mobileNumber: faker.helpers.arrayElement([null, faker.phone.number()]),
+          mobileNumber: faker.helpers.arrayElement([null, generateUKMobileNumber()]),
           emailAddress: faker.helpers.arrayElement([null, faker.internet.email()]),
           preferredContactMethod: faker.helpers.arrayElement([null, "Email", "Phone", "Post"]),
-          faxNumber: faker.helpers.arrayElement([null, faker.phone.number()]),
-          homeNumber: faker.helpers.arrayElement([null, faker.phone.number()]),
-          workNumber: faker.helpers.arrayElement([null, faker.phone.number()]),
-          otherNumber: faker.helpers.arrayElement([null, faker.phone.number()]),
+          faxNumber: faker.helpers.arrayElement([null, generateUKLandlineNumber()]),
+          homeNumber: faker.helpers.arrayElement([null, generateUKLandlineNumber()]),
+          workNumber: faker.helpers.arrayElement([null, generateUKPhoneNumber()]),
+          otherNumber: faker.helpers.arrayElement([null, generateUKPhoneNumber()]),
           ...witnessTypes,
           isAppearingInCourt: faker.helpers.arrayElement([false, null]),
           isRelevant: faker.datatype.boolean(),
@@ -347,18 +759,13 @@ async function main() {
           ]),
           wasWarned: faker.datatype.boolean(),
           dcf: isDcf,
-          // Only set availability and special measures fields if dcf = true (new architecture)
+          // Only set availability fields if dcf = true (new architecture)
           courtAvailabilityStartDate: isDcf ? faker.date.future() : null,
           courtAvailabilityEndDate: isDcf ? faker.date.future() : null,
-          courtSpecialMeasures: isDcf ? faker.helpers.arrayElement([
-            null,
-            faker.lorem.sentence(),
-          ]) : null,
-          courtNeeds: isDcf ? faker.helpers.arrayElement([
-            null,
-            faker.lorem.sentence(),
-          ]) : null,
-          requiresMeeting: isDcf ? faker.datatype.boolean() : null,
+          // Only set victim fields if witness is a victim
+          victimCode: witnessTypes.isVictim ? "Learning disabilities" : null,
+          victimExplained: witnessTypes.isVictim ? faker.datatype.boolean() : null,
+          victimOfferResponse: witnessTypes.isVictim ? faker.helpers.arrayElement(["Not offered", "Declined", "Accepted"]) : null,
           caseId: createdCase.id,
         },
       });
@@ -375,6 +782,88 @@ async function main() {
           },
         });
       }
+
+      // Create special measures if dcf = true (65% get 1, 10% get 2, 25% get 0)
+      if (isDcf) {
+        const numSpecialMeasures = faker.helpers.weightedArrayElement([
+          { weight: 65, value: 1 },
+          { weight: 10, value: 2 },
+          { weight: 25, value: 0 }
+        ]);
+
+        const specialMeasureTypes = [
+          "Screen Witness",
+          "Pre-recorded Cross-examination (s.28)",
+          "Evidence by Live Link",
+          "Evidence in Private",
+          "Removal of Wigs and Gowns",
+          "Visually Recorded Interview",
+          "Intermediary",
+          "Aids to Communication"
+        ];
+
+        const meetingUrls = [
+          "https://teams.microsoft.com/l/meetup-join/19%3ameeting_example123",
+          "https://zoom.us/j/1234567890",
+          "https://meet.google.com/abc-defg-hij"
+        ];
+
+        // Select unique types for this witness
+        const selectedTypes = faker.helpers.arrayElements(specialMeasureTypes, numSpecialMeasures);
+
+        for (let sm = 0; sm < numSpecialMeasures; sm++) {
+          const requiresMeeting = faker.datatype.boolean();
+
+          await prisma.specialMeasure.create({
+            data: {
+              witnessId: createdWitness.id,
+              type: selectedTypes[sm],
+              details: faker.lorem.sentence(),
+              needs: faker.lorem.sentence(),
+              requiresMeeting: requiresMeeting,
+              meetingUrl: requiresMeeting ? faker.helpers.arrayElement(meetingUrls) : null,
+              hasAppliedForReportingRestrictions: faker.datatype.boolean(),
+            },
+          });
+        }
+      }
+    }
+
+    // -------------------- Notes --------------------
+    // Add 0-3 notes to each case
+    const numNotes = faker.number.int({ min: 0, max: 3 });
+    for (let n = 0; n < numNotes; n++) {
+      const noteContent = faker.helpers.arrayElement([
+        "Spoke with the defendant's solicitor today. They are requesting additional time to review the evidence.",
+        "Witness availability confirmed for the trial dates. All key witnesses will be present.",
+        "Discussed the case with senior prosecutor. Agreed to pursue the more serious charge given the strength of evidence.",
+        "Received updated forensic report. Results support our case significantly.",
+        "Defense has indicated they may be willing to accept a plea deal. Awaiting formal proposal.",
+        "Victim personal statement received and added to case file. Very compelling account.",
+        "Court liaison confirmed hearing room availability. No conflicts with trial dates.",
+        "Expert witness has reviewed the materials and confirmed availability to testify.",
+        "Defense disclosure received today. Need to review carefully before next hearing.",
+        "Case complexity assessment completed. Recommend upgrading to Level 4.",
+        "Brief prepared for counsel. All materials compiled and sent electronically.",
+        "Spoke with investigating officer. Additional evidence may be available from digital forensics.",
+        "Victim expressed concerns about giving evidence in open court. Discussing special measures options.",
+        "Received confirmation that all exhibits are properly logged and secured.",
+        "Case conference scheduled for next week to discuss trial strategy with team."
+      ]);
+
+      // 70% chance of having a type, 30% chance of no type
+      const noteType = faker.datatype.boolean(0.7)
+        ? faker.helpers.arrayElement(['CTL log', 'General', 'Review note', 'Case update'])
+        : null;
+
+      await prisma.note.create({
+        data: {
+          type: noteType,
+          content: noteContent,
+          caseId: createdCase.id,
+          userId: faker.helpers.arrayElement(users).id
+        }
+      });
     }
 
     createdCases.push({ id: createdCase.id });
@@ -382,24 +871,67 @@ async function main() {
 
   console.log(`✅ Created ${createdCases.length} cases`);
 
-  // -------------------- Assign DGAs --------------------
-  const dgaIds = new Set(
-    faker.helpers.arrayElements(createdCases, DGA_TARGET).map((c) => c.id)
-  );
+// NEW DGA SEEDING LOGIC
 
-  for (const c of createdCases) {
-    if (dgaIds.has(c.id)) {
-      await prisma.dGA.create({
+// -------------------- Assign DGAs with Failure Reasons --------------------
+const dgaIds = new Set(
+  faker.helpers.arrayElements(createdCases, DGA_TARGET).map((c) => c.id)
+);
+
+const failureReasonsList = [
+  "Breach failure - Charged by Police in breach of the Director's Guidance",
+  "Disclosure failure - Disclosable unused material not provided",
+  "Disclosure failure - Information about reasonable lines of inquiry insufficient",
+  "Disclosure failure - Information about reasonable lines of inquiry not provided",
+  "Disclosure failure - Rebuttable presumption material not provided",
+  "Disclosure failure - Schedules of unused material not completed correctly",
+  "Disclosure failure - Schedules of unused material not provided",
+  "Evidential failure - Exhibit",
+  "Evidential failure - Forensic",
+  "Evidential failure - Medical evidence",
+  "Evidential failure - Multi-media BWV not clipped",
+  "Evidential failure - Multi-media BWV not in playable format",
+  "Evidential failure - Multi-media BWV not provided",
+  "Evidential failure - Multi-media CCTV not clipped",
+  "Evidential failure - Multi-media CCTV not in playable format",
+  "Evidential failure - Multi-media CCTV not provided",
+  "Evidential failure - Multi-media Other not clipped",
+  "Evidential failure - Multi-media Other not in playable format",
+  "Evidential failure - Relevant orders/applications, details not provided",
+  "Evidential failure - Statement(s)",
+  "Victim and witness failure - Needs of the victim/witness special measures have not been considered or are inadequate",
+  "Victim and witness failure - Victim and witness needs (not special measures related)",
+  "Victim and witness failure - VPS - no information on whether VPS offered/not provided"
+];
+
+for (const c of createdCases) {
+  if (dgaIds.has(c.id)) {
+    // Create DGA
+    const dga = await prisma.dGA.create({
+      data: {
+        caseId: c.id,
+        reason: faker.lorem.sentence(),
+        // outcome omitted → will be NULL
+      },
+    });
+
+    // Create 1-5 failure reasons for this DGA
+    const numFailureReasons = faker.number.int({ min: 1, max: 5 });
+    const selectedReasons = faker.helpers.arrayElements(failureReasonsList, numFailureReasons);
+
+    for (const reason of selectedReasons) {
+      await prisma.dGAFailureReason.create({
         data: {
-          caseId: c.id,
-          reason: faker.lorem.sentence(),
-          // outcome omitted → will be NULL
-        },
+          dgaId: dga.id,
+          reason: reason,
+          outcome: null // All start as "Not started"
+        }
       });
     }
   }
+}
 
-  console.log(`✅ Assigned ${DGA_TARGET} cases needing DGA review (no outcome set)`);
+console.log(`✅ Assigned ${DGA_TARGET} cases needing DGA review with failure reasons`);
 
   // -------------------- Assign cases --------------------
   const unassignedCount = Math.min(UNASSIGNED_TARGET, createdCases.length);
@@ -427,6 +959,250 @@ async function main() {
   console.log(
     `✅ Assigned ${assignableCases.length} cases to exactly one lawyer, left ${unassignedCount} unassigned`
   );
+
+  // -------------------- Create Guaranteed Tasks for Testing --------------------
+  // Ensure each user (except Tony Stark) has tasks that are overdue, due today, and due tomorrow
+  const usersExcludingTony = users.filter(u => u.email !== 'tony@cps.gov.uk');
+
+  let guaranteedTasksCreated = 0;
+
+  for (const user of usersExcludingTony) {
+    // Get user's unit IDs
+    const userWithUnits = await prisma.user.findUnique({
+      where: { id: user.id },
+      include: { units: true }
+    });
+    const userUnitIds = userWithUnits.units.map(uu => uu.unitId);
+
+    // Find all cases assigned to this user that are in their units
+    const userCases = await prisma.case.findMany({
+      where: {
+        userId: user.id,
+        unitId: { in: userUnitIds }
+      }
+    });
+
+    // Skip if user has no cases in their units
+    if (userCases.length === 0) continue;
+
+    // Pick a random case for these guaranteed tasks
+    const targetCase = faker.helpers.arrayElement(userCases);
+
+    // Create 4 guaranteed tasks in each state: pending, due, overdue, escalated
+    const pendingDates = generatePendingTaskDates();
+    const dueDates = generateDueTaskDates();
+    const overdueDates = generateOverdueTaskDates();
+    const escalatedDates = generateEscalatedTaskDates();
+
+    const guaranteedTasks = [
+      {
+        name: faker.helpers.arrayElement(taskNames),
+        type: faker.helpers.arrayElement(taskTypes),
+        reminderDate: pendingDates.reminderDate,
+        dueDate: pendingDates.dueDate,
+        escalationDate: pendingDates.escalationDate,
+        completedDate: null,
+        caseId: targetCase.id,
+        assignedToUserId: user.id,
+        assignedToTeamId: null,
+      },
+      {
+        name: faker.helpers.arrayElement(taskNames),
+        type: faker.helpers.arrayElement(taskTypes),
+        reminderDate: dueDates.reminderDate,
+        dueDate: dueDates.dueDate,
+        escalationDate: dueDates.escalationDate,
+        completedDate: null,
+        caseId: targetCase.id,
+        assignedToUserId: user.id,
+        assignedToTeamId: null,
+      },
+      {
+        name: faker.helpers.arrayElement(taskNames),
+        type: faker.helpers.arrayElement(taskTypes),
+        reminderDate: overdueDates.reminderDate,
+        dueDate: overdueDates.dueDate,
+        escalationDate: overdueDates.escalationDate,
+        completedDate: null,
+        caseId: targetCase.id,
+        assignedToUserId: user.id,
+        assignedToTeamId: null,
+      },
+      {
+        name: faker.helpers.arrayElement(taskNames),
+        type: faker.helpers.arrayElement(taskTypes),
+        reminderDate: escalatedDates.reminderDate,
+        dueDate: escalatedDates.dueDate,
+        escalationDate: escalatedDates.escalationDate,
+        completedDate: null,
+        caseId: targetCase.id,
+        assignedToUserId: user.id,
+        assignedToTeamId: null,
+      }
+    ];
+
+    await prisma.task.createMany({
+      data: guaranteedTasks
+    });
+
+    guaranteedTasksCreated += guaranteedTasks.length;
+  }
+
+  console.log(`✅ Created ${guaranteedTasksCreated} guaranteed tasks (pending, due, overdue, escalated) for ${usersExcludingTony.length} users`);
+
+  // -------------------- Create Guaranteed CTL Charges for Testing --------------------
+  // Ensure each user has cases with charges where CTL expires today and tomorrow
+  let ctlChargesCreated = 0;
+  let ctlTasksCreated = 0;
+
+  for (const user of usersExcludingTony) {
+    // Get user's unit IDs
+    const userWithUnits = await prisma.user.findUnique({
+      where: { id: user.id },
+      include: { units: true }
+    });
+    const userUnitIds = userWithUnits.units.map(uu => uu.unitId);
+
+    // Find all cases assigned to this user that are in their units
+    const userCases = await prisma.case.findMany({
+      where: {
+        userId: user.id,
+        unitId: { in: userUnitIds }
+      },
+      include: { defendants: true }
+    });
+
+    // Skip if user has no cases in their units
+    if (userCases.length === 0) continue;
+
+    // Pick two different cases for today and tomorrow CTL (or same if only one case)
+    const casesForCtl = faker.helpers.arrayElements(userCases, Math.min(2, userCases.length));
+    const caseForTodayCtl = casesForCtl[0];
+    const caseForTomorrowCtl = casesForCtl.length > 1 ? casesForCtl[1] : casesForCtl[0];
+
+    // Create defendant with charge that has CTL expiring TODAY
+    const todayCtlDefendant = await prisma.defendant.create({
+      data: {
+        firstName: faker.helpers.arrayElement(firstNames),
+        lastName: faker.helpers.arrayElement(lastNames),
+        gender: faker.helpers.arrayElement(["Male", "Female", "Unknown"]),
+        dateOfBirth: faker.date.birthdate({ min: 18, max: 75, mode: "age" }),
+        remandStatus: "REMANDED_IN_CUSTODY", // Must be in custody for CTL to matter
+        defenceLawyer: {
+          connect: { id: faker.helpers.arrayElement(defenceLawyers).id }
+        },
+        charges: {
+          create: {
+            chargeCode: faker.helpers.arrayElement(charges).code,
+            description: faker.helpers.arrayElement(charges).description,
+            status: "Charged",
+            offenceDate: faker.date.past(),
+            plea: faker.helpers.arrayElement(pleas),
+            particulars: faker.lorem.sentence(),
+            custodyTimeLimit: getTodayDate(),
+            isCount: false,
+          }
+        }
+      },
+    });
+
+    // Connect defendant to case
+    await prisma.case.update({
+      where: { id: caseForTodayCtl.id },
+      data: {
+        defendants: {
+          connect: { id: todayCtlDefendant.id }
+        }
+      }
+    });
+
+    // Create task for today's CTL
+    const todayCtlDueDate = getTodayDate();
+    const todayCtlReminderDate = new Date(todayCtlDueDate);
+    todayCtlReminderDate.setDate(todayCtlReminderDate.getDate() - 3);
+    const todayCtlEscalationDate = new Date(todayCtlDueDate);
+    todayCtlEscalationDate.setDate(todayCtlEscalationDate.getDate() + 2);
+
+    await prisma.task.create({
+      data: {
+        name: "CTL expiry imminent",
+        type: "Reminder",
+        reminderDate: todayCtlReminderDate,
+        dueDate: todayCtlDueDate,
+        escalationDate: todayCtlEscalationDate,
+        completedDate: null,
+        caseId: caseForTodayCtl.id,
+        assignedToUserId: user.id,
+        assignedToTeamId: null,
+      }
+    });
+
+    ctlChargesCreated++;
+    ctlTasksCreated++;
+
+    // Create defendant with charge that has CTL expiring TOMORROW
+    const tomorrowCtlDefendant = await prisma.defendant.create({
+      data: {
+        firstName: faker.helpers.arrayElement(firstNames),
+        lastName: faker.helpers.arrayElement(lastNames),
+        gender: faker.helpers.arrayElement(["Male", "Female", "Unknown"]),
+        dateOfBirth: faker.date.birthdate({ min: 18, max: 75, mode: "age" }),
+        remandStatus: "REMANDED_IN_CUSTODY", // Must be in custody for CTL to matter
+        defenceLawyer: {
+          connect: { id: faker.helpers.arrayElement(defenceLawyers).id }
+        },
+        charges: {
+          create: {
+            chargeCode: faker.helpers.arrayElement(charges).code,
+            description: faker.helpers.arrayElement(charges).description,
+            status: "Charged",
+            offenceDate: faker.date.past(),
+            plea: faker.helpers.arrayElement(pleas),
+            particulars: faker.lorem.sentence(),
+            custodyTimeLimit: getTomorrowDate(),
+            isCount: false,
+          }
+        }
+      },
+    });
+
+    // Connect defendant to case
+    await prisma.case.update({
+      where: { id: caseForTomorrowCtl.id },
+      data: {
+        defendants: {
+          connect: { id: tomorrowCtlDefendant.id }
+        }
+      }
+    });
+
+    // Create task for tomorrow's CTL
+    const tomorrowCtlDueDate = getTomorrowDate();
+    const tomorrowCtlReminderDate = new Date(tomorrowCtlDueDate);
+    tomorrowCtlReminderDate.setDate(tomorrowCtlReminderDate.getDate() - 3);
+    const tomorrowCtlEscalationDate = new Date(tomorrowCtlDueDate);
+    tomorrowCtlEscalationDate.setDate(tomorrowCtlEscalationDate.getDate() + 2);
+
+    await prisma.task.create({
+      data: {
+        name: "CTL expiry imminent",
+        type: "Reminder",
+        reminderDate: tomorrowCtlReminderDate,
+        dueDate: tomorrowCtlDueDate,
+        escalationDate: tomorrowCtlEscalationDate,
+        completedDate: null,
+        caseId: caseForTomorrowCtl.id,
+        assignedToUserId: user.id,
+        assignedToTeamId: null,
+      }
+    });
+
+    ctlChargesCreated++;
+    ctlTasksCreated++;
+  }
+
+  console.log(`✅ Created ${ctlChargesCreated} charges with CTL expiring today/tomorrow for ${usersExcludingTony.length} users`);
+  console.log(`✅ Created ${ctlTasksCreated} CTL-related tasks for these charges`);
 
   // -------------------- Activity Logs --------------------
   const eventTypes = [
