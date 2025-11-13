@@ -440,16 +440,20 @@ function removeSearchStatus() {
 
     // Meta bar: only the show/hide details control now
     var metaBar =
-      '<div class="dcf-viewer__meta-bar">' +
-        '<div class="dcf-meta-actions">' +
+    '<div class="dcf-viewer__meta-bar">' +
+      '<div class="dcf-meta-actions">' +
+        '<div class="dcf-meta-right">' +
+          '<a href="#" class="govuk-link" data-action="add-note">Add a note</a>' +
+          '<span class="dcf-meta-sep" aria-hidden="true"> | </span>' +
           '<a href="#" class="govuk-link js-meta-toggle" ' +
-            'data-action="toggle-meta" ' +
-            'aria-expanded="false" ' +
-            'aria-controls="' + esc(bodyId) + '" ' +
-            'data-controls="' + esc(bodyId) + '">' +
+            'data-action="toggle-meta" aria-expanded="false" ' +
+            'aria-controls="' + esc(bodyId) + '" data-controls="' + esc(bodyId) + '">' +
             'Show details</a>' +
         '</div>' +
-      '</div>'
+      '</div>' +
+    '</div>'
+
+    
 
     // Inline actions (reclassify) – placed inside the meta body before first section
     var inlineActions =

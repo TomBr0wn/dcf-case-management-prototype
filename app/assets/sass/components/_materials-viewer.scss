@@ -161,6 +161,11 @@
 /* Remove default button bottom margin if any */
 .dcf-viewer__meta-bar .dcf-meta-secondary { margin: 0; }
 
+.dcf-meta-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.dcf-meta-sep { opacity: .85; }
+
+
+
 /* ----------------------------------------------------------------------
    OPS BAR (below meta, above iframe)
    ---------------------------------------------------------------------- */
