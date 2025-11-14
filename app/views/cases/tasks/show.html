@@ -26,7 +26,7 @@
       <h1 class="govuk-heading-l">
         {{task.name}}
         {% if task.isUrgent %}
-          {{govukTag({ text: 'Urgent', classes: 'govuk-tag--purple' })}}
+          {{govukTag({ text: 'Urgent', classes: 'govuk-tag--red' })}}
         {% endif %}
         {# {{govukTag({ text: task.severity, classes: (task.severity | severityTagClass) })}} #}
       </h1>
