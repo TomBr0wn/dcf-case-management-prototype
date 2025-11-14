@@ -28,14 +28,11 @@
 
   function buildPdfViewerUrl(rawUrl) {
     var fileUrl = toPublic(rawUrl || '')
-      return '/public/pdfjs/web/viewer.html?file=' + encodeURIComponent(fileUrl)
-    }
+    return '/public/pdfjs/web/viewer.html?file=' + encodeURIComponent(fileUrl)
+  }
 
-
-  // Remove the search status banner (if present). Used when opening a document
-  
   // --- Tab state for multi-document viewing ---
-  var _tabStore = { metaById: Object.create(null) };
+  var _tabStore = { metaById: Object.create(null) }
 
   function stableId(meta, url) {
     var raw = (meta && (meta.ItemId || (meta.Material && meta.Material.Reference))) || url || Date.now().toString()
@@ -56,7 +53,7 @@
       '<div id="dcf-viewer-tabs" class="dcf-viewer__tabs dcf-viewer__tabs--flush"></div>',
       '<div class="dcf-viewer__meta" data-meta-root></div>',
 
-      // ✅ restore original ops-bar structure/classes and start hidden
+      // ops-bar
       '<div class="dcf-viewer__ops-bar" data-ops-root>',
         '<div class="dcf-ops-actions">',
           '<a href="#" class="govuk-button govuk-button--inverse dcf-ops-iconbtn" data-action="ops-icon">',
@@ -76,7 +73,7 @@
                 '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Turn on potential redactions</a></li>',
                 '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Rotate pages</a></li>',
                 '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Discard pages</a></li>',
-                // ✅ keep these two wired to your JS by adding data-action
+                // status actions
                 '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link" data-action="mark-read">Mark as read</a></li>',
                 '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link" data-action="mark-unread">Mark as unread</a></li>',
                 '<li class="moj-button-menu__item" role="none"><a role="menuitem" href="#" class="moj-button-menu__link">Rename</a></li>',
@@ -93,8 +90,6 @@
     viewer.setAttribute('tabindex','-1')
     return viewer.querySelector('#dcf-viewer-tabs')
   }
-
-
 
   function setActiveTab(tabEl) {
     var tabs = viewer.querySelectorAll('#dcf-viewer-tabs .dcf-doc-tab')
@@ -153,8 +148,7 @@
     var tabs = ensureShell()
     var existing = viewer.querySelector('#dcf-viewer-tabs .dcf-doc-tab[data-tab-id="'+ id +'"]')
     if (!existing) {
-      var btn =
-        document.createElement('button')
+      var btn = document.createElement('button')
       btn.type = 'button'
       btn.className = 'dcf-doc-tab'
       btn.setAttribute('role', 'tab')
@@ -186,7 +180,8 @@
 
     renderMeta(meta)
   }
-function removeSearchStatus() {
+
+  function removeSearchStatus() {
     var s = document.getElementById('search-status')
     if (s && s.parentNode) s.parentNode.removeChild(s)
   }
@@ -198,7 +193,6 @@ function removeSearchStatus() {
       '<div id="dcf-viewer-tabs" class="dcf-viewer__tabs dcf-viewer__tabs--flush">' +
         '<button type="button" class="dcf-doc-tab is-active" aria-selected="true" title="' + safe + '">' +
           '<span class="dcf-doc-tab__label">' + safe + '</span>' +
-          // Use the multiplication sign; SCSS centres it precisely
           '<span class="dcf-doc-tab__close" aria-label="Close tab" role="button">×</span>' +
           '<span class="dcf-doc-tab__bar" aria-hidden="true"></span>' +
         '</button>' +
@@ -249,69 +243,225 @@ function removeSearchStatus() {
     return '/public/' + u
   }
 
-    // ---- helper: set material status on the card, its embedded JSON, and any global model ----
-    function setMaterialStatus(card, status) {
-      // Update the embedded JSON blob in the card (<script.js-material-data type="application/json">…</script>)
-      var tag  = card.querySelector('script.js-material-data[type="application/json"]')
-      var data = null
-      try { data = tag ? JSON.parse(tag.textContent) : null } catch (e) { data = null }
+  // --------------------------------------
+  // Status helpers: New / Read / Unread
+  // --------------------------------------
 
-      if (data) {
-        // normalise common shapes: either top-level materialStatus or nested under Material
-        if ('materialStatus' in data) {
-          data.materialStatus = status
-        } else if (data.Material && typeof data.Material === 'object') {
-          data.Material.materialStatus = status
-        } else {
-          data.materialStatus = status
+  // (kept for possible future use; no longer drives initial state)
+  function getCardStatusFromJSON(card) {
+    var tag = card.querySelector('script.js-material-data[type="application/json"]')
+    if (!tag) return null
+    var data
+    try { data = JSON.parse(tag.textContent) } catch (e) { return null }
+    if (!data) return null
+
+    if (typeof data.materialStatus === 'string') {
+      return data.materialStatus
+    }
+    if (data.Material && typeof data.Material.materialStatus === 'string') {
+      return data.Material.materialStatus
+    }
+    return null
+  }
+
+  // Render status tags based on three bits of state:
+  //   - materialStatus: "Read" or "Unread"
+  //   - isNew:          true/false (all start true; becomes false once Read)
+  //   - hasViewedAndClosed: true/false (set when user closes preview/tab)
+  //
+  // Rules:
+  //   - New + not yet closed        → "New"
+  //   - New + closed (not read)     → "New" + "Unread"
+  //   - Not new + Unread            → "Unread"
+  //   - Read                        → "Read"
+  function renderStatusTags(card) {
+    if (!card) return
+    var badge = card.querySelector('.dcf-material-card__badge')
+    if (!badge) return
+
+    var status          = (card.dataset.materialStatus || 'Unread').toLowerCase()
+    var isNew           = card.dataset.isNew !== 'false' // default true
+    var hasViewedClosed = card.dataset.hasViewedAndClosed === 'true'
+
+    var tags = []
+
+    if (status === 'read') {
+      // Once read, New disappears completely
+      tags.push('<strong class="govuk-tag dcf-tag dcf-tag--read">Read</strong>')
+    } else {
+      // Unread branch
+      if (isNew) {
+        // Still considered "New"
+        tags.push('<strong class="govuk-tag dcf-tag dcf-tag--new">New</strong>')
+
+        // Only show Unread once user has closed the preview/tab at least once
+        if (hasViewedClosed) {
+          tags.push('<strong class="govuk-tag dcf-tag dcf-tag--unread">Unread</strong>')
         }
-        try { tag.textContent = JSON.stringify(data) } catch (e) {}
+      } else {
+        // Not new anymore, just unread
+        tags.push('<strong class="govuk-tag dcf-tag dcf-tag--unread">Unread</strong>')
       }
-
-      // Update visible badge on the card (adjust selector to your template)
-      var badge = card.querySelector('.dcf-material-card__badge')
-      if (badge) badge.textContent = status
-
-      // Store on the element for quick reads
-      card.dataset.materialStatus = status
-
-      // If you hydrate a global model, update that too (so lists/summaries stay in sync)
-      var itemId =
-        (data && (data.ItemId || (data.Material && data.Material.ItemId) || data.itemId)) ||
-        card.getAttribute('data-item-id')
-
-      if (itemId && window.caseMaterials && Array.isArray(window.caseMaterials.Material)) {
-        var m = window.caseMaterials.Material.find(x => (x.ItemId || x.itemId) === itemId)
-        if (m) {
-          // support either top-level or nested Material object shapes
-          if ('materialStatus' in m) m.materialStatus = status
-          else if (m.Material && typeof m.Material === 'object') m.Material.materialStatus = status
-          else m.materialStatus = status
-        }
-      }
-
-      // Optional: lightweight persistence across reloads for prototype use
-      try {
-        var caseId = (window.caseMaterials && window.caseMaterials.caseId) || card.getAttribute('data-case-id')
-        if (itemId && caseId) localStorage.setItem('matStatus:' + caseId + ':' + itemId, status)
-      } catch (e) {}
     }
 
+    if (!tags.length && badge.dataset.rawStatus) {
+      badge.textContent = badge.dataset.rawStatus
+    } else if (tags.length) {
+      badge.innerHTML = tags.join(' ')
+    }
+  }
 
-    function updateOpsMenuForStatus(menuEl, status) {
-      if (!menuEl) return
-      var readItem   = menuEl.querySelector('[data-action="mark-read"]')
-      var unreadItem = menuEl.querySelector('[data-action="mark-unread"]')
+  // Initialise a card's status + flags:
+  //   - status: "Read" or "Unread" (default Unread)
+  //   - isNew:  all materials start life as New (true) until they are Read
+  //   - hasViewedAndClosed: true once user has opened AND closed the preview/tab
+  function initCardStatus(card) {
+    if (!card) return
 
-      // If it's Read → show "Mark as unread", hide "Mark as read"
-      // Otherwise (New/Unread/anything else) → show "Mark as read"
-      var isRead = String(status).toLowerCase() === 'read'
-      if (readItem)   readItem.closest('li').hidden   = isRead
-      if (unreadItem) unreadItem.closest('li').hidden = !isRead
+    var status          = 'Unread'
+    var isNew           = true
+    var hasViewedClosed = false
+
+    try {
+      var caseId = (window.caseMaterials && window.caseMaterials.caseId) || card.getAttribute('data-case-id')
+      var itemId = card.getAttribute('data-item-id')
+      if (caseId && itemId) {
+        var storedStatus = localStorage.getItem('matStatus:' + caseId + ':' + itemId)
+        var storedIsNew  = localStorage.getItem('matIsNew:'  + caseId + ':' + itemId)
+        var storedClosed = localStorage.getItem('matClosed:' + caseId + ':' + itemId)
+
+        if (storedStatus) status = storedStatus
+        if (storedIsNew !== null) isNew = (storedIsNew === 'true')
+        if (storedClosed === 'true') hasViewedClosed = true
+      }
+    } catch (e) {
+      // storage issues → fall back to defaults
     }
 
+    card.dataset.materialStatus     = status
+    card.dataset.isNew              = String(isNew)
+    card.dataset.hasViewedAndClosed = hasViewedClosed ? 'true' : 'false'
 
-  
+    var badge = card.querySelector('.dcf-material-card__badge')
+    if (badge) {
+      badge.dataset.rawStatus = status
+    }
+
+    renderStatusTags(card)
+  }
+
+  // Track that the user has visited/opened this material.
+  // DOES NOT affect visual tags – only closing preview/tab does that.
+  function markCardVisited(card) {
+    if (!card) return
+    if (card.dataset.hasVisited === 'true') return
+    card.dataset.hasVisited = 'true'
+
+    try {
+      var caseId = (window.caseMaterials && window.caseMaterials.caseId) || card.getAttribute('data-case-id')
+      var itemId = card.getAttribute('data-item-id')
+      if (caseId && itemId) {
+        localStorage.setItem('matVisited:' + caseId + ':' + itemId, 'true')
+      }
+    } catch (e) {}
+  }
+
+  // When the user closes the preview (or closes a tab) and the item
+  // is still Unread, record that it has been viewed-and-closed at least once.
+  function markCardClosed(card) {
+    if (!card) return
+    if (card.dataset.hasViewedAndClosed === 'true') return
+
+    card.dataset.hasViewedAndClosed = 'true'
+
+    try {
+      var caseId = (window.caseMaterials && window.caseMaterials.caseId) || card.getAttribute('data-case-id')
+      var itemId = card.getAttribute('data-item-id')
+      if (caseId && itemId) {
+        localStorage.setItem('matClosed:' + caseId + ':' + itemId, 'true')
+      }
+    } catch (e) {}
+
+    renderStatusTags(card)
+  }
+
+  // ---- helper: set material status on the card, its embedded JSON, and any global model ----
+  function setMaterialStatus(card, status) {
+    if (!card) return
+
+    // Update the embedded JSON blob in the card (<script.js-material-data type="application/json">…</script>)
+    var tag  = card.querySelector('script.js-material-data[type="application/json"]')
+    var data = null
+    try { data = tag ? JSON.parse(tag.textContent) : null } catch (e) { data = null }
+
+    if (data) {
+      // normalise common shapes: either top-level materialStatus or nested under Material
+      if ('materialStatus' in data) {
+        data.materialStatus = status
+      } else if (data.Material && typeof data.Material === 'object') {
+        data.Material.materialStatus = status
+      } else {
+        data.materialStatus = status
+      }
+      try { tag.textContent = JSON.stringify(data) } catch (e) {}
+    }
+
+    // Update visible badge on the card (we keep rawStatus for fallback text-only rendering)
+    var badge = card.querySelector('.dcf-material-card__badge')
+    if (badge) {
+      badge.dataset.rawStatus = status
+    }
+
+    // Store on the element for quick reads
+    card.dataset.materialStatus = status
+
+    // If it becomes Read, it's no longer "New"
+    var statusLower = String(status).toLowerCase()
+    if (statusLower === 'read') {
+      card.dataset.isNew = 'false'
+    }
+
+    // If you hydrate a global model, update that too (so lists/summaries stay in sync)
+    var itemId =
+      (data && (data.ItemId || (data.Material && data.Material.ItemId) || data.itemId)) ||
+      card.getAttribute('data-item-id')
+
+    if (itemId && window.caseMaterials && Array.isArray(window.caseMaterials.Material)) {
+      var m = window.caseMaterials.Material.find(x => (x.ItemId || x.itemId) === itemId)
+      if (m) {
+        // support either top-level or nested Material object shapes
+        if ('materialStatus' in m) m.materialStatus = status
+        else if (m.Material && typeof m.Material === 'object') m.Material.materialStatus = status
+        else m.materialStatus = status
+      }
+    }
+
+    // Optional: lightweight persistence across reloads for prototype use
+    try {
+      var caseId = (window.caseMaterials && window.caseMaterials.caseId) || card.getAttribute('data-case-id')
+      if (itemId && caseId) {
+        localStorage.setItem('matStatus:' + caseId + ':' + itemId, status)
+        if (statusLower === 'read') {
+          localStorage.setItem('matIsNew:' + caseId + ':' + itemId, 'false')
+        }
+      }
+    } catch (e) {}
+
+    // Re-render tags with the new state
+    renderStatusTags(card)
+  }
+
+  function updateOpsMenuForStatus(menuEl, status) {
+    if (!menuEl) return
+    var readItem   = menuEl.querySelector('[data-action="mark-read"]')
+    var unreadItem = menuEl.querySelector('[data-action="mark-unread"]')
+
+    // If it's Read → show "Mark as unread", hide "Mark as read"
+    // Otherwise (New/Unread/anything else) → show "Mark as read"
+    var isRead = String(status).toLowerCase() === 'read'
+    if (readItem)   readItem.closest('li').hidden   = isRead
+    if (unreadItem) unreadItem.closest('li').hidden = !isRead
+  }
 
   // --------------------------------------
   // Meta panel builder
@@ -326,7 +476,6 @@ function removeSearchStatus() {
     var cps  = (meta && meta.CPSMaterial) || {}
     var insp = pol.Inspection || {}
 
-    // Local helper: render rows from a mapping (shadowing the outer one is intentional for safety)
     function rowsHTMLLocal(obj, mapping) {
       return mapping.map(function (m) {
         var v = (m.get ? m.get(obj) : obj && obj[m.key])
@@ -341,7 +490,6 @@ function removeSearchStatus() {
       }).join('')
     }
 
-    // Local helper: titled summary list section
     function sectionHTMLLocal(title, rows) {
       if (!rows) return ''
       return (
@@ -350,7 +498,6 @@ function removeSearchStatus() {
       )
     }
 
-    // Local helper: summary list with spacing but without a heading
     function sectionHTMLNoHeading(rows) {
       if (!rows) return ''
       return (
@@ -358,7 +505,6 @@ function removeSearchStatus() {
       )
     }
 
-    // Material core fields
     var materialRows = rowsHTMLLocal(mat, [
       { key:'Title',                  label:'Title' },
       { key:'Reference',              label:'Reference' },
@@ -373,14 +519,12 @@ function removeSearchStatus() {
       { key:'PeriodTo',               label:'Period to' }
     ])
 
-    // Relationship fields
     var relatedRows = rowsHTMLLocal(rel, [
       { key:'RelatesToItem',    label:'Relates to item' },
       { key:'RelatedItemId',    label:'Related item id' },
       { key:'RelationshipType', label:'Relationship type' }
     ])
 
-    // Digital representation (supports an array of items OR legacy single object)
     var digitalRows
     if (Array.isArray(dig.Items) && dig.Items.length) {
       digitalRows = dig.Items.map(function (it, idx) {
@@ -401,7 +545,6 @@ function removeSearchStatus() {
         ) : ''
       }).join('')
     } else {
-      // Legacy single-object shape (backwards compatible)
       digitalRows = rowsHTMLLocal(dig, [
         { key:'FileName',             label:'File name' },
         { key:'Document',             label:'Document' },
@@ -414,7 +557,6 @@ function removeSearchStatus() {
       ])
     }
 
-    // Police material, including nested “Inspection”
     var policeRows = rowsHTMLLocal(pol, [
       { key:'DisclosureStatus',               label:'Disclosure status' },
       { key:'RationaleForDisclosureDecision', label:'Rationale for disclosure decision' },
@@ -431,18 +573,16 @@ function removeSearchStatus() {
       { label:'Inspected by',   get: function(){ return insp.InspectedBy } }
     ])
 
-    // CPS material
     var cpsRows = rowsHTMLLocal(cps, [
       { key:'DisclosureStatus',               label:'Disclosure status' },
       { key:'RationaleForDisclosureDecision', label:'Rationale for disclosure decision' },
       { key:'SensitivityDispute',             label:'Sensitivity dispute' }
     ])
 
-    // Meta bar: only the show/hide details control now
     var metaBar =
       '<div class="dcf-viewer__meta-bar">' +
         '<div class="dcf-meta-actions">' +
-          '<div class="dcf-meta-right">' + // ✅ new wrapper pushed to the right
+          '<div class="dcf-meta-right">' +
             '<a href="#" class="govuk-link" data-action="add-note">Add a note</a>' +
             '<span class="dcf-meta-sep" aria-hidden="true"> | </span>' +
             '<a href="#" class="govuk-link js-meta-toggle dcf-meta-toggle" ' +
@@ -457,22 +597,16 @@ function removeSearchStatus() {
         '</div>' +
       '</div>'
 
-
-
-
-    // Inline actions (reclassify) – placed inside the meta body before first section
     var inlineActions =
       '<div class="dcf-meta-inline-actions">' +
         '<a href="#" class="govuk-button govuk-button--primary dcf-meta-secondary" data-action="reclassify">Request reclassification</a>' +
       '</div>'
 
-    // Assemble full meta panel metadate default set to hidden
     return '' +
       '<div class="dcf-viewer__meta" data-meta-root>' +
         metaBar +
         '<div id="' + esc(bodyId) + '" class="dcf-viewer__meta-body" hidden>' +
           inlineActions +
-          // Material section rendered without a heading for a tighter top
           sectionHTMLNoHeading(materialRows) +
           sectionHTMLLocal('Related materials',      relatedRows)  +
           sectionHTMLLocal('Digital representation', digitalRows)  +
@@ -485,9 +619,7 @@ function removeSearchStatus() {
   // --------------------------------------
   // Preview builder (pdf.js + chrome)
   // --------------------------------------
-  // Renders the full preview UI (toolbar, tab, meta panel, ops menu, iframe)
-  
-function openMaterialPreview(link) {
+  function openMaterialPreview(link) {
     // Clear any search “No results / N results” banner when opening a doc
     removeSearchStatus()
 
@@ -503,7 +635,11 @@ function openMaterialPreview(link) {
 
     // Remember the originating material card so ops menu actions can update it
     var card = link.closest('.dcf-material-card')
-    if (card) viewer._currentCard = card
+    if (card) {
+      viewer._currentCard = card
+      // Just record that it has been visited (does NOT affect New/Unread tags)
+      markCardVisited(card)
+    }
 
     // Ensure viewer chrome exists
     if (!viewer.querySelector('#dcf-viewer-tabs')) ensureShell()
@@ -522,8 +658,7 @@ function openMaterialPreview(link) {
     // Focus viewer for keyboard users
     viewer.hidden = false
     try { viewer.focus({ preventScroll: true }) } catch (e) {}
-}
-
+  }
 
   // --------------------------------------
   // Intercepts: open previews from cards/links
@@ -538,14 +673,14 @@ function openMaterialPreview(link) {
     e.preventDefault()
     e.stopPropagation()
 
-    // 🔹 PART 2: remember the originating material card so ops menu actions
-    // (like "Mark as read") know which item to update.
     var card = link.closest('.dcf-material-card')
-    if (card) viewer._currentCard = card
+    if (card) {
+      viewer._currentCard = card
+      markCardVisited(card)
+    }
 
     openMaterialPreview(link)
   }, true)
-
 
   // Allow opening materials from elsewhere (e.g. injected search results) via .dcf-viewer-link
   document.addEventListener('click', function (e) {
@@ -569,6 +704,14 @@ function openMaterialPreview(link) {
       if (!btn) return
       var wasActive = btn.classList.contains('is-active')
       var id = btn.getAttribute('data-tab-id')
+
+      // NEW: mark underlying card as viewed-and-closed
+      var itemIdForClose = btn.getAttribute('data-item-id')
+      if (itemIdForClose) {
+        var cardForClose = document.querySelector('.dcf-material-card[data-item-id="' + CSS.escape(itemIdForClose) + '"]')
+        if (cardForClose) markCardClosed(cardForClose)
+      }
+
       if (id && _tabStore.metaById[id]) delete _tabStore.metaById[id]
       btn.parentNode && btn.parentNode.removeChild(btn)
       // If no tabs remain, close the viewer
@@ -588,7 +731,6 @@ function openMaterialPreview(link) {
       return
     }
 
-    
     // Activate a tab when its button is clicked (excluding the close icon)
     var tabBtn = e.target.closest('#dcf-viewer-tabs .dcf-doc-tab')
     if (tabBtn && !e.target.closest('.dcf-doc-tab__close')) {
@@ -600,7 +742,7 @@ function openMaterialPreview(link) {
       return
     }
 
-var a = e.target.closest('a[data-action]')
+    var a = e.target.closest('a[data-action]')
     if (!a) return
     e.preventDefault()
 
@@ -608,6 +750,11 @@ var a = e.target.closest('a[data-action]')
 
     // Close the whole viewer and reset layout
     if (action === 'close-viewer') {
+      // NEW: mark whatever card is currently active as viewed-and-closed
+      if (viewer._currentCard) {
+        markCardClosed(viewer._currentCard)
+      }
+
       viewer.innerHTML = '<p class="govuk-hint govuk-!-margin-bottom-3">Select a material from the list to preview it here.</p>'
       viewer.hidden = true
       if (layout) layout.classList.remove('is-full')
@@ -654,7 +801,6 @@ var a = e.target.closest('a[data-action]')
       return
     }
 
-
     // “Mark as read” from the Document actions menu
     if (action === 'mark-read') {
       // find the card that opened the viewer (preferred), or fall back to the active card
@@ -666,9 +812,8 @@ var a = e.target.closest('a[data-action]')
 
       if (card) {
         setMaterialStatus(card, 'Read')
-        updateOpsMenuForStatus(menu, 'Read')
+        updateOpsMenuForStatus(null, 'Read') // first call is harmless (menu resolved below)
       } else {
-        // No card found; nothing to update
         console.warn('mark-read: could not resolve current card')
       }
 
@@ -680,6 +825,8 @@ var a = e.target.closest('a[data-action]')
         if (wrapper) wrapper.hidden = true
         if (toggle)  toggle.setAttribute('aria-expanded', 'false')
         if (toggle)  toggle.focus()
+        // Now that we have a concrete menu element, sync its items
+        updateOpsMenuForStatus(menu, 'Read')
       }
 
       return
@@ -694,6 +841,7 @@ var a = e.target.closest('a[data-action]')
         null
 
       if (card) {
+        // New behaviour: mark as Unread but do NOT reintroduce "New"
         setMaterialStatus(card, 'Unread')
       } else {
         console.warn('mark-unread: could not resolve current card')
@@ -720,8 +868,7 @@ var a = e.target.closest('a[data-action]')
       return
     }
 
-
-    // Placeholder for future behaviour
+    // Placeholder for future behaviour (duplicate kept as in original)
     if (action === 'reclassify') {
       console.log('Reclassify clicked')
       return
@@ -754,6 +901,15 @@ var a = e.target.closest('a[data-action]')
       if (wrap) wrap.hidden = true
     }
   })
+
+  // --------------------------------------
+  // Initial status badges on material cards
+  // --------------------------------------
+  ;(function initialiseMaterialStatuses() {
+    var cards = document.querySelectorAll('.dcf-material-card')
+    if (!cards.length) return
+    cards.forEach(initCardStatus)
+  })()
 
   // --------------------------------------
   // Meta link behaviour
