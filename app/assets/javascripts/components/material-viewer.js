@@ -67,7 +67,7 @@
           '</a>',
           '<div class="moj-button-menu" data-module="moj-button-menu">',
             '<button type="button" class="govuk-button govuk-button--inverse moj-button-menu__toggle" aria-haspopup="true" aria-expanded="false">',
-              'Edit Document <span class="moj-button-menu__icon" aria-hidden="true">▾</span>',
+              'Document actions <span class="moj-button-menu__icon" aria-hidden="true">▾</span>',
             '</button>',
             '<div class="moj-button-menu__wrapper" hidden>',
               '<ul class="moj-button-menu__list" role="menu">',
