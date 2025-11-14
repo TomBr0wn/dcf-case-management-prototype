@@ -85,6 +85,14 @@
                   } if _case.hasCTL,
                   {
                     key: {
+                      text: 'Urgent note'
+                    },
+                    value: {
+                      text: task.urgentNote
+                    }
+                  } if task.isUrgent,
+                  {
+                    key: {
                       html: 'Owner'
                     },
                     value: {
@@ -98,7 +106,7 @@
                     value: {
                       html: task.type
                     }
-                  }
+                  } if 1==2
                 ]
               })}}
             </div>
