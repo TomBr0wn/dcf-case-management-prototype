@@ -211,6 +211,29 @@ function generateCaseReference() {
   return `${twoDigits}${twoLetters}${sixDigits}/${suffix}`;
 }
 
+const taskNoteDescriptions = [
+  "Awaiting response from witness",
+  "Documents requested from police",
+  "Need to schedule meeting with CPS",
+  "Awaiting lab results",
+  "Defence has requested extension",
+  "Victim contacted and updated",
+  "Court date confirmed",
+  "Evidence review in progress",
+  "Waiting for legal advice",
+  "Disclosure deadline approaching",
+  "Expert witness report received",
+  "Investigation officer contacted",
+  "File review completed",
+  "Additional evidence identified",
+  "Defendant solicitor contacted",
+  "Hearing preparation underway",
+  "Statement being reviewed",
+  "Timeline needs updating",
+  "Case file being prepared",
+  "Custody time limit noted"
+];
+
 async function main() {
   console.log("🌱 Starting seed...");
 
@@ -877,6 +900,39 @@ async function main() {
           userId: faker.helpers.arrayElement(users).id
         }
       });
+    }
+
+    // -------------------- Task Notes --------------------
+    // Get all tasks for this case
+    const caseTasks = await prisma.task.findMany({
+      where: { caseId: createdCase.id }
+    });
+
+    for (const task of caseTasks) {
+      // 25% no notes, 50% 1 note, 25% 3 notes
+      const noteCountChoice = faker.helpers.weightedArrayElement([
+        { weight: 25, value: 0 },
+        { weight: 50, value: 1 },
+        { weight: 25, value: 3 }
+      ]);
+
+      for (let n = 0; n < noteCountChoice; n++) {
+        const description = faker.helpers.arrayElement(taskNoteDescriptions);
+
+        // Create notes with timestamps spread out over the past
+        const daysAgo = faker.number.int({ min: 1, max: 30 });
+        const createdAt = new Date();
+        createdAt.setDate(createdAt.getDate() - daysAgo);
+
+        await prisma.taskNote.create({
+          data: {
+            description,
+            taskId: task.id,
+            createdAt,
+            updatedAt: createdAt
+          }
+        });
+      }
     }
 
     createdCases.push({ id: createdCase.id });

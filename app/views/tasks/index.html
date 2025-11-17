@@ -142,12 +142,12 @@
                     },
                     {
                       key: {
-                        html: 'Note'
+                        html: 'Latest note'
                       },
                       value: {
-                        html: 'The latest note goes here'
+                        html: task.notes[0].description
                       }
-                    },
+                    } if task.notes and task.notes.length > 0,
                     {
                       key: {
                         html: 'Task type'

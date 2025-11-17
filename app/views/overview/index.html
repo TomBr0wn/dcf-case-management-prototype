@@ -24,6 +24,20 @@
           </span>
         </a>
 
+        {% if urgentTaskCount > 0 %}
+          <a href="/tasks/shortcut/urgent" class="app-overview-card app-overview-card--red">
+            <span class="app-overview-card__count">{{urgentTaskCount}}</span>
+            <span class="app-overview-card__status">
+              urgent
+              {% if urgentTaskCount == 1 %}
+                task
+              {% else %}
+                tasks
+              {% endif %}
+            </span>
+          </a>
+        {% endif %}
+
         {% if incompleteProfileCount > 0 %}
           <a href="/prosecutors" class="app-overview-card app-overview-card--yellow">
             <span class="app-overview-card__count">{{incompleteProfileCount}}</span>
@@ -35,20 +49,6 @@
                 profiles
               {% endif %}
               incomplete
-            </span>
-          </a>
-        {% endif %}
-
-        {% if urgentTaskCount > 0 %}
-          <a href="/tasks/shortcut/urgent" class="app-overview-card app-overview-card--red">
-            <span class="app-overview-card__count">{{urgentTaskCount}}</span>
-            <span class="app-overview-card__status">
-              urgent
-              {% if urgentTaskCount == 1 %}
-                task
-              {% else %}
-                tasks
-              {% endif %}
             </span>
           </a>
         {% endif %}

@@ -294,6 +294,12 @@ module.exports = router => {
           include: {
             unit: true
           }
+        },
+        notes: {
+          orderBy: {
+            createdAt: 'desc'
+          },
+          take: 1
         }
       }
     })
