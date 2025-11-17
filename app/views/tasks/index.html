@@ -38,7 +38,9 @@
                 {% endset %}
 
                 <h3 class="govuk-heading-s govuk-!-margin-bottom-1">
-                  <a href="/cases/{{task.case.id}}/tasks/{{task.id}}" class="govuk-link--no-visited-state">{{ taskNameDisplay | trim }}</a>
+                  <div>
+                    <a href="/cases/{{task.case.id}}/tasks/{{task.id}}" class="govuk-link--no-visited-state">{{ taskNameDisplay | trim }}</a>
+                  </div>
 
                   <div class="app-list__tag">
                     {# {{ govukTag({ text: task.severity, classes: task.severity | severityTagClass })}} #}
@@ -126,7 +128,7 @@
                     } if task.case.hasCTL,
                     {
                       key: {
-                        text: 'Urgent note'
+                        text: 'Urgent reason'
                       },
                       value: {
                         text: task.urgentNote

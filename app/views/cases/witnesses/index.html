@@ -55,19 +55,21 @@
 
             <div class="app-list__item">
               <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
-                <a href="/cases/{{_case.id}}/witnesses/{{witness.id}}" class="govuk-link--no-visited-state">{{witness.firstName}} {{witness.lastName}}</a>
+                <div>
+                  <a href="/cases/{{_case.id}}/witnesses/{{witness.id}}" class="govuk-link--no-visited-state">{{witness.firstName}} {{witness.lastName}}</a>
+                </div>
                 <div class="app-list__tag">
                   {% if witness.isVictim %}
-                    {{ govukTag({ text: 'Victim' })}}
+                    {{ govukTag({ text: 'Victim', classes: 'govuk-!-margin-left-1' })}}
                   {% endif %}
                   {% if witness.isKeyWitness %}
-                    {{ govukTag({ text: 'Key witness' })}}
+                    {{ govukTag({ text: 'Key witness', classes: 'govuk-!-margin-left-1' })}}
                   {% endif %}
                   {% if witness.isAppearingInCourt %}
-                    {{ govukTag({ text: 'Attending court' })}}
+                    {{ govukTag({ text: 'Attending court', classes: 'govuk-!-margin-left-1' })}}
                   {% endif %}
                   {% if witness.isAppearingInCourt == false %}
-                    {{ govukTag({ text: 'Not attending court' })}}
+                    {{ govukTag({ text: 'Not attending court', classes: 'govuk-!-margin-left-1' })}}
                   {% endif %}
                 </div>
               </h2>
