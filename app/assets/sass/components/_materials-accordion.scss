@@ -182,5 +182,11 @@
   background: transparent;
 }
 
+@media (min-width: 40.0625em) {
+    .govuk-form-group {
+        margin-bottom: 10px;
+    }
+}
+
 
 
