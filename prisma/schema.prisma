@@ -128,7 +128,7 @@ model Case {
   victims     Victim[]    @relation("CaseVictims")
   lawyers     Lawyer[]    @relation("CaseLawyers")
   witnesses   Witness[]
-  hearing     Hearing?
+  hearings    Hearing[]
   location    Location?
   tasks       Task[]
   documents   Document[]
@@ -295,10 +295,14 @@ enum Plea {
 }
 
 model Hearing {
-  id      Int      @id @default(autoincrement())
-  date    DateTime
-  case    Case?    @relation(fields: [caseId], references: [id])
-  caseId  Int?     @unique
+  id        Int       @id @default(autoincrement())
+  startDate DateTime
+  endDate   DateTime?
+  status    String
+  type      String
+  venue     String
+  case      Case      @relation(fields: [caseId], references: [id])
+  caseId    Int
 }
 
 model Location {

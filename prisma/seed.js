@@ -8,6 +8,8 @@ const types = require("../app/data/types.js");
 const taskNames = require("../app/data/task-names.js");
 const documentTypes = require("../app/data/document-types.js");
 const specialisms = require("../app/data/specialisms.js");
+const hearingTypes = require("../app/data/hearing-types.js");
+const venues = require("../app/data/venues.js");
 
 const prisma = new PrismaClient();
 
@@ -724,7 +726,6 @@ async function main() {
         unit: { connect: { id: caseUnitId } },
         defendants: { connect: assignedDefendants.map((d) => ({ id: d.id })) },
         victims: { connect: assignedVictims.map((v) => ({ id: v.id })) },
-        hearing: { create: { date: futureDateAt10am() } },
         location: {
           create: {
             name: faker.company.name(),
@@ -746,6 +747,55 @@ async function main() {
         },
       },
     });
+
+    // -------------------- Hearings --------------------
+    // 50% of cases have 1 hearing, 50% have none
+    const hasHearing = faker.datatype.boolean();
+
+    if (hasHearing) {
+      const hearingStatus = faker.helpers.arrayElement(['Fixed', 'Warned', 'Estimated']);
+      const hearingType = 'First hearing';
+      const hearingVenue = faker.helpers.arrayElement(venues);
+
+      // Distribution: 40% today, 40% tomorrow, 20% future dates
+      const dateChoice = faker.number.float({ min: 0, max: 1 });
+      let hearingStartDate;
+
+      if (dateChoice < 0.4) {
+        // Today at 10am
+        hearingStartDate = new Date();
+        hearingStartDate.setUTCHours(10, 0, 0, 0);
+      } else if (dateChoice < 0.8) {
+        // Tomorrow at 10am
+        hearingStartDate = new Date();
+        hearingStartDate.setDate(hearingStartDate.getDate() + 1);
+        hearingStartDate.setUTCHours(10, 0, 0, 0);
+      } else {
+        // Future date at 10am
+        hearingStartDate = futureDateAt10am();
+      }
+
+      // 10% chance of multi-day hearing (has endDate)
+      const isMultiDay = faker.datatype.boolean({ probability: 0.10 });
+      const hearingEndDate = isMultiDay
+        ? new Date(hearingStartDate.getTime() + (faker.number.int({ min: 1, max: 5 }) * 24 * 60 * 60 * 1000))
+        : null;
+
+      if (hearingEndDate) {
+        hearingEndDate.setUTCHours(16, 0, 0, 0); // End at 4pm
+      }
+
+      await prisma.hearing.create({
+        data: {
+          startDate: hearingStartDate,
+          endDate: hearingEndDate,
+          status: hearingStatus,
+          type: hearingType,
+          venue: hearingVenue,
+          caseId: createdCase.id
+        }
+      });
+    }
 
     // -------------------- Witnesses --------------------
     const numWitnesses = faker.number.int({ min: 1, max: 7 });

@@ -114,7 +114,7 @@ function groupTasks(tasks, sortBy) {
       if (sortBy === 'Custody time limit') {
         dateToUse = task.case?.soonestCTL
       } else if (sortBy === 'Hearing date') {
-        dateToUse = task.case?.hearing?.date
+        dateToUse = task.case?.hearings?.[0]?.startDate
       }
 
       // Get the group key and heading

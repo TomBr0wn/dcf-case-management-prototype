@@ -266,7 +266,13 @@ module.exports = router => {
                 defenceLawyer: true
               }
             },
-            unit: true
+            unit: true,
+            hearings: {
+              orderBy: {
+                startDate: 'asc'
+              },
+              take: 1
+            }
           }
         },
         assignedToUser: true,
@@ -416,11 +422,17 @@ module.exports = router => {
         return 0
       })
     } else if (sortBy === 'Hearing date') {
-      // Sort by hearing date (assuming case has hearing)
+      // Sort by hearing date - cases with hearings first, then cases without
       tasks.sort((a, b) => {
-        const aDate = a.case.hearing ? new Date(a.case.hearing.date) : new Date(9999, 0, 1)
-        const bDate = b.case.hearing ? new Date(b.case.hearing.date) : new Date(9999, 0, 1)
-        return aDate - bDate
+        const aHasHearing = a.case.hearings && a.case.hearings.length > 0
+        const bHasHearing = b.case.hearings && b.case.hearings.length > 0
+
+        if (aHasHearing && !bHasHearing) return -1
+        if (!aHasHearing && bHasHearing) return 1
+        if (aHasHearing && bHasHearing) {
+          return new Date(a.case.hearings[0].startDate) - new Date(b.case.hearings[0].startDate)
+        }
+        return 0
       })
     } else {
       // Default 'Due date' - sort by severity priority (Critically overdue > Overdue > Due soon > Not due yet), then by date

@@ -17,7 +17,12 @@ module.exports = router => {
             defenceLawyer: true
           }
         },
-        hearing: true,
+        hearings: {
+          orderBy: {
+            startDate: 'asc'
+          },
+          take: 1
+        },
         location: true,
         tasks: true,
         dga: true
