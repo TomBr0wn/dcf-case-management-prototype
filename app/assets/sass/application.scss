@@ -36,11 +36,12 @@
 // Details - Overview panels
 @import "components/overview-areas";
 
-.govuk-width-container {
+.dcf-materials-wide .govuk-width-container {
   margin-right: auto;
   margin-left: auto;
   max-width: 1400px;
 }
+
 
 h1 .govuk-tag {
   position: relative;

@@ -1,6 +1,10 @@
 {% extends "layouts/main.html" %}
 {% from "moj/components/button-menu/macro.njk" import mojButtonMenu %}
 
+{% extends "layouts/main.html" %}
+{% from "moj/components/button-menu/macro.njk" import mojButtonMenu %}
+
+{% set bodyClasses = "dcf-materials-wide" %}
 
 {% set navId = 'cases' %}
 {% set secondaryNavId = 'materials' %}
@@ -21,6 +25,7 @@
 {% endblock %} #}
 
 {% block content %}
+  
   {% include "_includes/success-banner.njk" %}
   {% include "_includes/case/dcf-navigation.njk" %}
 
