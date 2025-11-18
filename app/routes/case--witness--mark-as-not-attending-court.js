@@ -56,9 +56,16 @@ module.exports = router => {
         model: 'Witness',
         recordId: witness.id,
         action: 'UPDATE',
-        title: 'Witness marked as not appearing in court',
+        title: 'Witness marked as not attending court',
         caseId: parseInt(req.params.caseId),
-        meta: { witness }
+        meta: {
+          witness: {
+            id: witness.id,
+            firstName: witness.firstName,
+            lastName: witness.lastName
+          },
+          reason: witness.reasonForNotAppearingInCourt
+        }
       }
     })
 

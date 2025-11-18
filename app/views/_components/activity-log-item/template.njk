@@ -77,7 +77,7 @@
       </p>
     {% endif %}
 
-    {% if params.event.title == 'Witness marked as not appearing in court' %}
+    {% if params.event.title == 'Witness marked as not attending court' %}
       <div class="app-activity-log__box">
         {{ govukSummaryList({
           rows: [
@@ -94,7 +94,7 @@
                 text: "Reason for marking the witness as not attending court"
               },
               value: {
-                text: params.event.meta.witness.reasonForNotAppearingInCourt
+                text: params.event.meta.reason
               }
             }
           ]

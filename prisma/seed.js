@@ -363,16 +363,19 @@ async function main() {
     });
   }
 
-  for (const u of userData) {
-    const hashedPassword = await bcrypt.hash(u.password, 10);
-    const user = await prisma.user.create({
-      data: {
-        ...u,
-        password: hashedPassword,
-      },
-    });
-    users.push(user);
-  }
+  // Hash all passwords in parallel
+  const hashedUserData = await Promise.all(
+    userData.map(async (u) => ({
+      ...u,
+      password: await bcrypt.hash(u.password, 10),
+    }))
+  );
+
+  // Create all users in one batch
+  const createdUsers = await prisma.user.createManyAndReturn({
+    data: hashedUserData,
+  });
+  users.push(...createdUsers);
   console.log(`✅ ${users.length} users seeded`);
 
   // -------------------- User-Unit Assignments --------------------
@@ -459,22 +462,37 @@ async function main() {
   console.log("✅ Lawyers seeded");
 
   // -------------------- Defence Lawyers --------------------
-  const defenceLawyers = [];
-  for (let i = 0; i < 100; i++) {
-    const dl = await prisma.defenceLawyer.create({
-      data: {
-        firstName: faker.helpers.arrayElement(firstNames),
-        lastName: faker.helpers.arrayElement(lastNames),
-        organisation: faker.helpers.arrayElement(defenceLawyerOrganisations),
-      },
-    });
-    defenceLawyers.push(dl);
-  }
+  const defenceLawyerData = Array.from({ length: 100 }, () => ({
+    firstName: faker.helpers.arrayElement(firstNames),
+    lastName: faker.helpers.arrayElement(lastNames),
+    organisation: faker.helpers.arrayElement(defenceLawyerOrganisations),
+  }));
+
+  const defenceLawyers = await prisma.defenceLawyer.createManyAndReturn({
+    data: defenceLawyerData,
+  });
   console.log("✅ Defence lawyers seeded");
 
   // -------------------- Defendants with Charges --------------------
-  const defendants = [];
-  for (let i = 0; i < 200; i++) {
+  // Step 1: Batch create all defendants
+  const defendantData = Array.from({ length: 200 }, () => ({
+    firstName: faker.helpers.arrayElement(firstNames),
+    lastName: faker.helpers.arrayElement(lastNames),
+    gender: faker.helpers.arrayElement(["Male", "Female", "Unknown"]),
+    religion: faker.helpers.arrayElement([...religions, null]), // Some nulls
+    occupation: faker.helpers.arrayElement([...occupations, null]), // Some nulls
+    dateOfBirth: faker.date.birthdate({ min: 18, max: 75, mode: "age" }),
+    remandStatus: faker.helpers.arrayElement(remandStatuses),
+    defenceLawyerId: faker.helpers.arrayElement(defenceLawyers).id,
+  }));
+
+  const defendants = await prisma.defendant.createManyAndReturn({
+    data: defendantData,
+  });
+
+  // Step 2: Batch create all charges for defendants
+  const allChargesData = [];
+  for (const defendant of defendants) {
     // Decide how many charges this defendant has (1-4, weighted towards 1-2)
     const numCharges = faker.helpers.weightedArrayElement([
       { weight: 50, value: 1 },
@@ -497,7 +515,7 @@ async function main() {
     }
 
     // Build charges data
-    const chargesData = selectedCharges.map((charge, index) => {
+    selectedCharges.forEach((charge, index) => {
       // 50% of charges should have CTL overall
       const thisChargeHasCTL = faker.datatype.boolean();
 
@@ -522,7 +540,7 @@ async function main() {
       });
       const victimName = `${faker.helpers.arrayElement(firstNames)} ${faker.helpers.arrayElement(lastNames)}`;
 
-      return {
+      allChargesData.push({
         chargeCode: charge.code,
         description: charge.description,
         status: faker.helpers.arrayElement(chargeStatuses),
@@ -531,46 +549,28 @@ async function main() {
         particulars: `On the ${particularsDate} ${charge.code === 'B10' ? 'stole' : charge.code === 'A01' ? 'assaulted' : charge.code === 'C03' ? 'damaged property belonging to' : 'committed an offence against'} ${victimName}.`,
         custodyTimeLimit: thisCtlDate,
         isCount: faker.datatype.boolean(0.3), // 30% are counts
-      };
+        defendantId: defendant.id,
+      });
     });
-
-    const d = await prisma.defendant.create({
-      data: {
-        firstName: faker.helpers.arrayElement(firstNames),
-        lastName: faker.helpers.arrayElement(lastNames),
-        gender: faker.helpers.arrayElement(["Male", "Female", "Unknown"]),
-        religion: faker.helpers.arrayElement([...religions, null]), // Some nulls
-        occupation: faker.helpers.arrayElement([...occupations, null]), // Some nulls
-        dateOfBirth: faker.date.birthdate({ min: 18, max: 75, mode: "age" }),
-        remandStatus: faker.helpers.arrayElement(remandStatuses),
-        defenceLawyer: {
-          connect: { id: faker.helpers.arrayElement(defenceLawyers).id }
-        },
-        charges: {
-          create: chargesData
-        }
-      },
-    });
-    defendants.push(d);
   }
+
+  await prisma.charge.createMany({ data: allChargesData });
   console.log("✅ Defendants and charges seeded");
 
   // -------------------- Victims --------------------
-  const victims = [];
-  for (let i = 0; i < 200; i++) {
-    const v = await prisma.victim.create({
-      data: {
-        firstName: faker.helpers.arrayElement(firstNames),
-        lastName: faker.helpers.arrayElement(lastNames),
-      },
-    });
-    victims.push(v);
-  }
+  const victimData = Array.from({ length: 200 }, () => ({
+    firstName: faker.helpers.arrayElement(firstNames),
+    lastName: faker.helpers.arrayElement(lastNames),
+  }));
+
+  const victims = await prisma.victim.createManyAndReturn({
+    data: victimData,
+  });
   console.log("✅ Victims seeded");
 
   // -------------------- Cases --------------------
-  const TOTAL_CASES = 3465;
-  const UNASSIGNED_TARGET = 39;
+  const TOTAL_CASES = 2465;
+  const UNASSIGNED_TARGET = 37;
   const DGA_TARGET = 50; // set desired number of DGAs
 
   const createdCases = [];
@@ -1369,7 +1369,7 @@ console.log(`✅ Assigned ${DGA_TARGET} cases needing DGA review with failure re
     'DGA recorded',
     'Prosecutor assigned',
     'Witness marked as appearing in court',
-    'Witness marked as not appearing in court',
+    'Witness marked as not attending court',
     'Witness statement marked as Section 9',
     'Witness statement unmarked as Section 9'
   ];
@@ -1379,6 +1379,17 @@ console.log(`✅ Assigned ${DGA_TARGET} cases needing DGA review with failure re
     DISPUTED_SUCCESSFULLY: "Disputed successfully",
     DISPUTED_UNSUCCESSFULLY: "Disputed unsuccessfully"
   };
+
+  const witnessNotAppearingReasons = [
+    "Witness is ill and unable to attend",
+    "Witness has moved abroad",
+    "Witness is unavailable due to work commitments",
+    "Witness has refused to attend",
+    "Witness cannot be located",
+    "Witness is intimidated and unwilling to testify",
+    "Witness has conflicting court appearance",
+    "Witness has withdrawn cooperation"
+  ];
 
   // Select ~50% of cases to have activity logs
   const casesForActivity = faker.helpers.arrayElements(
@@ -1435,7 +1446,7 @@ console.log(`✅ Assigned ${DGA_TARGET} cases needing DGA review with failure re
       // Witness events - if case has witnesses
       if (fullCase.witnesses && fullCase.witnesses.length > 0) {
         possibleEvents.push('Witness marked as appearing in court');
-        possibleEvents.push('Witness marked as not appearing in court');
+        possibleEvents.push('Witness marked as not attending court');
       }
 
       // Witness statement events - if case has witness statements
@@ -1482,16 +1493,29 @@ console.log(`✅ Assigned ${DGA_TARGET} cases needing DGA review with failure re
           break;
 
         case 'Witness marked as appearing in court':
-        case 'Witness marked as not appearing in court':
-          const witness = faker.helpers.arrayElement(fullCase.witnesses);
+          const appearingWitness = faker.helpers.arrayElement(fullCase.witnesses);
           activityData.model = 'Witness';
-          activityData.recordId = witness.id;
+          activityData.recordId = appearingWitness.id;
           activityData.meta = {
             witness: {
-              id: witness.id,
-              firstName: witness.firstName,
-              lastName: witness.lastName
+              id: appearingWitness.id,
+              firstName: appearingWitness.firstName,
+              lastName: appearingWitness.lastName
             }
+          };
+          break;
+
+        case 'Witness marked as not attending court':
+          const notAppearingWitness = faker.helpers.arrayElement(fullCase.witnesses);
+          activityData.model = 'Witness';
+          activityData.recordId = notAppearingWitness.id;
+          activityData.meta = {
+            witness: {
+              id: notAppearingWitness.id,
+              firstName: notAppearingWitness.firstName,
+              lastName: notAppearingWitness.lastName
+            },
+            reason: faker.helpers.arrayElement(witnessNotAppearingReasons)
           };
           break;
 
