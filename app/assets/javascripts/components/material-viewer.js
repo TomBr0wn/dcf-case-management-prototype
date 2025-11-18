@@ -44,10 +44,13 @@
     if (tabs) return tabs
 
     viewer.innerHTML = [
-      '<div class="dcf-viewer__toolbar govuk-!-margin-bottom-4">',
+      '<div class="dcf-viewer__toolbar govuk-!-margin-bottom-4 govuk-body">',
         '<a href="#" class="govuk-link" data-action="close-viewer">Close documents</a>',
         '<span aria-hidden="true" class="govuk-!-margin-horizontal-2">&nbsp;|&nbsp;</span>',
         '<a href="#" class="govuk-link" data-action="toggle-full" aria-pressed="false">View full width</a>',
+        // Only shown when document was opened from search
+        '<span aria-hidden="true" class="govuk-!-margin-horizontal-2" data-role="back-to-search-sep" hidden>&nbsp;|&nbsp;</span>',
+        '<a href="#" class="govuk-link" data-action="back-to-search" hidden>Back to search results</a>',
       '</div>',
 
       '<div id="dcf-viewer-tabs" class="dcf-viewer__tabs dcf-viewer__tabs--flush"></div>',
@@ -88,6 +91,8 @@
 
     viewer.hidden = false
     viewer.setAttribute('tabindex','-1')
+    viewer.dataset.mode = 'document'
+
     return viewer.querySelector('#dcf-viewer-tabs')
   }
 
@@ -181,9 +186,10 @@
     renderMeta(meta)
   }
 
+  // Just hides the search status instead of removing it
   function removeSearchStatus() {
     var s = document.getElementById('search-status')
-    if (s && s.parentNode) s.parentNode.removeChild(s)
+    if (s) s.hidden = true
   }
 
   // Build the single visible “Document” tab in the viewer (flush styling)
@@ -438,11 +444,11 @@
 
     // Optional: lightweight persistence across reloads for prototype use
     try {
-      var caseId = (window.caseMaterials && window.caseMaterials.caseId) || card.getAttribute('data-case-id')
-      if (itemId && caseId) {
-        localStorage.setItem('matStatus:' + caseId + ':' + itemId, status)
+      var caseId2 = (window.caseMaterials && window.caseMaterials.caseId) || card.getAttribute('data-case-id')
+      if (itemId && caseId2) {
+        localStorage.setItem('matStatus:' + caseId2 + ':' + itemId, status)
         if (statusLower === 'read') {
-          localStorage.setItem('matIsNew:' + caseId + ':' + itemId, 'false')
+          localStorage.setItem('matIsNew:' + caseId2 + ':' + itemId, 'false')
         }
       }
     } catch (e) {}
@@ -619,8 +625,12 @@
   // --------------------------------------
   // Preview builder (pdf.js + chrome)
   // --------------------------------------
-  function openMaterialPreview(link) {
-    // Clear any search “No results / N results” banner when opening a doc
+  // Accepts an optional { fromSearch } flag
+  function openMaterialPreview(link, opts) {
+    opts = opts || {}
+    var fromSearch = !!opts.fromSearch
+
+    // Clear / hide any search status banner when opening a doc
     removeSearchStatus()
 
     // Pull JSON + core attributes from the clicked link
@@ -641,6 +651,10 @@
       markCardVisited(card)
     }
 
+    // We're now in "document" mode, and we remember whether this came from search
+    viewer.dataset.mode = 'document'
+    viewer.dataset.fromSearch = fromSearch ? 'true' : 'false'
+
     // Ensure viewer chrome exists
     if (!viewer.querySelector('#dcf-viewer-tabs')) ensureShell()
 
@@ -652,6 +666,13 @@
 
     // Add or activate tab for this document
     addOrActivateTab(meta, url, title)
+
+    // Show/hide "Go back to search results" depending on origin + stored search
+    var backLink = viewer.querySelector('[data-action="back-to-search"]')
+    var backSep  = viewer.querySelector('[data-role="back-to-search-sep"]')
+    var canShowBackToSearch = (viewer.dataset.fromSearch === 'true') && !!viewer._lastSearchHTML
+    if (backLink) backLink.hidden = !canShowBackToSearch
+    if (backSep)  backSep.hidden  = !canShowBackToSearch
 
     console.log('Opening', { url, title, itemId: meta && meta.ItemId })
 
@@ -679,7 +700,8 @@
       markCardVisited(card)
     }
 
-    openMaterialPreview(link)
+    // Cards on the left are "normal documents" (not from search)
+    openMaterialPreview(link, { fromSearch: false })
   }, true)
 
   // Allow opening materials from elsewhere (e.g. injected search results) via .dcf-viewer-link
@@ -690,7 +712,10 @@
 
     e.preventDefault()
     e.stopPropagation()
-    openMaterialPreview(a)
+
+    // If the viewer is currently in search mode, this doc is "from search"
+    var fromSearch = (viewer.dataset.mode === 'search')
+    openMaterialPreview(a, { fromSearch: fromSearch })
   }, true)
 
   // --------------------------------------
@@ -705,7 +730,7 @@
       var wasActive = btn.classList.contains('is-active')
       var id = btn.getAttribute('data-tab-id')
 
-      // NEW: mark underlying card as viewed-and-closed
+      // Mark underlying card as viewed-and-closed
       var itemIdForClose = btn.getAttribute('data-item-id')
       if (itemIdForClose) {
         var cardForClose = document.querySelector('.dcf-material-card[data-item-id="' + CSS.escape(itemIdForClose) + '"]')
@@ -750,7 +775,7 @@
 
     // Close the whole viewer and reset layout
     if (action === 'close-viewer') {
-      // NEW: mark whatever card is currently active as viewed-and-closed
+      // Mark whatever card is currently active as viewed-and-closed
       if (viewer._currentCard) {
         markCardClosed(viewer._currentCard)
       }
@@ -761,6 +786,8 @@
         '</p>'
 
       viewer.hidden = true
+      viewer.dataset.mode = 'empty'
+      viewer.dataset.fromSearch = 'false'
 
       // Reset the split/full layout
       if (layout) layout.classList.remove('is-full')
@@ -771,8 +798,6 @@
 
       return
     }
-
-
 
     // Toggle the surrounding layout between split view and full-width
     if (action === 'toggle-full') {
@@ -787,7 +812,32 @@
       return
     }
 
+    // Toolbar "Go back to search results" – restore last search into viewer
+    if (action === 'back-to-search') {
+      // Only do anything if we have stored search HTML (set by material-search.js)
+      if (viewer._lastSearchHTML) {
+        // *** CHANGED: remember the current document view so we can come back to it
+        viewer._lastDocumentHTML = viewer.innerHTML
 
+        viewer.dataset.mode = 'search'
+        viewer.dataset.fromSearch = 'false'
+
+        // Restore the search results fragment exactly as it was
+        viewer.innerHTML = viewer._lastSearchHTML
+        viewer.hidden = false
+
+        // Re-show the search status banner and reveal "Back to documents"
+        var s = document.getElementById('search-status')
+        if (s) {
+          s.hidden = false
+          var link = s.querySelector('a[data-action="back-to-documents"]')
+          var sep  = s.querySelector('[data-role="back-to-documents-sep"]')
+          if (link) link.hidden = false
+          if (sep)  sep.hidden  = false
+        }
+      }
+      return
+    }
 
     // Show/hide the meta details panel (robust to id drift)
     if (action === 'toggle-meta') {
@@ -835,15 +885,15 @@
       }
 
       // close the MoJ menu politely and return focus to the toggle
-      var menu = a.closest('.moj-button-menu')
-      if (menu) {
-        var wrapper = menu.querySelector('.moj-button-menu__wrapper')
-        var toggle  = menu.querySelector('.moj-button-menu__toggle')
+      var menu2 = a.closest('.moj-button-menu')
+      if (menu2) {
+        var wrapper = menu2.querySelector('.moj-button-menu__wrapper')
+        var toggle  = menu2.querySelector('.moj-button-menu__toggle')
         if (wrapper) wrapper.hidden = true
         if (toggle)  toggle.setAttribute('aria-expanded', 'false')
         if (toggle)  toggle.focus()
         // Now that we have a concrete menu element, sync its items
-        updateOpsMenuForStatus(menu, 'Read')
+        updateOpsMenuForStatus(menu2, 'Read')
       }
 
       return
@@ -851,29 +901,29 @@
 
     // “Mark as unread” from the Document actions menu
     if (action === 'mark-unread') {
-      var card =
+      var card2 =
         (viewer && viewer._currentCard) ||
         viewer.querySelector('.dcf-material-card--active') ||
         document.querySelector('.dcf-material-card--active') ||
         null
 
-      if (card) {
+      if (card2) {
         // New behaviour: mark as Unread but do NOT reintroduce "New"
-        setMaterialStatus(card, 'Unread')
+        setMaterialStatus(card2, 'Unread')
       } else {
         console.warn('mark-unread: could not resolve current card')
       }
 
       // Close the menu + return focus to the toggle
-      var menu = a.closest('.moj-button-menu')
-      if (menu) {
-        var wrapper = menu.querySelector('.moj-button-menu__wrapper')
-        var toggle  = menu.querySelector('.moj-button-menu__toggle')
-        if (wrapper) wrapper.hidden = true
-        if (toggle)  toggle.setAttribute('aria-expanded', 'false')
-        if (toggle)  toggle.focus()
+      var menu3 = a.closest('.moj-button-menu')
+      if (menu3) {
+        var wrapper2 = menu3.querySelector('.moj-button-menu__wrapper')
+        var toggle2  = menu3.querySelector('.moj-button-menu__toggle')
+        if (wrapper2) wrapper2.hidden = true
+        if (toggle2)  toggle2.setAttribute('aria-expanded', 'false')
+        if (toggle2)  toggle2.focus()
         // Reflect the new status in which menu item is visible
-        updateOpsMenuForStatus(menu, 'Unread')
+        updateOpsMenuForStatus(menu3, 'Unread')
       }
 
       return
@@ -891,6 +941,43 @@
       return
     }
   }, false)
+
+  // --------------------------------------
+  // "Go back to documents" (search → previous document)
+  // --------------------------------------
+  document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest('a[data-action="back-to-documents"]')
+    if (!a) return
+
+    e.preventDefault()
+
+    // *** CHANGED: restore the last document viewer HTML if we have it
+    if (viewer._lastDocumentHTML) {
+      viewer.innerHTML = viewer._lastDocumentHTML
+      viewer.hidden = false
+      viewer.dataset.mode = 'document'
+    } else {
+      // Fallback: original hint if no stored document view
+      viewer.dataset.mode = 'document'
+      viewer.dataset.fromSearch = 'false'
+
+      viewer.innerHTML =
+        '<p class="govuk-hint govuk-!-margin-bottom-3">' +
+          'Select a material from the list to preview it here.' +
+        '</p>'
+      viewer.hidden = false
+    }
+
+    // Hide the search status and the inline link + separator
+    var s = document.getElementById('search-status')
+    if (s) {
+      s.hidden = true
+      var link = s.querySelector('a[data-action="back-to-documents"]')
+      var sep  = s.querySelector('[data-role="back-to-documents-sep"]')
+      if (link) link.hidden = true
+      if (sep)  sep.hidden  = true
+    }
+  })
 
   // --------------------------------------
   // Ops menu (MoJ button menu) open/close
