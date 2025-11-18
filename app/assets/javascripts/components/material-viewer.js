@@ -45,7 +45,7 @@
 
     viewer.innerHTML = [
       '<div class="dcf-viewer__toolbar govuk-!-margin-bottom-4">',
-        '<a href="#" class="govuk-link" data-action="close-viewer">Close preview</a>',
+        '<a href="#" class="govuk-link" data-action="close-viewer">Close documents</a>',
         '<span aria-hidden="true" class="govuk-!-margin-horizontal-2">&nbsp;|&nbsp;</span>',
         '<a href="#" class="govuk-link" data-action="toggle-full" aria-pressed="false">View full width</a>',
       '</div>',
@@ -755,22 +755,39 @@
         markCardClosed(viewer._currentCard)
       }
 
-      viewer.innerHTML = '<p class="govuk-hint govuk-!-margin-bottom-3">Select a material from the list to preview it here.</p>'
+      viewer.innerHTML =
+        '<p class="govuk-hint govuk-!-margin-bottom-3">' +
+          'Select a material from the list to preview it here.' +
+        '</p>'
+
       viewer.hidden = true
+
+      // Reset the split/full layout
       if (layout) layout.classList.remove('is-full')
-      document.querySelectorAll('.dcf-material-card--active').forEach(function (el) { el.classList.remove('dcf-material-card--active') })
+
+      document
+        .querySelectorAll('.dcf-material-card--active')
+        .forEach(function (el) { el.classList.remove('dcf-material-card--active') })
+
       return
     }
+
+
 
     // Toggle the surrounding layout between split view and full-width
     if (action === 'toggle-full') {
       if (!layout) return
+
       var on = layout.classList.toggle('is-full')
+
       a.textContent = on ? 'Exit full width' : 'View full width'
       a.setAttribute('aria-pressed', String(on))
-      viewer.focus({ preventScroll: true })
+      try { viewer.focus({ preventScroll: true }) } catch (e) {}
+
       return
     }
+
+
 
     // Show/hide the meta details panel (robust to id drift)
     if (action === 'toggle-meta') {

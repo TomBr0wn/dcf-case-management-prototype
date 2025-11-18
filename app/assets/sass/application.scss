@@ -36,11 +36,15 @@
 // Details - Overview panels
 @import "components/overview-areas";
 
+/* Default: pages without this class use GOV.UK default width */
 .dcf-materials-wide .govuk-width-container {
   margin-right: auto;
   margin-left: auto;
   max-width: 1400px;
 }
+
+
+
 
 
 h1 .govuk-tag {
