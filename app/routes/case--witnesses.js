@@ -10,8 +10,7 @@ module.exports = router => {
         user: true, 
         witnesses: { include: { statements: true }, orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }] }, 
         lawyers: true, 
-        defendants: true, 
-        hearing: true, 
+        defendants: true,
         location: true, 
         tasks: true, 
         dga: true 

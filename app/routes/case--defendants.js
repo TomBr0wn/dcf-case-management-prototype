@@ -16,7 +16,6 @@ module.exports = router => {
             defenceLawyer: true
           }
         },
-        hearing: true,
         location: true,
         tasks: true,
         dga: true

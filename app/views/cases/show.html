@@ -177,11 +177,11 @@
             }
           },
           {
-            key: { 
-              text: "Hearing" 
+            key: {
+              text: "Hearing"
             },
-            value: { 
-              html: _case.hearing.date | isoDateString | govukDateTime
+            value: {
+              html: _case.hearings[0].startDate | isoDateString | govukDateTime
             },
             actions: {
               items: [
@@ -192,7 +192,7 @@
                 }
               ]
             }
-          },
+          } if _case.hearings and _case.hearings.length > 0,
                     {
             key: {
               text: "Type of hearing"

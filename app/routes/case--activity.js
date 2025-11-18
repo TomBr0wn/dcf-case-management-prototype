@@ -34,7 +34,6 @@ module.exports = router => {
         witnesses: { include: { statements: true } },
         lawyers: true,
         defendants: true,
-        hearing: true,
         location: true,
         tasks: true,
         dga: true
