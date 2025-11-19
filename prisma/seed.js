@@ -771,27 +771,27 @@ async function main() {
       // 5% chance direction is already completed
       const completedDate = faker.datatype.boolean({ probability: 0.05 }) ? faker.date.recent({ days: 30 }) : null;
 
-      // Assign to user or team (40% user, 30% team, 30% unassigned)
+      // Assign to user or team (60% user, 40% team) - always assigned
       let assignedToUserId = null;
       let assignedToTeamId = null;
+
+      const unitUsers = users.filter(u =>
+        u.units.some(uu => uu.unitId === caseUnitId)
+      );
+      const unitTeams = teams.filter(t => t.unitId === caseUnitId);
+
       const assignmentChoice = faker.number.float({ min: 0, max: 1 });
 
-      if (assignmentChoice < 0.4) {
+      if (assignmentChoice < 0.6 && unitUsers.length > 0) {
         // Assign to a user from this case's unit
-        const unitUsers = users.filter(u =>
-          u.units.some(uu => uu.unitId === caseUnitId)
-        );
-        if (unitUsers.length > 0) {
-          assignedToUserId = faker.helpers.arrayElement(unitUsers).id;
-        }
-      } else if (assignmentChoice < 0.7) {
+        assignedToUserId = faker.helpers.arrayElement(unitUsers).id;
+      } else if (unitTeams.length > 0) {
         // Assign to a team from this case's unit
-        const unitTeams = teams.filter(t => t.unitId === caseUnitId);
-        if (unitTeams.length > 0) {
-          assignedToTeamId = faker.helpers.arrayElement(unitTeams).id;
-        }
+        assignedToTeamId = faker.helpers.arrayElement(unitTeams).id;
+      } else if (unitUsers.length > 0) {
+        // Fallback: assign to user if no teams available
+        assignedToUserId = faker.helpers.arrayElement(unitUsers).id;
       }
-      // else: leave unassigned
 
       directionsData.push({
         description,
@@ -1072,14 +1072,8 @@ async function main() {
         "Case conference scheduled for next week to discuss trial strategy with team."
       ]);
 
-      // 70% chance of having a type, 30% chance of no type
-      const noteType = faker.datatype.boolean(0.7)
-        ? faker.helpers.arrayElement(['CTL log', 'General', 'Review note', 'Case update'])
-        : null;
-
       await prisma.note.create({
         data: {
-          type: noteType,
           content: noteContent,
           caseId: createdCase.id,
           userId: faker.helpers.arrayElement(users).id
