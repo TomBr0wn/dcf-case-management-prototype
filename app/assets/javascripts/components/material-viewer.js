@@ -6,12 +6,142 @@
   if (!viewer) return
 
   // --------------------------------------
+  // Notes modal (side tray)
+  // --------------------------------------
+
+  // Cache the modal once; it lives in the page template, not inside the viewer.
+  var notesModal = document.getElementById('dcf-notes-modal')
+  var lastNotesTrigger = null
+
+  function isNotesOpen () {
+    return !!(notesModal && !notesModal.hidden)
+  }
+
+  // Opens the notes tray and moves focus into it.
+  function openNotesModal (triggerEl) {
+    if (!notesModal) return
+
+    lastNotesTrigger = triggerEl || document.activeElement || null
+
+    notesModal.hidden = false
+    notesModal.classList.add('is-open')
+
+    // Try to reflect the currently-active document title in the heading.
+    try {
+      var heading = notesModal.querySelector('#dcf-notes-modal-title')
+      var activeTab = viewer.querySelector('.dcf-doc-tab.is-active')
+      var tabTitle = activeTab && activeTab.getAttribute('data-title')
+      if (heading) {
+        var base = 'Notes'
+        heading.textContent = tabTitle ? base + ' – ' + tabTitle : base
+      }
+    } catch (e) {}
+
+    // Focus the textarea if present.
+    var textarea = notesModal.querySelector('#dcf-note-text')
+    if (textarea) {
+      try { textarea.focus() } catch (e) {}
+    }
+  }
+
+  // Closes the notes tray and returns focus to the thing that opened it.
+  function closeNotesModal () {
+    if (!notesModal || notesModal.hidden) return
+
+    notesModal.classList.remove('is-open')
+    notesModal.hidden = true
+
+    if (lastNotesTrigger && typeof lastNotesTrigger.focus === 'function') {
+      try { lastNotesTrigger.focus() } catch (e) {}
+    }
+  }
+
+    // When the notes form is submitted, append a new note into the list.
+    if (notesModal) {
+      var notesForm = notesModal.querySelector('.dcf-notes-modal__form')
+      if (notesForm) {
+        notesForm.addEventListener('submit', function (e) {
+          // For now we keep this entirely client-side
+          e.preventDefault()
+
+          var textarea = notesModal.querySelector('#dcf-note-text')
+          if (!textarea) return
+
+          var text = (textarea.value || '').trim()
+          if (!text) return // nothing to add
+
+          var list = notesModal.querySelector('[data-notes-list]')
+          var emptyMsg = notesModal.querySelector('[data-notes-empty]')
+
+          if (!list) return
+
+          // Hide the "No notes..." message once we have at least one note
+          if (emptyMsg) {
+            emptyMsg.hidden = true
+          }
+
+          // Build the note block using your placeholder values
+          var noteEl = document.createElement('article')
+          noteEl.className = 'dcf-note'
+
+          var nameEl = document.createElement('h4')
+          nameEl.className = 'govuk-heading-s'
+          nameEl.textContent = '[User_name]' // placeholder for now
+
+          var dateEl = document.createElement('p')
+          dateEl.className = 'govuk-body'
+          dateEl.textContent = '[govukDateTime]' // placeholder – hook up govukDateTime server-side later
+
+          var textEl = document.createElement('p')
+          textEl.className = 'govuk-body'
+          textEl.textContent = text
+
+          noteEl.appendChild(nameEl)
+          noteEl.appendChild(dateEl)
+          noteEl.appendChild(textEl)
+
+          // Add newest note at the top
+          list.prepend(noteEl)
+
+          // Clear the textarea + (optionally) reset char count
+          textarea.value = ''
+
+          var counter = notesModal.querySelector('#dcf-note-char-count')
+          if (counter) {
+            var max = parseInt(counter.getAttribute('data-maxlength') || '0', 10)
+            if (max) {
+              counter.textContent = 'You have ' + max + ' characters remaining'
+            }
+          }
+        })
+      }
+    }
+
+
+  // Global handler for anything with data-action="close-notes"
+  document.addEventListener('click', function (e) {
+    var closeEl = e.target && e.target.closest('[data-action="close-notes"]')
+    if (!closeEl) return
+    e.preventDefault()
+    closeNotesModal()
+  })
+
+  // Close the notes tray with Esc when it's open.
+  document.addEventListener('keydown', function (e) {
+    if (!isNotesOpen()) return
+    if (e.key === 'Escape' || e.key === 'Esc') {
+      e.preventDefault()
+      closeNotesModal()
+    }
+  })
+
+  // --------------------------------------
   // Helpers
   // --------------------------------------
 
   // Given a clicked link inside a material card, find and
   // read the embedded JSON describing that material
-  function getMaterialJSONFromLink(link) {
+  function getMaterialJSONFromLink (link) {
     var card = link.closest('.dcf-material-card')
     if (!card) return null
     var tag = card.querySelector('script.js-material-data[type="application/json"]')
@@ -20,13 +150,13 @@
   }
 
   // Tiny HTML escaper to keep injected strings safe
-  function esc(s) {
+  function esc (s) {
     return (s == null ? '' : String(s))
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-      .replace(/"/g,'&quot;').replace(/'/g,'&#39;')
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;')
   }
 
-  function buildPdfViewerUrl(rawUrl) {
+  function buildPdfViewerUrl (rawUrl) {
     var fileUrl = toPublic(rawUrl || '')
     return '/public/pdfjs/web/viewer.html?file=' + encodeURIComponent(fileUrl)
   }
@@ -34,12 +164,12 @@
   // --- Tab state for multi-document viewing ---
   var _tabStore = { metaById: Object.create(null) }
 
-  function stableId(meta, url) {
+  function stableId (meta, url) {
     var raw = (meta && (meta.ItemId || (meta.Material && meta.Material.Reference))) || url || Date.now().toString()
     return String(raw).replace(/[^a-zA-Z0-9_-]/g, '-')
   }
 
-  function ensureShell() {
+  function ensureShell () {
     var tabs = viewer.querySelector('#dcf-viewer-tabs')
     if (tabs) return tabs
 
@@ -90,22 +220,22 @@
     ].join('')
 
     viewer.hidden = false
-    viewer.setAttribute('tabindex','-1')
+    viewer.setAttribute('tabindex', '-1')
     viewer.dataset.mode = 'document'
 
     return viewer.querySelector('#dcf-viewer-tabs')
   }
 
-  function setActiveTab(tabEl) {
+  function setActiveTab (tabEl) {
     var tabs = viewer.querySelectorAll('#dcf-viewer-tabs .dcf-doc-tab')
-    Array.prototype.forEach.call(tabs, function(btn) {
+    Array.prototype.forEach.call(tabs, function (btn) {
       btn.classList.toggle('is-active', btn === tabEl)
       btn.setAttribute('aria-selected', String(btn === tabEl))
       btn.setAttribute('tabindex', btn === tabEl ? '0' : '-1')
     })
   }
 
-  function renderMeta(meta) {
+  function renderMeta (meta) {
     // Build a new meta panel and swap it into [data-meta-root]
     var rawId = (meta && (meta.ItemId || (meta.Material && meta.Material.Reference))) || Date.now()
     var bodyId = 'meta-' + String(rawId).replace(/[^a-zA-Z0-9_-]/g, '-')
@@ -120,12 +250,12 @@
     if (toggle) toggle.setAttribute('aria-controls', bodyId)
   }
 
-  function switchToTabById(id) {
-    var tab = viewer.querySelector('#dcf-viewer-tabs .dcf-doc-tab[data-tab-id="'+ id +'"]')
+  function switchToTabById (id) {
+    var tab = viewer.querySelector('#dcf-viewer-tabs .dcf-doc-tab[data-tab-id="' + id + '"]')
     if (!tab) return
     var meta = _tabStore.metaById[id] || {}
-    var url  = tab.getAttribute('data-url') || ''
-    var title= tab.getAttribute('data-title') || 'Document'
+    var url = tab.getAttribute('data-url') || ''
+    var title = tab.getAttribute('data-title') || 'Document'
 
     var iframe = viewer.querySelector('.dcf-viewer__frame')
     if (iframe && url) iframe.setAttribute('src', buildPdfViewerUrl(url))
@@ -148,10 +278,10 @@
     try { tab.focus() } catch (e) {}
   }
 
-  function addOrActivateTab(meta, url, title) {
+  function addOrActivateTab (meta, url, title) {
     var id = stableId(meta, url)
     var tabs = ensureShell()
-    var existing = viewer.querySelector('#dcf-viewer-tabs .dcf-doc-tab[data-tab-id="'+ id +'"]')
+    var existing = viewer.querySelector('#dcf-viewer-tabs .dcf-doc-tab[data-tab-id="' + id + '"]')
     if (!existing) {
       var btn = document.createElement('button')
       btn.type = 'button'
@@ -187,13 +317,13 @@
   }
 
   // Just hides the search status instead of removing it
-  function removeSearchStatus() {
+  function removeSearchStatus () {
     var s = document.getElementById('search-status')
     if (s) s.hidden = true
   }
 
   // Build the single visible “Document” tab in the viewer (flush styling)
-  function buildDocTabs(title) {
+  function buildDocTabs (title) {
     var safe = esc(title || 'Document')
     return (
       '<div id="dcf-viewer-tabs" class="dcf-viewer__tabs dcf-viewer__tabs--flush">' +
@@ -207,7 +337,7 @@
   }
 
   // Render GOV.UK summary list rows from mapping
-  function rowsHTML(obj, mapping) {
+  function rowsHTML (obj, mapping) {
     return mapping.map(function (m) {
       var v = (m.get ? m.get(obj) : obj && obj[m.key])
       if (v == null || v === '' || (Array.isArray(v) && v.length === 0)) return ''
@@ -222,7 +352,7 @@
   }
 
   // Wrap rows in a titled GOV.UK summary list section
-  function sectionHTML(title, rows) {
+  function sectionHTML (title, rows) {
     if (!rows) return ''
     return (
       '<h3 class="govuk-heading-s govuk-!-margin-top-3 govuk-!-margin-bottom-1">' + esc(title) + '</h3>' +
@@ -231,7 +361,7 @@
   }
 
   // Mark one card as “active” (visually selected) and clear any previous
-  function setActiveCard(linkEl) {
+  function setActiveCard (linkEl) {
     document.querySelectorAll('.dcf-material-card--active')
       .forEach(function (el) { el.classList.remove('dcf-material-card--active') })
     var card = linkEl.closest('.dcf-material-card')
@@ -239,13 +369,13 @@
   }
 
   // Normalise file URLs so pdf.js can load them from /public
-  function toPublic(u) {
+  function toPublic (u) {
     if (!u) return ''
     if (/^https?:\/\//i.test(u)) return u       // external absolute URL
     if (u.startsWith('/public/')) return u
     if (u.startsWith('/assets/')) return '/public' + u.slice('/assets'.length)
-    if (u.startsWith('/files/'))  return '/public' + u
-    if (u.startsWith('/'))        return '/public' + u
+    if (u.startsWith('/files/')) return '/public' + u
+    if (u.startsWith('/')) return '/public' + u
     return '/public/' + u
   }
 
@@ -254,7 +384,7 @@
   // --------------------------------------
 
   // (kept for possible future use; no longer drives initial state)
-  function getCardStatusFromJSON(card) {
+  function getCardStatusFromJSON (card) {
     var tag = card.querySelector('script.js-material-data[type="application/json"]')
     if (!tag) return null
     var data
@@ -280,13 +410,13 @@
   //   - New + closed (not read)     → "New" + "Unread"
   //   - Not new + Unread            → "Unread"
   //   - Read                        → "Read"
-  function renderStatusTags(card) {
+  function renderStatusTags (card) {
     if (!card) return
     var badge = card.querySelector('.dcf-material-card__badge')
     if (!badge) return
 
-    var status          = (card.dataset.materialStatus || 'Unread').toLowerCase()
-    var isNew           = card.dataset.isNew !== 'false' // default true
+    var status = (card.dataset.materialStatus || 'Unread').toLowerCase()
+    var isNew = card.dataset.isNew !== 'false' // default true
     var hasViewedClosed = card.dataset.hasViewedAndClosed === 'true'
 
     var tags = []
@@ -321,11 +451,11 @@
   //   - status: "Read" or "Unread" (default Unread)
   //   - isNew:  all materials start life as New (true) until they are Read
   //   - hasViewedAndClosed: true once user has opened AND closed the preview/tab
-  function initCardStatus(card) {
+  function initCardStatus (card) {
     if (!card) return
 
-    var status          = 'Unread'
-    var isNew           = true
+    var status = 'Unread'
+    var isNew = true
     var hasViewedClosed = false
 
     try {
@@ -333,7 +463,7 @@
       var itemId = card.getAttribute('data-item-id')
       if (caseId && itemId) {
         var storedStatus = localStorage.getItem('matStatus:' + caseId + ':' + itemId)
-        var storedIsNew  = localStorage.getItem('matIsNew:'  + caseId + ':' + itemId)
+        var storedIsNew = localStorage.getItem('matIsNew:' + caseId + ':' + itemId)
         var storedClosed = localStorage.getItem('matClosed:' + caseId + ':' + itemId)
 
         if (storedStatus) status = storedStatus
@@ -344,8 +474,8 @@
       // storage issues → fall back to defaults
     }
 
-    card.dataset.materialStatus     = status
-    card.dataset.isNew              = String(isNew)
+    card.dataset.materialStatus = status
+    card.dataset.isNew = String(isNew)
     card.dataset.hasViewedAndClosed = hasViewedClosed ? 'true' : 'false'
 
     var badge = card.querySelector('.dcf-material-card__badge')
@@ -358,7 +488,7 @@
 
   // Track that the user has visited/opened this material.
   // DOES NOT affect visual tags – only closing preview/tab does that.
-  function markCardVisited(card) {
+  function markCardVisited (card) {
     if (!card) return
     if (card.dataset.hasVisited === 'true') return
     card.dataset.hasVisited = 'true'
@@ -374,7 +504,7 @@
 
   // When the user closes the preview (or closes a tab) and the item
   // is still Unread, record that it has been viewed-and-closed at least once.
-  function markCardClosed(card) {
+  function markCardClosed (card) {
     if (!card) return
     if (card.dataset.hasViewedAndClosed === 'true') return
 
@@ -392,11 +522,11 @@
   }
 
   // ---- helper: set material status on the card, its embedded JSON, and any global model ----
-  function setMaterialStatus(card, status) {
+  function setMaterialStatus (card, status) {
     if (!card) return
 
     // Update the embedded JSON blob in the card (<script.js-material-data type="application/json">…</script>)
-    var tag  = card.querySelector('script.js-material-data[type="application/json"]')
+    var tag = card.querySelector('script.js-material-data[type="application/json"]')
     var data = null
     try { data = tag ? JSON.parse(tag.textContent) : null } catch (e) { data = null }
 
@@ -457,15 +587,15 @@
     renderStatusTags(card)
   }
 
-  function updateOpsMenuForStatus(menuEl, status) {
+  function updateOpsMenuForStatus (menuEl, status) {
     if (!menuEl) return
-    var readItem   = menuEl.querySelector('[data-action="mark-read"]')
+    var readItem = menuEl.querySelector('[data-action="mark-read"]')
     var unreadItem = menuEl.querySelector('[data-action="mark-unread"]')
 
     // If it's Read → show "Mark as unread", hide "Mark as read"
     // Otherwise (New/Unread/anything else) → show "Mark as read"
     var isRead = String(status).toLowerCase() === 'read'
-    if (readItem)   readItem.closest('li').hidden   = isRead
+    if (readItem) readItem.closest('li').hidden = isRead
     if (unreadItem) unreadItem.closest('li').hidden = !isRead
   }
 
@@ -474,15 +604,15 @@
   // --------------------------------------
   // Creates the “details” panel next to the PDF (material, related, digital, police, CPS)
   // Accepts the parsed material JSON and a stable id to hook up show/hide behaviour
-  function buildMetaPanel(meta, bodyId) {
-    var mat  = (meta && meta.Material) || {}
-    var rel  = (meta && meta.RelatedMaterials) || {}
-    var dig  = (meta && meta.DigitalRepresentation) || {}
-    var pol  = (meta && meta.PoliceMaterial) || {}
-    var cps  = (meta && meta.CPSMaterial) || {}
+  function buildMetaPanel (meta, bodyId) {
+    var mat = (meta && meta.Material) || {}
+    var rel = (meta && meta.RelatedMaterials) || {}
+    var dig = (meta && meta.DigitalRepresentation) || {}
+    var pol = (meta && meta.PoliceMaterial) || {}
+    var cps = (meta && meta.CPSMaterial) || {}
     var insp = pol.Inspection || {}
 
-    function rowsHTMLLocal(obj, mapping) {
+    function rowsHTMLLocal (obj, mapping) {
       return mapping.map(function (m) {
         var v = (m.get ? m.get(obj) : obj && obj[m.key])
         if (v == null || v === '' || (Array.isArray(v) && v.length === 0)) return ''
@@ -496,7 +626,7 @@
       }).join('')
     }
 
-    function sectionHTMLLocal(title, rows) {
+    function sectionHTMLLocal (title, rows) {
       if (!rows) return ''
       return (
         '<h3 class="govuk-heading-s govuk-!-margin-top-3 govuk-!-margin-bottom-1">' + esc(title) + '</h3>' +
@@ -504,7 +634,7 @@
       )
     }
 
-    function sectionHTMLNoHeading(rows) {
+    function sectionHTMLNoHeading (rows) {
       if (!rows) return ''
       return (
         '<dl class="govuk-summary-list govuk-!-margin-top-3 govuk-!-margin-bottom-2">' + rows + '</dl>'
@@ -512,36 +642,36 @@
     }
 
     var materialRows = rowsHTMLLocal(mat, [
-      { key:'Title',                  label:'Title' },
-      { key:'Reference',              label:'Reference' },
-      { key:'ProducedbyWitnessId',    label:'Produced by (witness id)' },
-      { key:'MaterialClassification', label:'Material classification' },
-      { key:'MaterialType',           label:'Material type' },
-      { key:'SentExternally',         label:'Sent externally' },
-      { key:'RelatedParticipantId',   label:'Related participant id' },
-      { key:'Incident',               label:'Incident' },
-      { key:'Location',               label:'Location' },
-      { key:'PeriodFrom',             label:'Period from' },
-      { key:'PeriodTo',               label:'Period to' }
+      { key: 'Title',                  label: 'Title' },
+      { key: 'Reference',              label: 'Reference' },
+      { key: 'ProducedbyWitnessId',    label: 'Produced by (witness id)' },
+      { key: 'MaterialClassification', label: 'Material classification' },
+      { key: 'MaterialType',           label: 'Material type' },
+      { key: 'SentExternally',         label: 'Sent externally' },
+      { key: 'RelatedParticipantId',   label: 'Related participant id' },
+      { key: 'Incident',               label: 'Incident' },
+      { key: 'Location',               label: 'Location' },
+      { key: 'PeriodFrom',             label: 'Period from' },
+      { key: 'PeriodTo',               label: 'Period to' }
     ])
 
     var relatedRows = rowsHTMLLocal(rel, [
-      { key:'RelatesToItem',    label:'Relates to item' },
-      { key:'RelatedItemId',    label:'Related item id' },
-      { key:'RelationshipType', label:'Relationship type' }
+      { key: 'RelatesToItem',    label: 'Relates to item' },
+      { key: 'RelatedItemId',    label: 'Related item id' },
+      { key: 'RelationshipType', label: 'Relationship type' }
     ])
 
     var digitalRows
     if (Array.isArray(dig.Items) && dig.Items.length) {
       digitalRows = dig.Items.map(function (it, idx) {
         var itemRows = rowsHTMLLocal(it, [
-          { key:'FileName',             label:'File name' },
-          { key:'ExternalFileLocation', label:'External file location' },
-          { key:'ExternalFileURL',      label:'External file URL', render: function (v) {
-              if (v === '#' || v === '') return '—'
-              return '<a class="govuk-link" href="' + esc(v) + '" target="_blank" rel="noreferrer">' + esc(v) + '</a>'
-            }},
-          { key:'DigitalSignature',     label:'Digital signature' }
+          { key: 'FileName',             label: 'File name' },
+          { key: 'ExternalFileLocation', label: 'External file location' },
+          { key: 'ExternalFileURL',      label: 'External file URL', render: function (v) {
+            if (v === '#' || v === '') return '—'
+            return '<a class="govuk-link" href="' + esc(v) + '" target="_blank" rel="noreferrer">' + esc(v) + '</a>'
+          } },
+          { key: 'DigitalSignature',     label: 'Digital signature' }
         ])
         return itemRows ? (
           '<div class="govuk-!-margin-bottom-2">' +
@@ -552,44 +682,45 @@
       }).join('')
     } else {
       digitalRows = rowsHTMLLocal(dig, [
-        { key:'FileName',             label:'File name' },
-        { key:'Document',             label:'Document' },
-        { key:'ExternalFileLocation', label:'External file location' },
-        { key:'ExternalFileURL',      label:'External file URL', render: function (v) {
-            if (v === '#' || v === '') return '—'
-            return '<a class="govuk-link js-doc-link" href="' + esc(v) + '" target="_blank" rel="noreferrer">' + esc(v) + '</a>'
-          }},
-        { key:'DigitalSignature',     label:'Digital signature' }
+        { key: 'FileName',             label: 'File name' },
+        { key: 'Document',             label: 'Document' },
+        { key: 'ExternalFileLocation', label: 'External file location' },
+        { key: 'ExternalFileURL',      label: 'External file URL', render: function (v) {
+          if (v === '#' || v === '') return '—'
+          return '<a class="govuk-link js-doc-link" href="' + esc(v) + '" target="_blank" rel="noreferrer">' + esc(v) + '</a>'
+        } },
+        { key: 'DigitalSignature',     label: 'Digital signature' }
       ])
     }
 
     var policeRows = rowsHTMLLocal(pol, [
-      { key:'DisclosureStatus',               label:'Disclosure status' },
-      { key:'RationaleForDisclosureDecision', label:'Rationale for disclosure decision' },
-      { key:'Rebuttable',                     label:'Rebuttable' },
-      { key:'SensitivityRationale',           label:'Sensitivity rationale' },
-      { key:'Description',                    label:'Description' },
-      { key:'Exceptions',                     label:'Exceptions', render: function (arr) {
-          if (!Array.isArray(arr) || !arr.length) return '—'
-          return '<ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">' +
-                 arr.map(function (x){ return '<li>' + esc(x) + '</li>' }).join('') +
-                 '</ul>'
-        }},
-      { label:'Inspection date', get: function(){ return insp.DateOfInspection } },
-      { label:'Inspected by',   get: function(){ return insp.InspectedBy } }
+      { key: 'DisclosureStatus',               label: 'Disclosure status' },
+      { key: 'RationaleForDisclosureDecision', label: 'Rationale for disclosure decision' },
+      { key: 'Rebuttable',                     label: 'Rebuttable' },
+      { key: 'SensitivityRationale',           label: 'Sensitivity rationale' },
+      { key: 'Description',                    label: 'Description' },
+      { key: 'Exceptions',                     label: 'Exceptions', render: function (arr) {
+        if (!Array.isArray(arr) || !arr.length) return '—'
+        return '<ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">' +
+               arr.map(function (x) { return '<li>' + esc(x) + '</li>' }).join('') +
+               '</ul>'
+      } },
+      { label: 'Inspection date', get: function () { return insp.DateOfInspection } },
+      { label: 'Inspected by',   get: function () { return insp.InspectedBy } }
     ])
 
     var cpsRows = rowsHTMLLocal(cps, [
-      { key:'DisclosureStatus',               label:'Disclosure status' },
-      { key:'RationaleForDisclosureDecision', label:'Rationale for disclosure decision' },
-      { key:'SensitivityDispute',             label:'Sensitivity dispute' }
+      { key: 'DisclosureStatus',               label: 'Disclosure status' },
+      { key: 'RationaleForDisclosureDecision', label: 'Rationale for disclosure decision' },
+      { key: 'SensitivityDispute',             label: 'Sensitivity dispute' }
     ])
 
     var metaBar =
       '<div class="dcf-viewer__meta-bar">' +
         '<div class="dcf-meta-actions">' +
           '<div class="dcf-meta-right">' +
-            '<a href="#" class="govuk-link" data-action="add-note">Add a note</a>' +
+            // NOTE: this is what opens the side-tray modal
+            '<a href="#" class="govuk-link" data-action="open-notes">Add a note</a>' +
             '<span class="dcf-meta-sep" aria-hidden="true"> | </span>' +
             '<a href="#" class="govuk-link js-meta-toggle dcf-meta-toggle" ' +
               'data-action="toggle-meta" ' +
@@ -626,7 +757,7 @@
   // Preview builder (pdf.js + chrome)
   // --------------------------------------
   // Accepts an optional { fromSearch } flag
-  function openMaterialPreview(link, opts) {
+  function openMaterialPreview (link, opts) {
     opts = opts || {}
     var fromSearch = !!opts.fromSearch
 
@@ -634,8 +765,8 @@
     removeSearchStatus()
 
     // Pull JSON + core attributes from the clicked link
-    var meta  = getMaterialJSONFromLink(link) || {}
-    var url   = link.getAttribute('data-file-url') || link.getAttribute('href')
+    var meta = getMaterialJSONFromLink(link) || {}
+    var url = link.getAttribute('data-file-url') || link.getAttribute('href')
 
     if (!url && meta && meta.Material && meta.Material.myFileUrl) {
       url = meta.Material.myFileUrl
@@ -669,10 +800,10 @@
 
     // Show/hide "Go back to search results" depending on origin + stored search
     var backLink = viewer.querySelector('[data-action="back-to-search"]')
-    var backSep  = viewer.querySelector('[data-role="back-to-search-sep"]')
+    var backSep = viewer.querySelector('[data-role="back-to-search-sep"]')
     var canShowBackToSearch = (viewer.dataset.fromSearch === 'true') && !!viewer._lastSearchHTML
     if (backLink) backLink.hidden = !canShowBackToSearch
-    if (backSep)  backSep.hidden  = !canShowBackToSearch
+    if (backSep) backSep.hidden = !canShowBackToSearch
 
     console.log('Opening', { url, title, itemId: meta && meta.ItemId })
 
@@ -831,11 +962,17 @@
         if (s) {
           s.hidden = false
           var link = s.querySelector('a[data-action="back-to-documents"]')
-          var sep  = s.querySelector('[data-role="back-to-documents-sep"]')
+          var sep = s.querySelector('[data-role="back-to-documents-sep"]')
           if (link) link.hidden = false
-          if (sep)  sep.hidden  = false
+          if (sep) sep.hidden = false
         }
       }
+      return
+    }
+
+    // --- NEW: open notes side-tray from meta bar ---
+    if (action === 'open-notes') {
+      openNotesModal(a)
       return
     }
 
@@ -847,13 +984,13 @@
           var id = a.getAttribute('aria-controls') || a.getAttribute('data-controls')
           if (!metaWrap || !id) return null
           try { return metaWrap.querySelector('#' + CSS.escape(id)) } catch (e) { return null }
-        })()
-        || (metaWrap && metaWrap.querySelector('.dcf-viewer__meta-body'))
+        })() ||
+        (metaWrap && metaWrap.querySelector('.dcf-viewer__meta-body'))
 
       if (!body) return
 
       // Toggle using the DOM state and keep the control’s text/aria in sync
-      var willHide = !body.hidden    // visible -> hide; hidden -> show
+      var willHide = !body.hidden // visible -> hide; hidden -> show
       body.hidden = willHide
       a.setAttribute('aria-expanded', String(!willHide))
 
@@ -888,10 +1025,10 @@
       var menu2 = a.closest('.moj-button-menu')
       if (menu2) {
         var wrapper = menu2.querySelector('.moj-button-menu__wrapper')
-        var toggle  = menu2.querySelector('.moj-button-menu__toggle')
+        var toggle = menu2.querySelector('.moj-button-menu__toggle')
         if (wrapper) wrapper.hidden = true
-        if (toggle)  toggle.setAttribute('aria-expanded', 'false')
-        if (toggle)  toggle.focus()
+        if (toggle) toggle.setAttribute('aria-expanded', 'false')
+        if (toggle) toggle.focus()
         // Now that we have a concrete menu element, sync its items
         updateOpsMenuForStatus(menu2, 'Read')
       }
@@ -918,10 +1055,10 @@
       var menu3 = a.closest('.moj-button-menu')
       if (menu3) {
         var wrapper2 = menu3.querySelector('.moj-button-menu__wrapper')
-        var toggle2  = menu3.querySelector('.moj-button-menu__toggle')
+        var toggle2 = menu3.querySelector('.moj-button-menu__toggle')
         if (wrapper2) wrapper2.hidden = true
-        if (toggle2)  toggle2.setAttribute('aria-expanded', 'false')
-        if (toggle2)  toggle2.focus()
+        if (toggle2) toggle2.setAttribute('aria-expanded', 'false')
+        if (toggle2) toggle2.focus()
         // Reflect the new status in which menu item is visible
         updateOpsMenuForStatus(menu3, 'Unread')
       }
@@ -973,9 +1110,9 @@
     if (s) {
       s.hidden = true
       var link = s.querySelector('a[data-action="back-to-documents"]')
-      var sep  = s.querySelector('[data-role="back-to-documents-sep"]')
+      var sep = s.querySelector('[data-role="back-to-documents-sep"]')
       if (link) link.hidden = true
-      if (sep)  sep.hidden  = true
+      if (sep) sep.hidden = true
     }
   })
 
@@ -1009,7 +1146,7 @@
   // --------------------------------------
   // Initial status badges on material cards
   // --------------------------------------
-  ;(function initialiseMaterialStatuses() {
+  ;(function initialiseMaterialStatuses () {
     var cards = document.querySelectorAll('.dcf-material-card')
     if (!cards.length) return
     cards.forEach(initCardStatus)

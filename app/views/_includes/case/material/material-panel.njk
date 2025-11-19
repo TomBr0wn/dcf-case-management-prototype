@@ -2,6 +2,9 @@
 
 {% block content %}
   {{ appMaterialPanel({ caseMaterials: data.caseMaterials }) }}
+
+  {# Notes side-tray modal for materials viewer #}
+  {% include "_includes/case/material/notes-modal.njk" %}
 {% endblock %}
 
 {% block pageScripts %}
