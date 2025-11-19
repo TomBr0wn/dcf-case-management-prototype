@@ -35,6 +35,11 @@
                 <div>
                   <a href="/cases/{{_case.id}}/directions/{{direction.id}}" class="govuk-link--no-visited-state">{{ directionDescriptionDisplay | trim }}</a>
                 </div>
+                {% if direction.status %}
+                  <div class="app-list__tag">
+                    {{ govukTag({ text: direction.status, classes: direction.status | directionStatusTagClass }) }}
+                  </div>
+                {% endif %}
               </h3>
 
               {% set dueDateValue %}

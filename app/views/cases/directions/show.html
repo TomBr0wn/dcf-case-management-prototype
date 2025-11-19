@@ -33,6 +33,9 @@
 
       <h1 class="govuk-heading-l">
         {{ directionDescriptionDisplay | trim }}
+        {% if direction.status %}
+          {{ govukTag({ text: direction.status, classes: direction.status | directionStatusTagClass }) }}
+        {% endif %}
       </h1>
 
       <div class="govuk-button-group">

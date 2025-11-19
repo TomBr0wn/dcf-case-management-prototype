@@ -2,6 +2,7 @@ const _ = require('lodash')
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 const { groupDirections } = require('../helpers/directionGrouping')
+const { getDirectionStatus } = require('../helpers/directionState')
 
 function addCtlInfo(_case) {
   let allCtlDates = []
@@ -62,6 +63,12 @@ module.exports = router => {
 
     // Add CTL info
     _case = addCtlInfo(_case)
+
+    // Add status to each direction
+    _case.directions = _case.directions.map(direction => {
+      direction.status = getDirectionStatus(direction)
+      return direction
+    })
 
     // Add grouping metadata
     _case.directions = groupDirections(_case.directions)

@@ -33,6 +33,17 @@ addFilter('severityTagClass', severity => {
   }
 })
 
+addFilter('directionStatusTagClass', status => {
+  switch(status) {
+    case 'Overdue':
+      return 'govuk-tag--red'
+    case 'Due today':
+      return 'govuk-tag--orange'
+    default:
+      return ''
+  }
+})
+
 addFilter('capitalize', str => {
   if (!str) return str
   return str.charAt(0).toUpperCase() + str.slice(1)

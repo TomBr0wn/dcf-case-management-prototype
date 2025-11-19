@@ -1,6 +1,7 @@
 const _ = require('lodash')
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
+const { getDirectionStatus } = require('../helpers/directionState')
 
 function addCtlInfo(_case) {
   let allCtlDates = []
@@ -70,6 +71,9 @@ module.exports = router => {
         }
       }
     })
+
+    // Add status to direction
+    direction.status = getDirectionStatus(direction)
 
     res.render("cases/directions/show", { _case, direction })
   })

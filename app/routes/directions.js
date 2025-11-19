@@ -3,6 +3,7 @@ const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 const Pagination = require('../helpers/pagination')
 const { groupDirections } = require('../helpers/directionGrouping')
+const { getDirectionStatus } = require('../helpers/directionState')
 
 function resetFilters(req) {
   _.set(req, 'session.data.directionListFilters.owner', null)
@@ -218,7 +219,7 @@ module.exports = router => {
       }
     })
 
-    // Add CTL information to each direction's case
+    // Add CTL information and status to each direction
     directions = directions.map(direction => {
       let allCtlDates = []
       direction.case.defendants.forEach(defendant => {
@@ -232,6 +233,9 @@ module.exports = router => {
       direction.case.hasCTL = allCtlDates.length > 0
       direction.case.soonestCTL = allCtlDates.length > 0 ? new Date(Math.min(...allCtlDates)) : null
       direction.case.ctlCount = allCtlDates.length
+
+      // Add direction status (for tags)
+      direction.status = getDirectionStatus(direction)
 
       return direction
     })
