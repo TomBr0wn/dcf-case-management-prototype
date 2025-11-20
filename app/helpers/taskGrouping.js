@@ -68,19 +68,28 @@ function getDateGroup(date, today) {
 /**
  * Get the heading text for a date group based on sort type
  * @param {string} groupKey - The group key
- * @param {string} sortBy - The sort type ('Custody time limit', 'Hearing date')
+ * @param {string} sortBy - The sort type ('Time limit', 'Custody time limit', 'Hearing date')
  * @returns {string} - The heading text
  */
 function getDateGroupHeading(groupKey, sortBy) {
   const headings = {
+    'Time limit': {
+      overdue: 'Time limit expired',
+      today: 'Time limit ends today',
+      tomorrow: 'Time limit ends tomorrow',
+      thisWeek: 'Time limit ends this week',
+      nextWeek: 'Time limit ends next week',
+      later: 'Time limit ends later',
+      noDate: 'No time limit'
+    },
     'Custody time limit': {
-      overdue: 'Custody time limit expired',
-      today: 'Custody time limit ends today',
-      tomorrow: 'Custody time limit ends tomorrow',
-      thisWeek: 'Custody time limit ends this week',
-      nextWeek: 'Custody time limit ends next week',
-      later: 'Custody time limit ends later',
-      noDate: 'No custody time limit'
+      overdue: 'Time limit expired',
+      today: 'Time limit ends today',
+      tomorrow: 'Time limit ends tomorrow',
+      thisWeek: 'Time limit ends this week',
+      nextWeek: 'Time limit ends next week',
+      later: 'Time limit ends later',
+      noDate: 'No time limit'
     },
     'Hearing date': {
       overdue: 'Hearing date has passed',
@@ -99,11 +108,11 @@ function getDateGroupHeading(groupKey, sortBy) {
 /**
  * Add group metadata to tasks based on their severity or date (depending on sortBy)
  * @param {Array} tasks - Array of task objects
- * @param {string} sortBy - Optional. The sort type ('Custody time limit', 'Hearing date'). Defaults to severity-based grouping.
+ * @param {string} sortBy - Optional. The sort type ('Time limit', 'Custody time limit', 'Hearing date'). Defaults to severity-based grouping.
  * @returns {Array} - Tasks with groupKey, groupHeading, sortOrder, and severity properties added
  */
 function groupTasks(tasks, sortBy) {
-  if (sortBy === 'Custody time limit' || sortBy === 'Hearing date') {
+  if (sortBy === 'Time limit' || sortBy === 'Custody time limit' || sortBy === 'Hearing date') {
     // Use date-based grouping
     const today = new Date()
     today.setHours(0, 0, 0, 0)
@@ -111,8 +120,8 @@ function groupTasks(tasks, sortBy) {
     return tasks.map(task => {
       let dateToUse = null
 
-      if (sortBy === 'Custody time limit') {
-        dateToUse = task.case?.soonestCTL
+      if (sortBy === 'Time limit' || sortBy === 'Custody time limit') {
+        dateToUse = task.case?.soonestTimeLimit
       } else if (sortBy === 'Hearing date') {
         dateToUse = task.case?.hearings?.[0]?.startDate
       }

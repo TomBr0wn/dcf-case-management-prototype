@@ -120,12 +120,12 @@
                     } if 1==2,
                     {
                       key: {
-                        text: 'Custody time limit'
+                        text: 'Custody time limit' if task.case.timeLimitType == 'CTL' else ('Statutory time limit' if task.case.timeLimitType == 'STL' else 'PACE time limit')
                       },
                       value: {
-                        html: (task.case.soonestCTL | isoDateString | govukDateTime) + ' (' + (task.case.soonestCTL | daysUntil) + ')'
+                        html: (task.case.soonestTimeLimit | isoDateString | govukDateTime) + ' (' + (task.case.soonestTimeLimit | daysUntil) + ')'
                       }
-                    } if task.case.hasCTL,
+                    },
                     {
                       key: {
                         text: 'Reason for marking as urgent'

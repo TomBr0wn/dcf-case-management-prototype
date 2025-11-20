@@ -212,6 +212,32 @@ function generateCaseReference() {
   return `${twoDigits}${twoLetters}${sixDigits}/${suffix}`;
 }
 
+// Generate CTL between yesterday and 120 days from now
+function generateCTL() {
+  const daysFromNow = faker.number.int({ min: -1, max: 120 });
+  const d = new Date();
+  d.setDate(d.getDate() + daysFromNow);
+  d.setUTCHours(23, 59, 59, 999);
+  return d;
+}
+
+// Generate STL between yesterday and 6 months (180 days) from now
+function generateSTL() {
+  const daysFromNow = faker.number.int({ min: -1, max: 180 });
+  const d = new Date();
+  d.setDate(d.getDate() + daysFromNow);
+  d.setUTCHours(23, 59, 59, 999);
+  return d;
+}
+
+// Generate PACE between yesterday and 24 hours from now
+function generatePACE() {
+  const hoursFromNow = faker.number.int({ min: -24, max: 24 });
+  const d = new Date();
+  d.setHours(d.getHours() + hoursFromNow);
+  return d;
+}
+
 const taskNoteDescriptions = [
   "Awaiting response from witness",
   "Documents requested from police",
@@ -484,17 +510,23 @@ async function main() {
   console.log("✅ Defence lawyers seeded");
 
   // -------------------- Defendants with Charges --------------------
-  // Step 1: Batch create all defendants
-  const defendantData = Array.from({ length: 200 }, () => ({
-    firstName: faker.helpers.arrayElement(firstNames),
-    lastName: faker.helpers.arrayElement(lastNames),
-    gender: faker.helpers.arrayElement(["Male", "Female", "Unknown"]),
-    religion: faker.helpers.arrayElement([...religions, null]), // Some nulls
-    occupation: faker.helpers.arrayElement([...occupations, null]), // Some nulls
-    dateOfBirth: faker.date.birthdate({ min: 18, max: 75, mode: "age" }),
-    remandStatus: faker.helpers.arrayElement(remandStatuses),
-    defenceLawyerId: faker.helpers.arrayElement(defenceLawyers).id,
-  }));
+  // Step 1: Batch create all defendants with time limit distribution
+  // 50% CTL, 25% STL, 25% PACE
+  const defendantData = Array.from({ length: 200 }, (_, index) => {
+    const timeLimitType = index < 100 ? 'CTL' : index < 150 ? 'STL' : 'PACE';
+
+    return {
+      firstName: faker.helpers.arrayElement(firstNames),
+      lastName: faker.helpers.arrayElement(lastNames),
+      gender: faker.helpers.arrayElement(["Male", "Female", "Unknown"]),
+      religion: faker.helpers.arrayElement([...religions, null]), // Some nulls
+      occupation: faker.helpers.arrayElement([...occupations, null]), // Some nulls
+      dateOfBirth: faker.date.birthdate({ min: 18, max: 75, mode: "age" }),
+      remandStatus: faker.helpers.arrayElement(remandStatuses),
+      paceTimeLimit: timeLimitType === 'PACE' ? generatePACE() : null,
+      defenceLawyerId: faker.helpers.arrayElement(defenceLawyers).id,
+    };
+  });
 
   const defendants = await prisma.defendant.createManyAndReturn({
     data: defendantData,
@@ -502,7 +534,12 @@ async function main() {
 
   // Step 2: Batch create all charges for defendants
   const allChargesData = [];
-  for (const defendant of defendants) {
+  for (let i = 0; i < defendants.length; i++) {
+    const defendant = defendants[i];
+
+    // Determine time limit type based on defendant index (same logic as creation)
+    const timeLimitType = i < 100 ? 'CTL' : i < 150 ? 'STL' : 'PACE';
+
     // Decide how many charges this defendant has (1-4, weighted towards 1-2)
     const numCharges = faker.helpers.weightedArrayElement([
       { weight: 50, value: 1 },
@@ -514,33 +551,17 @@ async function main() {
     // Select random charges
     const selectedCharges = faker.helpers.arrayElements(charges, numCharges);
 
-    // Determine if any charges will have CTL (50% chance)
-    const hasAnyCTL = faker.datatype.boolean();
-
-    let ctlDate = null;
-    if (hasAnyCTL) {
-      // Generate a CTL date within the next 30 days
-      ctlDate = faker.date.soon({ days: 30 });
-      ctlDate.setUTCHours(23, 59, 59, 999);
+    // Generate a time limit date for this defendant (will apply to at least one charge)
+    let timeLimitDate = null;
+    if (timeLimitType === 'CTL') {
+      timeLimitDate = generateCTL();
+    } else if (timeLimitType === 'STL') {
+      timeLimitDate = generateSTL();
     }
+    // PACE is on defendant, not charges
 
     // Build charges data
     selectedCharges.forEach((charge, index) => {
-      // 50% of charges should have CTL overall
-      const thisChargeHasCTL = faker.datatype.boolean();
-
-      let thisCtlDate = null;
-      if (thisChargeHasCTL && hasAnyCTL) {
-        // If this is the first charge or 75% chance, use the same CTL
-        if (index === 0 || Math.random() < 0.75) {
-          thisCtlDate = ctlDate;
-        } else {
-          // 25% chance of different CTL within the next 30 days
-          thisCtlDate = faker.date.soon({ days: 30 });
-          thisCtlDate.setUTCHours(23, 59, 59, 999);
-        }
-      }
-
       // Generate particulars with random date and victim
       const offenceDate = faker.date.past();
       const particularsDate = offenceDate.toLocaleDateString('en-GB', {
@@ -550,6 +571,18 @@ async function main() {
       });
       const victimName = `${faker.helpers.arrayElement(firstNames)} ${faker.helpers.arrayElement(lastNames)}`;
 
+      // For CTL/STL defendants, at least one charge must have the time limit
+      // For first charge, always apply it. For additional charges, 50% chance
+      const shouldHaveTimeLimit = index === 0 || faker.datatype.boolean();
+
+      let ctl = null;
+      let stl = null;
+      if (timeLimitType === 'CTL' && shouldHaveTimeLimit) {
+        ctl = timeLimitDate;
+      } else if (timeLimitType === 'STL' && shouldHaveTimeLimit) {
+        stl = timeLimitDate;
+      }
+
       allChargesData.push({
         chargeCode: charge.code,
         description: charge.description,
@@ -557,7 +590,8 @@ async function main() {
         offenceDate: offenceDate,
         plea: faker.helpers.arrayElement(pleas),
         particulars: `On the ${particularsDate} ${charge.code === 'B10' ? 'stole' : charge.code === 'A01' ? 'assaulted' : charge.code === 'C03' ? 'damaged property belonging to' : 'committed an offence against'} ${victimName}.`,
-        custodyTimeLimit: thisCtlDate,
+        custodyTimeLimit: ctl,
+        statutoryTimeLimit: stl,
         isCount: faker.datatype.boolean(0.3), // 30% are counts
         defendantId: defendant.id,
       });

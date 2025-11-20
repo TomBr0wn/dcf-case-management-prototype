@@ -255,6 +255,7 @@ model Defendant {
   occupation       String?
   dateOfBirth      DateTime?
   remandStatus     RemandStatus?
+  paceTimeLimit    DateTime?
   defenceLawyerId  Int?
   defenceLawyer    DefenceLawyer? @relation(fields: [defenceLawyerId], references: [id])
   cases            Case[]         @relation("CaseDefendants")
@@ -270,17 +271,18 @@ model DefenceLawyer {
 }
 
 model Charge {
-  id                Int       @id @default(autoincrement())
-  chargeCode        String
-  description       String
-  status            String
-  offenceDate       DateTime
-  plea              Plea?
-  particulars       String
-  custodyTimeLimit  DateTime?
-  isCount           Boolean   @default(false)
-  defendantId       Int
-  defendant         Defendant @relation(fields: [defendantId], references: [id])
+  id                  Int       @id @default(autoincrement())
+  chargeCode          String
+  description         String
+  status              String
+  offenceDate         DateTime
+  plea                Plea?
+  particulars         String
+  custodyTimeLimit    DateTime?
+  statutoryTimeLimit  DateTime?
+  isCount             Boolean   @default(false)
+  defendantId         Int
+  defendant           Defendant @relation(fields: [defendantId], references: [id])
 }
 
 enum RemandStatus {

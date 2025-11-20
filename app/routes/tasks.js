@@ -3,6 +3,7 @@ const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 const Pagination = require('../helpers/pagination')
 const { groupTasks } = require('../helpers/taskGrouping')
+const { calculateTimeLimit } = require('../helpers/timeLimit')
 const taskNames = require('../data/task-names')
 
 function resetFilters(req) {
@@ -319,20 +320,12 @@ module.exports = router => {
       }
     })
 
-    // Add CTL information to each task's case
+    // Add time limit information to each task's case
     tasks = tasks.map(task => {
-      let allCtlDates = []
-      task.case.defendants.forEach(defendant => {
-        defendant.charges.forEach(charge => {
-          if (charge.custodyTimeLimit) {
-            allCtlDates.push(new Date(charge.custodyTimeLimit))
-          }
-        })
-      })
-
-      task.case.hasCTL = allCtlDates.length > 0
-      task.case.soonestCTL = allCtlDates.length > 0 ? new Date(Math.min(...allCtlDates)) : null
-      task.case.ctlCount = allCtlDates.length
+      const timeLimitInfo = calculateTimeLimit(task.case)
+      task.case.soonestTimeLimit = timeLimitInfo.soonestTimeLimit
+      task.case.timeLimitType = timeLimitInfo.timeLimitType
+      task.case.timeLimitCount = timeLimitInfo.timeLimitCount
 
       return task
     })
@@ -446,15 +439,10 @@ module.exports = router => {
       })
     }
 
-    if (sortBy === 'Custody time limit') {
-      // Sort by soonest CTL first, then tasks without CTL
+    if (sortBy === 'Time limit' || sortBy === 'Custody time limit') {
+      // Sort by soonest time limit (all cases have one)
       tasks.sort((a, b) => {
-        if (a.case.hasCTL && !b.case.hasCTL) return -1
-        if (!a.case.hasCTL && b.case.hasCTL) return 1
-        if (a.case.hasCTL && b.case.hasCTL) {
-          return a.case.soonestCTL - b.case.soonestCTL
-        }
-        return 0
+        return a.case.soonestTimeLimit - b.case.soonestTimeLimit
       })
     } else if (sortBy === 'Hearing date') {
       // Sort by hearing date - cases with hearings first, then cases without

@@ -7,10 +7,10 @@
       <a  href="?taskSort=Due date">Due date</a>
     {% endif %}
     <span class="govuk-!-margin-left-1 govuk-!-margin-right-1">|</span>
-    {% if data.taskSort == 'Custody time limit' %}
-      <span>Custody time limit</span>
+    {% if data.taskSort == 'Time limit' or data.taskSort == 'Custody time limit' %}
+      <span>Time limit</span>
     {% else %}
-      <a href="?taskSort=Custody time limit">Custody time limit</a>
+      <a href="?taskSort=Time limit">Time limit</a>
     {% endif %}
     <span class="govuk-!-margin-left-1 govuk-!-margin-right-1">|</span>
     {% if data.taskSort == 'Hearing date' %}

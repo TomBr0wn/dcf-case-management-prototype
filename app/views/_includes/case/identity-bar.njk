@@ -8,8 +8,12 @@
     {% endif %}
   </b>
 
-  {% if _case.hasCTL %}
-    {{ govukTag({ text: 'Custody time limit', classes: 'govuk-tag--re' })}}
+  {% if _case.timeLimitType == 'CTL' %}
+    {{ govukTag({ text: 'Custody time limit', classes: 'govuk-tag--red' })}}
+  {% elif _case.timeLimitType == 'STL' %}
+    {{ govukTag({ text: 'Statutory time limit', classes: 'govuk-tag--orange' })}}
+  {% elif _case.timeLimitType == 'PACE' %}
+    {{ govukTag({ text: 'PACE time limit', classes: 'govuk-tag--yellow' })}}
   {% endif %}
 {% endset %}
 {{ appIdentityBar({

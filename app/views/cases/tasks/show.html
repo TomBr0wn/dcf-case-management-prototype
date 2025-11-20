@@ -144,12 +144,12 @@
           } if 1==2,
           {
             key: {
-              text: 'Custody time limit'
+              text: 'Custody time limit' if _case.timeLimitType == 'CTL' else ('Statutory time limit' if _case.timeLimitType == 'STL' else 'PACE time limit')
             },
             value: {
-              html: (_case.soonestCTL | isoDateString | govukDateTime) + ' (' + (_case.soonestCTL | daysUntil) + ')'
+              html: (_case.soonestTimeLimit | isoDateString | govukDateTime) + ' (' + (_case.soonestTimeLimit | daysUntil) + ')'
             }
-          } if _case.hasCTL,
+          },
           {
             key: {
               text: 'Urgent reason'
