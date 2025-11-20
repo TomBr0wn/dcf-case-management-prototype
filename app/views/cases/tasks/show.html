@@ -78,12 +78,21 @@
         rows: [
           {
             key: {
-              text: 'Details'
+              text: 'Description'
             },
             value: {
               text: task.name
+            },
+            actions: {
+              items: [
+                {
+                  href: "#",
+                  text: "Change",
+                  visuallyHiddenText: "Description"
+                }
+              ]
             }
-          } if task.name.length > 100,
+          } if task.reminderType != null,
           {
             key: {
               text: 'Severity'
@@ -114,7 +123,16 @@
             },
             value: {
               html: dueDateValue
-            }
+            },
+            actions: {
+              items: [
+                {
+                  href: "#",
+                  text: "Change",
+                  visuallyHiddenText: "Due date"
+                }
+              ]
+            } if task.reminderType != null
           },
           {
             key: {
@@ -167,12 +185,12 @@
           },
           {
             key: {
-              html: 'Task type'
+              html: 'Reminder type'
             },
             value: {
-              html: task.type
+              html: 'Reminder' if task.reminderType == 'Standard' else 'Reminder (asset recovery)'
             }
-          } if 1==2
+          } if task.reminderType
         ]
       })}}
 

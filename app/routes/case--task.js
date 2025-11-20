@@ -125,7 +125,7 @@ module.exports = router => {
           task: {
             id: task.id,
             name: task.name,
-            type: task.type
+            reminderType: task.reminderType
           },
           assignedToUser: task.assignedToUser ? {
             id: task.assignedToUser.id,
@@ -267,7 +267,7 @@ module.exports = router => {
           task: {
             id: task.id,
             name: task.name,
-            type: task.type
+            reminderType: task.reminderType
           },
           urgentNote,
           assignedToUser: task.assignedToUser ? {
@@ -349,7 +349,7 @@ module.exports = router => {
           task: {
             id: task.id,
             name: task.name,
-            type: task.type
+            reminderType: task.reminderType
           },
           assignedToUser: task.assignedToUser ? {
             id: task.assignedToUser.id,

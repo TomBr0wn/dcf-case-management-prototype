@@ -11,6 +11,7 @@ function resetFilters(req) {
   _.set(req, 'session.data.taskListFilters.taskNames', null)
   _.set(req, 'session.data.taskListFilters.severities', null)
   _.set(req, 'session.data.taskListFilters.urgent', null)
+  _.set(req, 'session.data.taskListFilters.reminder', null)
 }
 
 module.exports = router => {
@@ -70,6 +71,7 @@ module.exports = router => {
     let selectedTaskNameFilters = _.get(req.session.data.taskListFilters, 'taskNames', [])
     let selectedSeverityFilters = _.get(req.session.data.taskListFilters, 'severities', [])
     let selectedUrgentFilters = _.get(req.session.data.taskListFilters, 'urgent', [])
+    let selectedReminderFilters = _.get(req.session.data.taskListFilters, 'reminder', [])
 
     let selectedFilters = { categories: [] }
 
@@ -78,6 +80,7 @@ module.exports = router => {
     let selectedTaskNameItems = []
     let selectedSeverityItems = []
     let selectedUrgentItems = []
+    let selectedReminderItems = []
 
     // Owner filter display
     if (selectedOwnerFilters?.length) {
@@ -187,6 +190,18 @@ module.exports = router => {
       })
     }
 
+    // Reminder filter display
+    if (selectedReminderFilters?.length) {
+      selectedReminderItems = selectedReminderFilters.map(function(reminder) {
+        return { text: reminder, href: '/tasks/remove-reminder/' + encodeURIComponent(reminder) }
+      })
+
+      selectedFilters.categories.push({
+        heading: { text: 'Reminder' },
+        items: selectedReminderItems
+      })
+    }
+
     // Build Prisma where clause
     let where = { AND: [] }
 
@@ -244,6 +259,20 @@ module.exports = router => {
       }
       if (urgentConditions.length) {
         where.AND.push({ OR: urgentConditions })
+      }
+    }
+
+    // Reminder filter
+    if (selectedReminderFilters?.length) {
+      const reminderConditions = []
+      if (selectedReminderFilters.includes('Is reminder')) {
+        reminderConditions.push({ reminderType: { not: null } })
+      }
+      if (selectedReminderFilters.includes('Is not reminder')) {
+        reminderConditions.push({ reminderType: null })
+      }
+      if (reminderConditions.length) {
+        where.AND.push({ OR: reminderConditions })
       }
     }
 
@@ -398,6 +427,12 @@ module.exports = router => {
       { text: 'Not urgent', value: 'Not urgent' }
     ]
 
+    // Reminder items
+    let reminderItems = [
+      { text: 'Is reminder', value: 'Is reminder' },
+      { text: 'Is not reminder', value: 'Is not reminder' }
+    ]
+
     // Handle sorting
     const sortBy = _.get(req.session.data, 'taskSort', 'Due date')
 
@@ -467,6 +502,9 @@ module.exports = router => {
       urgentItems,
       selectedUrgentFilters,
       selectedUrgentItems,
+      reminderItems,
+      selectedReminderFilters,
+      selectedReminderItems,
       taskNameItems,
       selectedTaskNameFilters,
       selectedTaskNameItems,
@@ -514,6 +552,13 @@ module.exports = router => {
     const currentFilters = _.get(req, 'session.data.taskListFilters.urgent', [])
     const urgent = decodeURIComponent(req.params.urgent)
     _.set(req, 'session.data.taskListFilters.urgent', _.pull(currentFilters, urgent))
+    res.redirect('/tasks')
+  })
+
+  router.get('/tasks/remove-reminder/:reminder', (req, res) => {
+    const currentFilters = _.get(req, 'session.data.taskListFilters.reminder', [])
+    const reminder = decodeURIComponent(req.params.reminder)
+    _.set(req, 'session.data.taskListFilters.reminder', _.pull(currentFilters, reminder))
     res.redirect('/tasks')
   })
 

@@ -322,7 +322,7 @@ model Location {
 model Task {
   id               Int        @id @default(autoincrement())
   name             String
-  isManual         Boolean    @default(false)
+  reminderType     String?
   reminderDate     DateTime
   dueDate          DateTime
   escalationDate   DateTime

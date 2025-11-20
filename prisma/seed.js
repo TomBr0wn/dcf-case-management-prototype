@@ -623,22 +623,30 @@ async function main() {
     const numStandardTasks = faker.number.int({ min: 0, max: 5 });
     const chosenTaskNames = faker.helpers.arrayElements(taskNames, numStandardTasks);
 
-    // Add 0 to 3 manual tasks
-    const numManualTasks = faker.number.int({ min: 0, max: 3 });
-    const manualTasks = [];
-    for (let m = 0; m < numManualTasks; m++) {
+    // Add 0 to 2 reminder tasks (with manual-style descriptions)
+    const numReminderTasks = faker.number.int({ min: 0, max: 2 });
+    const reminderTasks = [];
+    for (let r = 0; r < numReminderTasks; r++) {
+      // 80% standard reminder, 20% asset recovery reminder
+      const reminderType = faker.datatype.boolean({ probability: 0.8 }) ? 'Standard' : 'Asset recovery';
+
+      // Generate longer description for reminder tasks (like manual tasks)
       // 25% chance of long name, 75% chance of short name
       const useLongName = faker.datatype.boolean({ probability: 0.25 });
-      const manualTaskName = useLongName
+      const name = useLongName
         ? faker.helpers.arrayElement(manualTaskNamesLong)
         : faker.helpers.arrayElement(manualTaskNamesShort);
-      manualTasks.push(manualTaskName);
+
+      reminderTasks.push({ name, reminderType });
     }
 
-    const allTaskNames = [...chosenTaskNames, ...manualTasks];
+    const allTasks = [
+      ...chosenTaskNames.map(name => ({ name, reminderType: null })),
+      ...reminderTasks
+    ];
 
-    const tasksData = allTaskNames.map((name, index) => {
-      const isManual = index >= chosenTaskNames.length;
+    const tasksData = allTasks.map((taskInfo) => {
+      const { name, reminderType } = taskInfo;
 
       // 75% assigned to users, 25% assigned to teams
       const assignmentType = faker.helpers.weightedArrayElement([
@@ -700,7 +708,7 @@ async function main() {
 
       return {
         name,
-        isManual,
+        reminderType,
         reminderDate: dates.reminderDate,
         dueDate: dates.dueDate,
         escalationDate: dates.escalationDate,
@@ -1245,7 +1253,7 @@ console.log(`✅ Assigned ${DGA_TARGET} cases needing DGA review with failure re
     const guaranteedTasks = [
       {
         name: faker.helpers.arrayElement(taskNames),
-        isManual: false,
+        reminderType: null,
         reminderDate: pendingDates.reminderDate,
         dueDate: pendingDates.dueDate,
         escalationDate: pendingDates.escalationDate,
@@ -1256,7 +1264,7 @@ console.log(`✅ Assigned ${DGA_TARGET} cases needing DGA review with failure re
       },
       {
         name: faker.helpers.arrayElement(taskNames),
-        isManual: false,
+        reminderType: null,
         reminderDate: dueDates.reminderDate,
         dueDate: dueDates.dueDate,
         escalationDate: dueDates.escalationDate,
@@ -1267,7 +1275,7 @@ console.log(`✅ Assigned ${DGA_TARGET} cases needing DGA review with failure re
       },
       {
         name: faker.helpers.arrayElement(taskNames),
-        isManual: false,
+        reminderType: null,
         reminderDate: overdueDates.reminderDate,
         dueDate: overdueDates.dueDate,
         escalationDate: overdueDates.escalationDate,
@@ -1278,7 +1286,7 @@ console.log(`✅ Assigned ${DGA_TARGET} cases needing DGA review with failure re
       },
       {
         name: faker.helpers.arrayElement(taskNames),
-        isManual: false,
+        reminderType: null,
         reminderDate: escalatedDates.reminderDate,
         dueDate: escalatedDates.dueDate,
         escalationDate: escalatedDates.escalationDate,
@@ -1374,7 +1382,7 @@ console.log(`✅ Assigned ${DGA_TARGET} cases needing DGA review with failure re
     await prisma.task.create({
       data: {
         name: "CTL expiry imminent",
-        isManual: false,
+        reminderType: null,
         reminderDate: todayCtlReminderDate,
         dueDate: todayCtlDueDate,
         escalationDate: todayCtlEscalationDate,
@@ -1434,7 +1442,7 @@ console.log(`✅ Assigned ${DGA_TARGET} cases needing DGA review with failure re
     await prisma.task.create({
       data: {
         name: "CTL expiry imminent",
-        isManual: false,
+        reminderType: null,
         reminderDate: tomorrowCtlReminderDate,
         dueDate: tomorrowCtlDueDate,
         escalationDate: tomorrowCtlEscalationDate,

@@ -41,6 +41,20 @@
   }) }}
 
   {{ govukCheckboxes({
+    idPrefix: "taskListFilters[reminder]",
+    name: "taskListFilters[reminder]",
+    classes: "govuk-checkboxes--small",
+    fieldset: {
+      legend: {
+        text: "Reminder",
+        classes: "govuk-fieldset__legend--s"
+      }
+    },
+    items: reminderItems,
+    values: selectedReminderFilters
+  }) }}
+
+  {{ govukCheckboxes({
     idPrefix: "taskListFilters[severities]",
     name: "taskListFilters[severities]",
     classes: "govuk-checkboxes--small",
@@ -53,20 +67,6 @@
     items: severityItems,
     values: selectedSeverityFilters
   }) }}
-
-  {{ govukCheckboxes({
-    idPrefix: "taskListFilters[taskTypes]",
-    name: "taskListFilters[taskTypes]",
-    classes: "govuk-checkboxes--small",
-    fieldset: {
-      legend: {
-        text: "Task type",
-        classes: "govuk-fieldset__legend--s"
-      }
-    },
-    items: taskTypeItems,
-    values: selectedTaskTypeFilters
-  }) if 1==2}}
 
   {{ appCheckboxFilter({
     idPrefix: "taskListFilters[taskNames]",

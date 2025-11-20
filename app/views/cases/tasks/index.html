@@ -111,6 +111,14 @@
                   },
                   {
                     key: {
+                      html: 'Reminder type'
+                    },
+                    value: {
+                      html: 'Reminder' if task.reminderType == 'Standard' else 'Reminder (asset recovery)'
+                    }
+                  } if task.reminderType,
+                  {
+                    key: {
                       html: 'Latest note'
                     },
                     value: {
@@ -124,15 +132,7 @@
                     value: {
                       html: (_case.hearings[0].startDate | isoDateString | govukDateTime) + ' - ' + _case.hearings[0].type
                     }
-                  } if _case.hearings and _case.hearings.length > 0,
-                  {
-                    key: {
-                      html: 'Task type'
-                    },
-                    value: {
-                      html: task.type
-                    }
-                  } if 1==2
+                  } if _case.hearings and _case.hearings.length > 0
                 ]
               })}}
             </div>

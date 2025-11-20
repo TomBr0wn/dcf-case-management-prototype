@@ -81,8 +81,6 @@ module.exports = [
   'Record CTL extension',
   'Record Hg outcome',
   'Record PCM witnesses',
-  'Reminder',
-  'Reminder (asset recovery)',
   'Request upgrade file',
   'Retrieve core details',
   'Review BCM information',
