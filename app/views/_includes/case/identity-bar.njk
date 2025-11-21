@@ -1,19 +1,21 @@
 {% set identityTitle %}
-  
+
   <span class="govuk-!-margin-right-1">{{_case.reference}}</span>
   <b class="govuk-!-margin-right-1">
-    {{_case.defendants[0].firstName}} {{_case.defendants[0].lastName}} 
+    {{_case.defendants[0].firstName}} {{_case.defendants[0].lastName}}
     {% if _case.defendants.length > 1 %}
       and {{_case.defendants.length - 1}} more
     {% endif %}
   </b>
 
-  {% if _case.timeLimitType == 'CTL' %}
-    {{ govukTag({ text: 'Custody time limit' })}}
-  {% elif _case.timeLimitType == 'STL' %}
-    {{ govukTag({ text: 'Statutory time limit'})}}
-  {% elif _case.timeLimitType == 'PACE' %}
-    {{ govukTag({ text: 'PACE time limit' })}}
+  {% if _case.custodyTimeLimit %}
+    {{ govukTag({ text: 'Custody time limit', classes: 'govuk-tag--red' })}}
+  {% endif %}
+  {% if _case.statutoryTimeLimit %}
+    {{ govukTag({ text: 'Statutory time limit', classes: 'govuk-tag--orange' })}}
+  {% endif %}
+  {% if _case.paceTimeLimit %}
+    {{ govukTag({ text: 'PACE time limit', classes: 'govuk-tag--yellow' })}}
   {% endif %}
 {% endset %}
 {{ appIdentityBar({

@@ -1,7 +1,7 @@
 const _ = require('lodash')
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
-const { calculateTimeLimit } = require('../helpers/timeLimit')
+const { addTimeLimitDates } = require('../helpers/timeLimit')
 
 module.exports = router => {
 
@@ -22,10 +22,7 @@ module.exports = router => {
     })
 
     // Add time limit info
-    const timeLimitInfo = calculateTimeLimit(_case)
-    _case.soonestTimeLimit = timeLimitInfo.soonestTimeLimit
-    _case.timeLimitType = timeLimitInfo.timeLimitType
-    _case.timeLimitCount = timeLimitInfo.timeLimitCount
+    _case = addTimeLimitDates(_case)
 
     // Fetch notes
     let notes = await prisma.note.findMany({
@@ -71,10 +68,7 @@ module.exports = router => {
       }
     })
 
-    const timeLimitInfo = calculateTimeLimit(_case)
-    _case.soonestTimeLimit = timeLimitInfo.soonestTimeLimit
-    _case.timeLimitType = timeLimitInfo.timeLimitType
-    _case.timeLimitCount = timeLimitInfo.timeLimitCount
+    _case = addTimeLimitDates(_case)
 
     res.render("cases/notes/new/index", { _case })
   })
@@ -96,10 +90,7 @@ module.exports = router => {
       }
     })
 
-    const timeLimitInfo = calculateTimeLimit(_case)
-    _case.soonestTimeLimit = timeLimitInfo.soonestTimeLimit
-    _case.timeLimitType = timeLimitInfo.timeLimitType
-    _case.timeLimitCount = timeLimitInfo.timeLimitCount
+    _case = addTimeLimitDates(_case)
 
     const content = req.session.data.addNote?.content || ''
 

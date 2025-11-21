@@ -120,12 +120,28 @@
                     } if 1==2,
                     {
                       key: {
-                        text: 'Custody time limit' if task.case.timeLimitType == 'CTL' else ('Statutory time limit' if task.case.timeLimitType == 'STL' else 'PACE time limit')
+                        text: 'Custody time limit'
                       },
                       value: {
-                        html: (task.case.soonestTimeLimit | isoDateString | govukDateTime) + ' (' + (task.case.soonestTimeLimit | daysUntil) + ')'
+                        html: (task.case.custodyTimeLimit | isoDateString | govukDateTime) + ' (' + (task.case.custodyTimeLimit | daysUntil) + ')'
                       }
-                    },
+                    } if task.case.custodyTimeLimit,
+                    {
+                      key: {
+                        text: 'Statutory time limit'
+                      },
+                      value: {
+                        html: (task.case.statutoryTimeLimit | isoDateString | govukDateTime) + ' (' + (task.case.statutoryTimeLimit | daysUntil) + ')'
+                      }
+                    } if task.case.statutoryTimeLimit,
+                    {
+                      key: {
+                        text: 'PACE time limit'
+                      },
+                      value: {
+                        html: (task.case.paceTimeLimit | isoDateString | govukDateTime) + ' (' + (task.case.paceTimeLimit | daysUntil) + ')'
+                      }
+                    } if task.case.paceTimeLimit,
                     {
                       key: {
                         text: 'Reason for marking as urgent'

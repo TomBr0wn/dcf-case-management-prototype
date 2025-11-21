@@ -2,7 +2,7 @@ const _ = require('lodash')
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 const { getTaskSeverity } = require('../helpers/taskState')
-const { calculateTimeLimit } = require('../helpers/timeLimit')
+const { addTimeLimitDates } = require('../helpers/timeLimit')
 
 module.exports = router => {
 
@@ -95,14 +95,12 @@ module.exports = router => {
       }
 
       // Calculate time limit info for this task's case
-      const timeLimitInfo = calculateTimeLimit(task.case)
-      if (timeLimitInfo.timeLimitType === 'CTL') {
-        ctlTaskCount++
-      } else if (timeLimitInfo.timeLimitType === 'STL') {
-        stlTaskCount++
-      } else if (timeLimitInfo.timeLimitType === 'PACE') {
-        paceTaskCount++
-      }
+      addTimeLimitDates(task.case)
+
+      // Count by time limit type
+      if (task.case.custodyTimeLimit) ctlTaskCount++
+      if (task.case.statutoryTimeLimit) stlTaskCount++
+      if (task.case.paceTimeLimit) paceTaskCount++
     })
 
     // Fetch directions assigned to current user and categorize by due date

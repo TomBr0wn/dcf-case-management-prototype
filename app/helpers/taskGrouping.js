@@ -139,17 +139,18 @@ function groupTasks(tasks, sortBy) {
       let dateToUse = null
 
       if (sortBy === 'Time limit') {
-        // For generic 'Time limit', use the soonest time limit regardless of type
-        dateToUse = task.case?.soonestTimeLimit
+        // For generic 'Time limit', use the soonest time limit across all types
+        const dates = [task.case?.custodyTimeLimit, task.case?.statutoryTimeLimit, task.case?.paceTimeLimit].filter(d => d)
+        dateToUse = dates.length > 0 ? new Date(Math.min(...dates.map(d => new Date(d)))) : null
       } else if (sortBy === 'Custody time limit') {
         // Only use date if this task has a CTL
-        dateToUse = task.case?.timeLimitType === 'CTL' ? task.case?.soonestTimeLimit : null
+        dateToUse = task.case?.custodyTimeLimit || null
       } else if (sortBy === 'Statutory time limit') {
         // Only use date if this task has a STL
-        dateToUse = task.case?.timeLimitType === 'STL' ? task.case?.soonestTimeLimit : null
+        dateToUse = task.case?.statutoryTimeLimit || null
       } else if (sortBy === 'PACE') {
         // Only use date if this task has a PACE time limit
-        dateToUse = task.case?.timeLimitType === 'PACE' ? task.case?.soonestTimeLimit : null
+        dateToUse = task.case?.paceTimeLimit || null
       } else if (sortBy === 'Hearing date') {
         dateToUse = task.case?.hearings?.[0]?.startDate
       }

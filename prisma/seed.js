@@ -641,9 +641,27 @@ async function main() {
     "Search warrant",
   ];
 
+  // Group defendants by time limit type for case assignment
+  const ctlDefendants = defendants.slice(0, 100);
+  const stlDefendants = defendants.slice(100, 150);
+  const paceDefendants = defendants.slice(150, 200);
+
   for (let i = 0; i < TOTAL_CASES; i++) {
+    // Randomly choose which time limit type this case will have
+    const timeLimitType = faker.helpers.arrayElement(['CTL', 'STL', 'PACE']);
+
+    // Select defendants only from the appropriate group
+    let defendantPool;
+    if (timeLimitType === 'CTL') {
+      defendantPool = ctlDefendants;
+    } else if (timeLimitType === 'STL') {
+      defendantPool = stlDefendants;
+    } else {
+      defendantPool = paceDefendants;
+    }
+
     const assignedDefendants = faker.helpers.arrayElements(
-      defendants,
+      defendantPool,
       faker.number.int({ min: 1, max: 3 })
     );
     const assignedVictims = faker.helpers.arrayElements(

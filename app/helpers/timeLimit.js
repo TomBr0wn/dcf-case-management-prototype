@@ -1,58 +1,36 @@
 /**
- * Calculate time limit information for a case across all three types: CTL, STL, and PACE
+ * Add time limit dates to a case object for CTL, STL, and PACE
+ * Each property will be the soonest date for that type, or null if none exist
  *
  * @param {Object} _case - Case object with defendants (including charges)
- * @returns {Object} - Object with soonestTimeLimit, timeLimitType, and timeLimitCount
+ * @returns {Object} - The case object with custodyTimeLimit, statutoryTimeLimit, and paceTimeLimit properties added
  */
-function calculateTimeLimit(_case) {
-  const allTimeLimits = [];
+function addTimeLimitDates(_case) {
+  const ctlDates = []
+  const stlDates = []
+  const paceDates = []
 
   _case.defendants.forEach(defendant => {
-    // Check for PACE time limit on defendant
     if (defendant.paceTimeLimit) {
-      allTimeLimits.push({
-        date: new Date(defendant.paceTimeLimit),
-        type: 'PACE'
-      });
+      paceDates.push(new Date(defendant.paceTimeLimit))
     }
-
-    // Check for CTL and STL on charges
     defendant.charges.forEach(charge => {
       if (charge.custodyTimeLimit) {
-        allTimeLimits.push({
-          date: new Date(charge.custodyTimeLimit),
-          type: 'CTL'
-        });
+        ctlDates.push(new Date(charge.custodyTimeLimit))
       }
       if (charge.statutoryTimeLimit) {
-        allTimeLimits.push({
-          date: new Date(charge.statutoryTimeLimit),
-          type: 'STL'
-        });
+        stlDates.push(new Date(charge.statutoryTimeLimit))
       }
-    });
-  });
+    })
+  })
 
-  if (allTimeLimits.length === 0) {
-    return {
-      soonestTimeLimit: null,
-      timeLimitType: null,
-      timeLimitCount: 0
-    };
-  }
+  _case.custodyTimeLimit = ctlDates.length > 0 ? new Date(Math.min(...ctlDates)) : null
+  _case.statutoryTimeLimit = stlDates.length > 0 ? new Date(Math.min(...stlDates)) : null
+  _case.paceTimeLimit = paceDates.length > 0 ? new Date(Math.min(...paceDates)) : null
 
-  // Find the soonest time limit
-  const soonest = allTimeLimits.reduce((earliest, current) => {
-    return current.date < earliest.date ? current : earliest;
-  });
-
-  return {
-    soonestTimeLimit: soonest.date,
-    timeLimitType: soonest.type,
-    timeLimitCount: allTimeLimits.length
-  };
+  return _case
 }
 
 module.exports = {
-  calculateTimeLimit
-};
+  addTimeLimitDates
+}

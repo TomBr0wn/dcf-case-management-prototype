@@ -3,7 +3,7 @@ const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 const Pagination = require('../helpers/pagination')
 const { groupTasks } = require('../helpers/taskGrouping')
-const { calculateTimeLimit } = require('../helpers/timeLimit')
+const { addTimeLimitDates } = require('../helpers/timeLimit')
 const taskNames = require('../data/task-names')
 
 function resetFilters(req) {
@@ -353,28 +353,21 @@ module.exports = router => {
       }
     })
 
-    // Add time limit information to each task's case
+    // Add time limit dates to each task's case
     tasks = tasks.map(task => {
-      const timeLimitInfo = calculateTimeLimit(task.case)
-      task.case.soonestTimeLimit = timeLimitInfo.soonestTimeLimit
-      task.case.timeLimitType = timeLimitInfo.timeLimitType
-      task.case.timeLimitCount = timeLimitInfo.timeLimitCount
-
+      addTimeLimitDates(task.case)
       return task
     })
 
-    // Filter by time limit type (must be done after calculating time limit info)
+    // Filter by time limit type (must be done after calculating time limit dates)
     if (selectedTimeLimitTypeFilters?.length) {
-      // Map display names to internal codes
-      const timeLimitTypeMap = {
-        'Custody time limit': 'CTL',
-        'Statutory time limit': 'STL',
-        'PACE': 'PACE'
-      }
-      const selectedCodes = selectedTimeLimitTypeFilters.map(filter => timeLimitTypeMap[filter])
-
       tasks = tasks.filter(task => {
-        return selectedCodes.includes(task.case.timeLimitType)
+        return selectedTimeLimitTypeFilters.some(filter => {
+          if (filter === 'Custody time limit' && task.case.custodyTimeLimit) return true
+          if (filter === 'Statutory time limit' && task.case.statutoryTimeLimit) return true
+          if (filter === 'PACE' && task.case.paceTimeLimit) return true
+          return false
+        })
       })
     }
 
@@ -495,37 +488,39 @@ module.exports = router => {
     }
 
     if (sortBy === 'Time limit' || sortBy === 'Custody time limit' || sortBy === 'Statutory time limit' || sortBy === 'PACE') {
-      // Sort by soonest time limit
+      // Sort by specific time limit date
       // Tasks with the matching time limit type come first, then others
       tasks.sort((a, b) => {
-        let aHasMatchingType = false
-        let bHasMatchingType = false
+        let aDate = null
+        let bDate = null
 
         if (sortBy === 'Custody time limit') {
-          aHasMatchingType = a.case.timeLimitType === 'CTL'
-          bHasMatchingType = b.case.timeLimitType === 'CTL'
+          aDate = a.case.custodyTimeLimit
+          bDate = b.case.custodyTimeLimit
         } else if (sortBy === 'Statutory time limit') {
-          aHasMatchingType = a.case.timeLimitType === 'STL'
-          bHasMatchingType = b.case.timeLimitType === 'STL'
+          aDate = a.case.statutoryTimeLimit
+          bDate = b.case.statutoryTimeLimit
         } else if (sortBy === 'PACE') {
-          aHasMatchingType = a.case.timeLimitType === 'PACE'
-          bHasMatchingType = b.case.timeLimitType === 'PACE'
+          aDate = a.case.paceTimeLimit
+          bDate = b.case.paceTimeLimit
         } else {
-          // For 'Time limit', all types are considered matching
-          aHasMatchingType = true
-          bHasMatchingType = true
+          // For 'Time limit', find earliest of all three types
+          const aDates = [a.case.custodyTimeLimit, a.case.statutoryTimeLimit, a.case.paceTimeLimit].filter(d => d)
+          const bDates = [b.case.custodyTimeLimit, b.case.statutoryTimeLimit, b.case.paceTimeLimit].filter(d => d)
+          aDate = aDates.length > 0 ? new Date(Math.min(...aDates.map(d => new Date(d)))) : null
+          bDate = bDates.length > 0 ? new Date(Math.min(...bDates.map(d => new Date(d)))) : null
         }
 
-        // Tasks with matching type come before tasks without
-        if (aHasMatchingType && !bHasMatchingType) return -1
-        if (!aHasMatchingType && bHasMatchingType) return 1
+        // Tasks with dates come before tasks without
+        if (aDate && !bDate) return -1
+        if (!aDate && bDate) return 1
 
-        // If both have matching type or both don't, sort by date
-        if (aHasMatchingType && bHasMatchingType) {
-          return a.case.soonestTimeLimit - b.case.soonestTimeLimit
+        // If both have dates, sort by date
+        if (aDate && bDate) {
+          return new Date(aDate) - new Date(bDate)
         }
 
-        // If neither has matching type, they're equal (will be in "No [type] time limit" group)
+        // If neither has a date, they're equal
         return 0
       })
     } else if (sortBy === 'Hearing date') {

@@ -2,7 +2,7 @@ const _ = require('lodash')
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 const { groupTasks } = require('../helpers/taskGrouping')
-const { calculateTimeLimit } = require('../helpers/timeLimit')
+const { addTimeLimitDates } = require('../helpers/timeLimit')
 
 module.exports = router => {
   router.get("/cases/:caseId/tasks", async (req, res) => {
@@ -50,11 +50,8 @@ module.exports = router => {
       },
     })
 
-    // Add time limit information to the case
-    const timeLimitInfo = calculateTimeLimit(_case)
-    _case.soonestTimeLimit = timeLimitInfo.soonestTimeLimit
-    _case.timeLimitType = timeLimitInfo.timeLimitType
-    _case.timeLimitCount = timeLimitInfo.timeLimitCount
+    // Add time limit dates to the case
+    addTimeLimitDates(_case)
 
     // Add severity information to tasks (no sortBy parameter = default severity-based grouping)
     _case.tasks = groupTasks(_case.tasks)

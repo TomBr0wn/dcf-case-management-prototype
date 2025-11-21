@@ -1,7 +1,7 @@
 const _ = require('lodash')
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
-const { calculateTimeLimit } = require('../helpers/timeLimit')
+const { addTimeLimitDates } = require('../helpers/timeLimit')
 
 module.exports = router => {
   router.get("/cases/:caseId", async (req, res) => {
@@ -29,10 +29,7 @@ module.exports = router => {
       },
     })
 
-    const timeLimitInfo = calculateTimeLimit(_case)
-    _case.soonestTimeLimit = timeLimitInfo.soonestTimeLimit
-    _case.timeLimitType = timeLimitInfo.timeLimitType
-    _case.timeLimitCount = timeLimitInfo.timeLimitCount
+    _case = addTimeLimitDates(_case)
 
     res.render("cases/show", { _case })
   })
@@ -62,10 +59,7 @@ module.exports = router => {
       },
     })
 
-    const timeLimitInfo = calculateTimeLimit(_case)
-    _case.soonestTimeLimit = timeLimitInfo.soonestTimeLimit
-    _case.timeLimitType = timeLimitInfo.timeLimitType
-    _case.timeLimitCount = timeLimitInfo.timeLimitCount
+    _case = addTimeLimitDates(_case)
 
     res.render("cases/complexity-calculation", { _case })
   })
