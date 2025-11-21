@@ -1,7 +1,6 @@
 const _ = require('lodash')
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
-const { getDirectionStatus } = require('../helpers/directionState')
 
 function addCtlInfo(_case) {
   let allCtlDates = []
@@ -21,7 +20,7 @@ function addCtlInfo(_case) {
 }
 
 module.exports = router => {
-  router.get("/cases/:caseId/directions/:directionId", async (req, res) => {
+  router.get("/cases/:caseId/directions/:directionId/complete", async (req, res) => {
     let _case = await prisma.case.findUnique({
       where: { id: parseInt(req.params.caseId) },
       include: {
@@ -50,31 +49,24 @@ module.exports = router => {
     _case = addCtlInfo(_case)
 
     const direction = await prisma.direction.findUnique({
+      where: { id: parseInt(req.params.directionId) }
+    })
+
+    res.render("cases/directions/complete/index", { _case, direction })
+  })
+
+  router.post("/cases/:caseId/directions/:directionId/complete", async (req, res) => {
+    await prisma.direction.update({
       where: { id: parseInt(req.params.directionId) },
-      include: {
-        case: {
-          include: {
-            defendants: {
-              include: {
-                charges: true,
-                defenceLawyer: true
-              }
-            },
-            unit: true
-          }
-        },
-        assignedToUser: true,
-        assignedToTeam: {
-          include: {
-            unit: true
-          }
-        }
+      data: {
+        completedDate: new Date()
       }
     })
 
-    // Add status to direction
-    direction.status = getDirectionStatus(direction)
+    _.set(req, 'session.data.successBanner', {
+      heading: 'Direction completed'
+    })
 
-    res.render("cases/directions/show", { _case, direction })
+    res.redirect(`/cases/${req.params.caseId}/directions`)
   })
 }

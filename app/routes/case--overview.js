@@ -31,7 +31,7 @@ module.exports = router => {
 
     _case = addTimeLimitDates(_case)
 
-    res.render("cases/show", { _case })
+    res.render("cases/overview/index", { _case })
   })
 
   router.get("/cases/:caseId/complexity-calculation", async (req, res) => {
@@ -61,7 +61,7 @@ module.exports = router => {
 
     _case = addTimeLimitDates(_case)
 
-    res.render("cases/complexity-calculation", { _case })
+    res.render("cases/complexity-calculation/index", { _case })
   })
 
 }

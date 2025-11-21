@@ -2,7 +2,6 @@ const _ = require('lodash')
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 const documentTypes = require('../data/document-types')
-const { addTimeLimitDates } = require('../helpers/timeLimit')
 
 function resetFilters(req) {
   _.set(req, 'session.data.documentListFilters.documentTypes', null)
@@ -44,18 +43,13 @@ module.exports = router => {
         user: true,
         witnesses: { include: { statements: true } },
         lawyers: true,
-        defendants: {
-          include: {
-            charges: true
-          }
-        },
+        defendants: true,
+        hearing: true,
         location: true,
         tasks: true,
         dga: true
       }
     })
-
-    _case = addTimeLimitDates(_case)
 
     // Fetch documents with filters
     let documents = await prisma.document.findMany({
@@ -87,8 +81,7 @@ module.exports = router => {
   })
 
   router.get('/cases/:caseId/documents/remove-type/:type', (req, res) => {
-    const currentFilters = _.get(req, 'session.data.documentListFilters.documentTypes', [])
-    _.set(req, 'session.data.documentListFilters.documentTypes', _.pull(currentFilters, req.params.type))
+    _.set(req, 'session.data.documentListFilters.documentTypes', _.pull(req.session.data.documentListFilters.documentTypes, req.params.type))
     res.redirect(`/cases/${req.params.caseId}/documents`)
   })
 
