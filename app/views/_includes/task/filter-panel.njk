@@ -55,6 +55,20 @@
   }) }}
 
   {{ govukCheckboxes({
+    idPrefix: "taskListFilters[timeLimitType]",
+    name: "taskListFilters[timeLimitType]",
+    classes: "govuk-checkboxes--small",
+    fieldset: {
+      legend: {
+        text: "Time limit",
+        classes: "govuk-fieldset__legend--s"
+      }
+    },
+    items: timeLimitTypeItems,
+    values: selectedTimeLimitTypeFilters
+  }) }}
+
+  {{ govukCheckboxes({
     idPrefix: "taskListFilters[severities]",
     name: "taskListFilters[severities]",
     classes: "govuk-checkboxes--small",

@@ -3,6 +3,7 @@ const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 const Pagination = require('../helpers/pagination')
 const eventTypes = require('../data/event-types')
+const { calculateTimeLimit } = require('../helpers/timeLimit')
 
 function resetFilters(req) {
   _.set(req, 'session.data.caseActivityListFilters.eventTypes', null)
@@ -33,12 +34,21 @@ module.exports = router => {
         user: true,
         witnesses: { include: { statements: true } },
         lawyers: true,
-        defendants: true,
+        defendants: {
+          include: {
+            charges: true
+          }
+        },
         location: true,
         tasks: true,
         dga: true
       }
     })
+
+    const timeLimitInfo = calculateTimeLimit(_case)
+    _case.soonestTimeLimit = timeLimitInfo.soonestTimeLimit
+    _case.timeLimitType = timeLimitInfo.timeLimitType
+    _case.timeLimitCount = timeLimitInfo.timeLimitCount
 
     // Build Prisma where clause for events
     let where = { caseId: caseId, AND: [] }

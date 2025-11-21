@@ -28,7 +28,7 @@
         </div>
       {% endif %}
 
-      {% if urgentTaskCount > 0 %}
+      {% if urgentTaskCount > 0 or ctlTaskCount > 0 or stlTaskCount > 0 or paceTaskCount > 0 %}
         <h2 class="govuk-heading-m">Tasks</h2>
 
         <div class="app-overview-cards govuk-!-margin-bottom-9">
@@ -42,6 +42,48 @@
                 {% else %}
                   tasks
                 {% endif %}
+              </span>
+            </a>
+          {% endif %}
+
+          {% if ctlTaskCount > 0 %}
+            <a href="/tasks/shortcut/ctl" class="app-overview-card app-overview-card--blue">
+              <span class="app-overview-card__count">{{ctlTaskCount}}</span>
+              <span class="app-overview-card__status">
+                {% if ctlTaskCount == 1 %}
+                  task
+                {% else %}
+                  tasks
+                {% endif %}
+                with custody time limit
+              </span>
+            </a>
+          {% endif %}
+
+          {% if stlTaskCount > 0 %}
+            <a href="/tasks/shortcut/stl" class="app-overview-card app-overview-card--purple">
+              <span class="app-overview-card__count">{{stlTaskCount}}</span>
+              <span class="app-overview-card__status">
+                {% if stlTaskCount == 1 %}
+                  task
+                {% else %}
+                  tasks
+                {% endif %}
+                with statutory time limit
+              </span>
+            </a>
+          {% endif %}
+
+          {% if paceTaskCount > 0 %}
+            <a href="/tasks/shortcut/pace" class="app-overview-card app-overview-card--turquoise">
+              <span class="app-overview-card__count">{{paceTaskCount}}</span>
+              <span class="app-overview-card__status">
+                {% if paceTaskCount == 1 %}
+                  task
+                {% else %}
+                  tasks
+                {% endif %}
+                with PACE time limit
               </span>
             </a>
           {% endif %}

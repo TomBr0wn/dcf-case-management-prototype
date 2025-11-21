@@ -2,6 +2,7 @@ const _ = require('lodash')
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 const { getTaskSeverity } = require('../helpers/taskState')
+const { calculateTimeLimit } = require('../helpers/timeLimit')
 
 module.exports = router => {
 
@@ -52,7 +53,7 @@ module.exports = router => {
       }
     })
 
-    // Fetch tasks assigned to current user
+    // Fetch tasks assigned to current user with case and defendant info for time limit calculation
     let tasks = await prisma.task.findMany({
       where: {
         AND: [
@@ -60,6 +61,17 @@ module.exports = router => {
           { assignedToUserId: currentUser.id },
           { case: { unitId: { in: userUnitIds } } }
         ]
+      },
+      include: {
+        case: {
+          include: {
+            defendants: {
+              include: {
+                charges: true
+              }
+            }
+          }
+        }
       }
     })
 
@@ -71,10 +83,25 @@ module.exports = router => {
       'Not due yet': []
     }
 
+    // Count tasks by time limit type
+    let ctlTaskCount = 0
+    let stlTaskCount = 0
+    let paceTaskCount = 0
+
     tasks.forEach(task => {
       const severity = getTaskSeverity(task)
       if (tasksBySeverity[severity]) {
         tasksBySeverity[severity].push(task)
+      }
+
+      // Calculate time limit info for this task's case
+      const timeLimitInfo = calculateTimeLimit(task.case)
+      if (timeLimitInfo.timeLimitType === 'CTL') {
+        ctlTaskCount++
+      } else if (timeLimitInfo.timeLimitType === 'STL') {
+        stlTaskCount++
+      } else if (timeLimitInfo.timeLimitType === 'PACE') {
+        paceTaskCount++
       }
     })
 
@@ -118,6 +145,9 @@ module.exports = router => {
       incompleteProfileCount,
       needsDGAReviewCount,
       urgentTaskCount,
+      ctlTaskCount,
+      stlTaskCount,
+      paceTaskCount,
       criticallyOverdueTaskCount: tasksBySeverity['Critically overdue'].length,
       overdueTaskCount: tasksBySeverity['Overdue'].length,
       dueSoonTaskCount: tasksBySeverity['Due soon'].length,

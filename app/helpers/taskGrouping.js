@@ -83,13 +83,31 @@ function getDateGroupHeading(groupKey, sortBy) {
       noDate: 'No time limit'
     },
     'Custody time limit': {
-      overdue: 'Time limit expired',
-      today: 'Time limit ends today',
-      tomorrow: 'Time limit ends tomorrow',
-      thisWeek: 'Time limit ends this week',
-      nextWeek: 'Time limit ends next week',
-      later: 'Time limit ends later',
-      noDate: 'No time limit'
+      overdue: 'Custody time limit expired',
+      today: 'Custody time limit ends today',
+      tomorrow: 'Custody time limit ends tomorrow',
+      thisWeek: 'Custody time limit ends this week',
+      nextWeek: 'Custody time limit ends next week',
+      later: 'Custody time limit ends later',
+      noDate: 'No custody time limit'
+    },
+    'Statutory time limit': {
+      overdue: 'Statutory time limit expired',
+      today: 'Statutory time limit ends today',
+      tomorrow: 'Statutory time limit ends tomorrow',
+      thisWeek: 'Statutory time limit ends this week',
+      nextWeek: 'Statutory time limit ends next week',
+      later: 'Statutory time limit ends later',
+      noDate: 'No statutory time limit'
+    },
+    'PACE': {
+      overdue: 'PACE time limit expired',
+      today: 'PACE time limit ends today',
+      tomorrow: 'PACE time limit ends tomorrow',
+      thisWeek: 'PACE time limit ends this week',
+      nextWeek: 'PACE time limit ends next week',
+      later: 'PACE time limit ends later',
+      noDate: 'No PACE time limit'
     },
     'Hearing date': {
       overdue: 'Hearing date has passed',
@@ -112,7 +130,7 @@ function getDateGroupHeading(groupKey, sortBy) {
  * @returns {Array} - Tasks with groupKey, groupHeading, sortOrder, and severity properties added
  */
 function groupTasks(tasks, sortBy) {
-  if (sortBy === 'Time limit' || sortBy === 'Custody time limit' || sortBy === 'Hearing date') {
+  if (sortBy === 'Time limit' || sortBy === 'Custody time limit' || sortBy === 'Statutory time limit' || sortBy === 'PACE' || sortBy === 'Hearing date') {
     // Use date-based grouping
     const today = new Date()
     today.setHours(0, 0, 0, 0)
@@ -120,8 +138,18 @@ function groupTasks(tasks, sortBy) {
     return tasks.map(task => {
       let dateToUse = null
 
-      if (sortBy === 'Time limit' || sortBy === 'Custody time limit') {
+      if (sortBy === 'Time limit') {
+        // For generic 'Time limit', use the soonest time limit regardless of type
         dateToUse = task.case?.soonestTimeLimit
+      } else if (sortBy === 'Custody time limit') {
+        // Only use date if this task has a CTL
+        dateToUse = task.case?.timeLimitType === 'CTL' ? task.case?.soonestTimeLimit : null
+      } else if (sortBy === 'Statutory time limit') {
+        // Only use date if this task has a STL
+        dateToUse = task.case?.timeLimitType === 'STL' ? task.case?.soonestTimeLimit : null
+      } else if (sortBy === 'PACE') {
+        // Only use date if this task has a PACE time limit
+        dateToUse = task.case?.timeLimitType === 'PACE' ? task.case?.soonestTimeLimit : null
       } else if (sortBy === 'Hearing date') {
         dateToUse = task.case?.hearings?.[0]?.startDate
       }

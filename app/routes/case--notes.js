@@ -1,6 +1,7 @@
 const _ = require('lodash')
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
+const { calculateTimeLimit } = require('../helpers/timeLimit')
 
 module.exports = router => {
 
@@ -11,10 +12,20 @@ module.exports = router => {
     const _case = await prisma.case.findUnique({
       where: { id: caseId },
       include: {
-        defendants: true,
+        defendants: {
+          include: {
+            charges: true
+          }
+        },
         witnesses: true
       }
     })
+
+    // Add time limit info
+    const timeLimitInfo = calculateTimeLimit(_case)
+    _case.soonestTimeLimit = timeLimitInfo.soonestTimeLimit
+    _case.timeLimitType = timeLimitInfo.timeLimitType
+    _case.timeLimitCount = timeLimitInfo.timeLimitCount
 
     // Fetch notes
     let notes = await prisma.note.findMany({
@@ -50,8 +61,20 @@ module.exports = router => {
   router.get("/cases/:caseId/notes/new", async (req, res) => {
     const _case = await prisma.case.findUnique({
       where: { id: parseInt(req.params.caseId) },
-      include: { defendants: true, witnesses: true }
+      include: {
+        defendants: {
+          include: {
+            charges: true
+          }
+        },
+        witnesses: true
+      }
     })
+
+    const timeLimitInfo = calculateTimeLimit(_case)
+    _case.soonestTimeLimit = timeLimitInfo.soonestTimeLimit
+    _case.timeLimitType = timeLimitInfo.timeLimitType
+    _case.timeLimitCount = timeLimitInfo.timeLimitCount
 
     res.render("cases/notes/new/index", { _case })
   })
@@ -63,8 +86,20 @@ module.exports = router => {
   router.get("/cases/:caseId/notes/new/check", async (req, res) => {
     const _case = await prisma.case.findUnique({
       where: { id: parseInt(req.params.caseId) },
-      include: { defendants: true, witnesses: true }
+      include: {
+        defendants: {
+          include: {
+            charges: true
+          }
+        },
+        witnesses: true
+      }
     })
+
+    const timeLimitInfo = calculateTimeLimit(_case)
+    _case.soonestTimeLimit = timeLimitInfo.soonestTimeLimit
+    _case.timeLimitType = timeLimitInfo.timeLimitType
+    _case.timeLimitCount = timeLimitInfo.timeLimitCount
 
     const content = req.session.data.addNote?.content || ''
 

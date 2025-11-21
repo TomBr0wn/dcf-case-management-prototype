@@ -13,6 +13,7 @@ function resetFilters(req) {
   _.set(req, 'session.data.taskListFilters.severities', null)
   _.set(req, 'session.data.taskListFilters.urgent', null)
   _.set(req, 'session.data.taskListFilters.reminder', null)
+  _.set(req, 'session.data.taskListFilters.timeLimitType', null)
 }
 
 module.exports = router => {
@@ -47,6 +48,24 @@ module.exports = router => {
     res.redirect(`/tasks?taskListFilters[owner][]=user-${currentUser.id}&taskListFilters[urgent][]=Urgent`)
   })
 
+  router.get('/tasks/shortcut/ctl', (req, res) => {
+    const currentUser = req.session.data.user
+    resetFilters(req)
+    res.redirect(`/tasks?taskListFilters[owner][]=user-${currentUser.id}&taskListFilters[timeLimitType][]=Custody time limit`)
+  })
+
+  router.get('/tasks/shortcut/stl', (req, res) => {
+    const currentUser = req.session.data.user
+    resetFilters(req)
+    res.redirect(`/tasks?taskListFilters[owner][]=user-${currentUser.id}&taskListFilters[timeLimitType][]=Statutory time limit`)
+  })
+
+  router.get('/tasks/shortcut/pace', (req, res) => {
+    const currentUser = req.session.data.user
+    resetFilters(req)
+    res.redirect(`/tasks?taskListFilters[owner][]=user-${currentUser.id}&taskListFilters[timeLimitType][]=PACE`)
+  })
+
   router.get("/tasks", async (req, res) => {
     const currentUser = req.session.data.user
 
@@ -73,6 +92,7 @@ module.exports = router => {
     let selectedSeverityFilters = _.get(req.session.data.taskListFilters, 'severities', [])
     let selectedUrgentFilters = _.get(req.session.data.taskListFilters, 'urgent', [])
     let selectedReminderFilters = _.get(req.session.data.taskListFilters, 'reminder', [])
+    let selectedTimeLimitTypeFilters = _.get(req.session.data.taskListFilters, 'timeLimitType', [])
 
     let selectedFilters = { categories: [] }
 
@@ -82,6 +102,7 @@ module.exports = router => {
     let selectedSeverityItems = []
     let selectedUrgentItems = []
     let selectedReminderItems = []
+    let selectedTimeLimitTypeItems = []
 
     // Owner filter display
     if (selectedOwnerFilters?.length) {
@@ -200,6 +221,18 @@ module.exports = router => {
       selectedFilters.categories.push({
         heading: { text: 'Reminder' },
         items: selectedReminderItems
+      })
+    }
+
+    // Time limit type filter display
+    if (selectedTimeLimitTypeFilters?.length) {
+      selectedTimeLimitTypeItems = selectedTimeLimitTypeFilters.map(function(timeLimitType) {
+        return { text: timeLimitType, href: '/tasks/remove-time-limit-type/' + encodeURIComponent(timeLimitType) }
+      })
+
+      selectedFilters.categories.push({
+        heading: { text: 'Time limit' },
+        items: selectedTimeLimitTypeItems
       })
     }
 
@@ -330,6 +363,21 @@ module.exports = router => {
       return task
     })
 
+    // Filter by time limit type (must be done after calculating time limit info)
+    if (selectedTimeLimitTypeFilters?.length) {
+      // Map display names to internal codes
+      const timeLimitTypeMap = {
+        'Custody time limit': 'CTL',
+        'Statutory time limit': 'STL',
+        'PACE': 'PACE'
+      }
+      const selectedCodes = selectedTimeLimitTypeFilters.map(filter => timeLimitTypeMap[filter])
+
+      tasks = tasks.filter(task => {
+        return selectedCodes.includes(task.case.timeLimitType)
+      })
+    }
+
     let keywords = _.get(req.session.data.taskSearch, 'keywords')
 
     if(keywords) {
@@ -426,6 +474,13 @@ module.exports = router => {
       { text: 'Is not reminder', value: 'Is not reminder' }
     ]
 
+    // Time limit type items
+    let timeLimitTypeItems = [
+      { text: 'Custody time limit', value: 'Custody time limit' },
+      { text: 'Statutory time limit', value: 'Statutory time limit' },
+      { text: 'PACE', value: 'PACE' }
+    ]
+
     // Handle sorting
     const sortBy = _.get(req.session.data, 'taskSort', 'Due date')
 
@@ -439,10 +494,39 @@ module.exports = router => {
       })
     }
 
-    if (sortBy === 'Time limit' || sortBy === 'Custody time limit') {
-      // Sort by soonest time limit (all cases have one)
+    if (sortBy === 'Time limit' || sortBy === 'Custody time limit' || sortBy === 'Statutory time limit' || sortBy === 'PACE') {
+      // Sort by soonest time limit
+      // Tasks with the matching time limit type come first, then others
       tasks.sort((a, b) => {
-        return a.case.soonestTimeLimit - b.case.soonestTimeLimit
+        let aHasMatchingType = false
+        let bHasMatchingType = false
+
+        if (sortBy === 'Custody time limit') {
+          aHasMatchingType = a.case.timeLimitType === 'CTL'
+          bHasMatchingType = b.case.timeLimitType === 'CTL'
+        } else if (sortBy === 'Statutory time limit') {
+          aHasMatchingType = a.case.timeLimitType === 'STL'
+          bHasMatchingType = b.case.timeLimitType === 'STL'
+        } else if (sortBy === 'PACE') {
+          aHasMatchingType = a.case.timeLimitType === 'PACE'
+          bHasMatchingType = b.case.timeLimitType === 'PACE'
+        } else {
+          // For 'Time limit', all types are considered matching
+          aHasMatchingType = true
+          bHasMatchingType = true
+        }
+
+        // Tasks with matching type come before tasks without
+        if (aHasMatchingType && !bHasMatchingType) return -1
+        if (!aHasMatchingType && bHasMatchingType) return 1
+
+        // If both have matching type or both don't, sort by date
+        if (aHasMatchingType && bHasMatchingType) {
+          return a.case.soonestTimeLimit - b.case.soonestTimeLimit
+        }
+
+        // If neither has matching type, they're equal (will be in "No [type] time limit" group)
+        return 0
       })
     } else if (sortBy === 'Hearing date') {
       // Sort by hearing date - cases with hearings first, then cases without
@@ -493,6 +577,9 @@ module.exports = router => {
       reminderItems,
       selectedReminderFilters,
       selectedReminderItems,
+      timeLimitTypeItems,
+      selectedTimeLimitTypeFilters,
+      selectedTimeLimitTypeItems,
       taskNameItems,
       selectedTaskNameFilters,
       selectedTaskNameItems,
@@ -547,6 +634,13 @@ module.exports = router => {
     const currentFilters = _.get(req, 'session.data.taskListFilters.reminder', [])
     const reminder = decodeURIComponent(req.params.reminder)
     _.set(req, 'session.data.taskListFilters.reminder', _.pull(currentFilters, reminder))
+    res.redirect('/tasks')
+  })
+
+  router.get('/tasks/remove-time-limit-type/:timeLimitType', (req, res) => {
+    const currentFilters = _.get(req, 'session.data.taskListFilters.timeLimitType', [])
+    const timeLimitType = decodeURIComponent(req.params.timeLimitType)
+    _.set(req, 'session.data.taskListFilters.timeLimitType', _.pull(currentFilters, timeLimitType))
     res.redirect('/tasks')
   })
 

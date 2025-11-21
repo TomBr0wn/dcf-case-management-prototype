@@ -9,11 +9,11 @@
   </b>
 
   {% if _case.timeLimitType == 'CTL' %}
-    {{ govukTag({ text: 'Custody time limit', classes: 'govuk-tag--red' })}}
+    {{ govukTag({ text: 'Custody time limit' })}}
   {% elif _case.timeLimitType == 'STL' %}
-    {{ govukTag({ text: 'Statutory time limit', classes: 'govuk-tag--orange' })}}
+    {{ govukTag({ text: 'Statutory time limit'})}}
   {% elif _case.timeLimitType == 'PACE' %}
-    {{ govukTag({ text: 'PACE time limit', classes: 'govuk-tag--yellow' })}}
+    {{ govukTag({ text: 'PACE time limit' })}}
   {% endif %}
 {% endset %}
 {{ appIdentityBar({

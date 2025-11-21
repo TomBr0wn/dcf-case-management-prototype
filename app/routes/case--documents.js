@@ -2,6 +2,7 @@ const _ = require('lodash')
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 const documentTypes = require('../data/document-types')
+const { calculateTimeLimit } = require('../helpers/timeLimit')
 
 function resetFilters(req) {
   _.set(req, 'session.data.documentListFilters.documentTypes', null)
@@ -43,12 +44,21 @@ module.exports = router => {
         user: true,
         witnesses: { include: { statements: true } },
         lawyers: true,
-        defendants: true,
+        defendants: {
+          include: {
+            charges: true
+          }
+        },
         location: true,
         tasks: true,
         dga: true
       }
     })
+
+    const timeLimitInfo = calculateTimeLimit(_case)
+    _case.soonestTimeLimit = timeLimitInfo.soonestTimeLimit
+    _case.timeLimitType = timeLimitInfo.timeLimitType
+    _case.timeLimitCount = timeLimitInfo.timeLimitCount
 
     // Fetch documents with filters
     let documents = await prisma.document.findMany({

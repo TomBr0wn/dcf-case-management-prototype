@@ -1,23 +1,7 @@
 const _ = require('lodash')
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
-
-function addCtlInfo(_case) {
-  let allCtlDates = []
-  _case.defendants.forEach(defendant => {
-    defendant.charges.forEach(charge => {
-      if (charge.custodyTimeLimit) {
-        allCtlDates.push(new Date(charge.custodyTimeLimit))
-      }
-    })
-  })
-
-  _case.hasCTL = allCtlDates.length > 0
-  _case.soonestCTL = allCtlDates.length > 0 ? new Date(Math.min(...allCtlDates)) : null
-  _case.ctlCount = allCtlDates.length
-
-  return _case
-}
+const { calculateTimeLimit } = require('../helpers/timeLimit')
 
 module.exports = router => {
   router.get("/cases/:caseId", async (req, res) => {
@@ -44,7 +28,12 @@ module.exports = router => {
         dga: true
       },
     })
-    _case = addCtlInfo(_case)
+
+    const timeLimitInfo = calculateTimeLimit(_case)
+    _case.soonestTimeLimit = timeLimitInfo.soonestTimeLimit
+    _case.timeLimitType = timeLimitInfo.timeLimitType
+    _case.timeLimitCount = timeLimitInfo.timeLimitCount
+
     res.render("cases/show", { _case })
   })
 
@@ -72,7 +61,12 @@ module.exports = router => {
         dga: true
       },
     })
-    _case = addCtlInfo(_case)
+
+    const timeLimitInfo = calculateTimeLimit(_case)
+    _case.soonestTimeLimit = timeLimitInfo.soonestTimeLimit
+    _case.timeLimitType = timeLimitInfo.timeLimitType
+    _case.timeLimitCount = timeLimitInfo.timeLimitCount
+
     res.render("cases/complexity-calculation", { _case })
   })
 

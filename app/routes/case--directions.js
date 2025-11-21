@@ -3,23 +3,7 @@ const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 const { groupDirections } = require('../helpers/directionGrouping')
 const { getDirectionStatus } = require('../helpers/directionState')
-
-function addCtlInfo(_case) {
-  let allCtlDates = []
-  _case.defendants.forEach(defendant => {
-    defendant.charges.forEach(charge => {
-      if (charge.custodyTimeLimit) {
-        allCtlDates.push(new Date(charge.custodyTimeLimit))
-      }
-    })
-  })
-
-  _case.hasCTL = allCtlDates.length > 0
-  _case.soonestCTL = allCtlDates.length > 0 ? new Date(Math.min(...allCtlDates)) : null
-  _case.ctlCount = allCtlDates.length
-
-  return _case
-}
+const { calculateTimeLimit } = require('../helpers/timeLimit')
 
 module.exports = router => {
   router.get("/cases/:caseId/directions", async (req, res) => {
@@ -61,8 +45,11 @@ module.exports = router => {
       }
     })
 
-    // Add CTL info
-    _case = addCtlInfo(_case)
+    // Add time limit info
+    const timeLimitInfo = calculateTimeLimit(_case)
+    _case.soonestTimeLimit = timeLimitInfo.soonestTimeLimit
+    _case.timeLimitType = timeLimitInfo.timeLimitType
+    _case.timeLimitCount = timeLimitInfo.timeLimitCount
 
     // Add status to each direction
     _case.directions = _case.directions.map(direction => {

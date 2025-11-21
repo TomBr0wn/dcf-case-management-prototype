@@ -1,6 +1,7 @@
 const _ = require('lodash')
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
+const { calculateTimeLimit } = require('../helpers/timeLimit')
 
 module.exports = router => {
   router.get("/cases/:caseId/defendants", async (req, res) => {
@@ -21,6 +22,11 @@ module.exports = router => {
         dga: true
       }
     })
+
+    const timeLimitInfo = calculateTimeLimit(_case)
+    _case.soonestTimeLimit = timeLimitInfo.soonestTimeLimit
+    _case.timeLimitType = timeLimitInfo.timeLimitType
+    _case.timeLimitCount = timeLimitInfo.timeLimitCount
 
     res.render("cases/defendants/index", { _case })
   })

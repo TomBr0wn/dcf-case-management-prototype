@@ -1,5 +1,5 @@
 <div class="app-sort">
-  <p>
+  <p class="govuk-!-font-size-16">
     <b class="govuk-!-margin-right-1">Sort by:</b>
     {% if data.taskSort == 'Due date' or not data.taskSort %}
       <span class="">Due date</span>
@@ -7,16 +7,28 @@
       <a  href="?taskSort=Due date">Due date</a>
     {% endif %}
     <span class="govuk-!-margin-left-1 govuk-!-margin-right-1">|</span>
-    {% if data.taskSort == 'Time limit' or data.taskSort == 'Custody time limit' %}
-      <span>Time limit</span>
-    {% else %}
-      <a href="?taskSort=Time limit">Time limit</a>
-    {% endif %}
-    <span class="govuk-!-margin-left-1 govuk-!-margin-right-1">|</span>
     {% if data.taskSort == 'Hearing date' %}
       <span>Hearing date</span>
     {% else %}
       <a href="?taskSort=Hearing date">Hearing date</a>
+    {% endif %}
+    <span class="govuk-!-margin-left-1 govuk-!-margin-right-1">|</span>
+    {% if data.taskSort == 'PACE' %}
+      <span>PACE</span>
+    {% else %}
+      <a href="?taskSort=PACE">PACE</a>
+    {% endif %}
+    <span class="govuk-!-margin-left-1 govuk-!-margin-right-1">|</span>
+    {% if data.taskSort == 'Custody time limit' %}
+      <span>Custody time limit</span>
+    {% else %}
+      <a href="?taskSort=Custody time limit">Custody time limit</a>
+    {% endif %}
+    <span class="govuk-!-margin-left-1 govuk-!-margin-right-1">|</span>
+    {% if data.taskSort == 'Statutory time limit' %}
+      <span>Statutory time limit</span>
+    {% else %}
+      <a href="?taskSort=Statutory time limit">Statutory time limit</a>
     {% endif %}
   </p>
 </div>
