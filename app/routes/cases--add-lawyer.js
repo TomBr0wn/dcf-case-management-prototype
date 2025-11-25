@@ -8,7 +8,7 @@ function getLawyerHintText(lawyer) {
 
   if(lawyer.didInitialReview) {
     hintParts.push(
-      `<li>Ground work lawyer</li>`
+      `<li>Did initial review</li>`
     )
   }
 
