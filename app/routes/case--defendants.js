@@ -11,7 +11,7 @@ module.exports = router => {
         witnesses: true,
         lawyers: true,
         defendants: true,
-        hearing: true,
+        //hearing: true,
         location: true,
         tasks: true,
         dga: true
@@ -36,7 +36,7 @@ module.exports = router => {
         witnesses: true,
         lawyers: true,
         defendants: true,
-        hearing: true,
+        //hearing: true,
         location: true,
         tasks: true,
         dga: true

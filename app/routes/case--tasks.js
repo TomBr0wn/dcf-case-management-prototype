@@ -12,7 +12,7 @@ module.exports = router => {
         unit: true,
         lawyers: true,
         defendants: true,
-        hearing: true,
+        //hearing: true,
         location: true,
         dga: true
       },

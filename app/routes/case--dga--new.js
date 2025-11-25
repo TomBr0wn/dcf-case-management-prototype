@@ -12,7 +12,14 @@ module.exports = router => {
   router.get("/cases/:caseId/dga/new", async (req, res) => {
     const _case = await prisma.case.findUnique({
       where: { id: parseInt(req.params.caseId) },
-      include: { user: true, lawyers: true, defendants: true, hearing: true, location: true, tasks: true, dga: true },
+      include: { 
+        user: true,
+        lawyers: true, 
+        defendants: true, 
+        //hearing: true, 
+        location: true,
+        tasks: true, 
+        dga: true },
     })
 
     res.render("cases/dga/new/index", { _case })
@@ -25,7 +32,14 @@ module.exports = router => {
   router.get("/cases/:caseId/dga/new/check", async (req, res) => {
     const _case = await prisma.case.findUnique({
       where: { id: parseInt(req.params.caseId) },
-      include: { user: true, lawyers: true, defendants: true, hearing: true, location: true, tasks: true, dga: true },
+      include: { 
+        user: true, 
+        lawyers: true, 
+        defendants: true, 
+        //hearing: true, 
+        location: true, 
+        tasks: true, 
+        dga: true },
     })
 
     
@@ -46,7 +60,14 @@ module.exports = router => {
 
     const _case = await prisma.case.findUnique({
       where: { id: caseId },
-      include: { user: true, lawyers: true, defendants: true, hearing: true, location: true, tasks: true, dga: true },
+      include: { 
+        user: true, 
+        lawyers: true, 
+        defendants: true, 
+        //hearing: true, 
+        location: true, 
+        tasks: true, 
+        dga: true },
     })
 
     await prisma.activityLog.create({

@@ -1,7 +1,7 @@
 {% extends "layouts/main.html" %}
 
 {% set navId = 'cases' %}
-{% set pageName = "Cases (:total)" | replace(':total', totalCases) %}
+{% set pageName = "Cases (:total)" | replace(':total', totalCases ) %}
 
 {% block content %}
   <h1 class="govuk-heading-l">{{pageName}}</h1>
@@ -12,7 +12,7 @@
     }) }}
 
     {{ govukButton({
-      text: "Export",
+      text: "Export cases",
       classes: 'govuk-button--secondary'
     }) }}
   </div>  
@@ -45,12 +45,12 @@
               {% endset %}
 
               <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
-                <a href="/cases/{{_case.id}}/details" class="govuk-link--no-visited-state">{{defendantsValue}}</a>
-                {# Reinstate the line below & delete the line above to get rid of DCF tabby nonsense #}
-                {# <a href="/cases/{{_case.id}}" class="govuk-link--no-visited-state">{{defendantsValue}}</a> #}
+                <div>
+                  <a href="/cases/{{_case.id}}" class="govuk-link--no-visited-state">{{defendantsValue}}</a>
+                </div>
                 <div class="app-list__tag">
-                  {% if _case.isCTL %}
-                    {{ govukTag({ text: 'CTL', classes: 'govuk-tag--red' })}}
+                  {% if _case.hasCTL %}
+                    {{ govukTag({ text: 'Custody time limit', classes: 'govuk-tag--re' })}}
                   {% endif %}
                 </div>
               </h2>
@@ -72,7 +72,7 @@
                 rows: [
                   {
                     key: {
-                      html: 'Reference'
+                      html: 'Reference number'
                     },
                     value: {
                       html: _case.reference
@@ -120,7 +120,7 @@
                   },
                   {
                     key: {
-                      html: 'Type of hearing'
+                      html: 'Hearing type'
                     },
                     value: {
                       html: _case.type
@@ -128,24 +128,22 @@
                   },
                   {
                     key: {
-                      html: 'Hearing'
+                      html: 'Hearing date'
                     },
                     value: {
-                      html: _case.hearing.date | isoDateString | govukDateTime
+                      html: _case.hearings[0].startDate | isoDateString | govukDateTime
                     }
-                  },
+                  } if _case.hearings and _case.hearings.length > 0,
                   {
                     key: {
-                      html: 'DGA'
+                      html: 'Custody time limit'
                     },
                     value: {
-                      html: 'Needs review' 
+                      html: (_case.soonestCTL | isoDateString | govukDateTime) + ' (' + (_case.soonestCTL | daysUntil) + ')'
                     }
-                  } if _case.dgaReview                  
+                  } if _case.hasCTL                
                 ]
               })}}
-
-
             </div>
           {% endfor %}
         </div>
@@ -156,8 +154,6 @@
       {% include "_includes/pagination.njk" %}
     </div>
   </div>
-
-
 {% endblock %}
 
 {% block scripts %}
