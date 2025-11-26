@@ -25,13 +25,20 @@
   }
 }
 
-/* Full-width viewer mode */
+/* ----------------------------------------------------------------------
+   FULL-WIDTH VIEWER MODE (within the materials grid row)
+   ---------------------------------------------------------------------- */
 .dcf-materials-layout.is-full {
-  .govuk-grid-column-one-third { display: none; }
-  .govuk-grid-column-two-thirds {
-    flex: 0 0 100%;
-    max-width: 100%;
+  // Hide the left 1/4 column
+  .govuk-grid-column-one-quarter {        // *** CHANGED (was one-third)
+    display: none;
+  }
+
+  // Let the right 3/4 column take the whole row
+  .govuk-grid-column-three-quarters {     // *** CHANGED (was two-thirds + flex)
+    float: none;          // cancel GOV.UK grid float
     width: 100%;
+    max-width: 100%;
   }
 }
 
@@ -40,7 +47,7 @@
    ---------------------------------------------------------------------- */
 
 /* Make sure the right edge can't be clipped by ancestor overflow */
-.dcf-materials-layout .govuk-grid-column-two-thirds,
+.dcf-materials-layout .govuk-grid-column-three-quarters,   // *** CHANGED (was two-thirds)
 #material-viewer,
 .dcf-viewer {
   overflow: visible;
@@ -52,7 +59,7 @@
   box-sizing: border-box;     /* width includes padding/border */
   width: 100%;
   max-width: 100%;            /* never exceed the column */
-  height: calc(100vh - 20px);/* adjust to taste */
+  height: calc(100vh - 20px); /* adjust to taste */
   border: 0;
 }
 
@@ -174,9 +181,6 @@
   line-height: 1;
 }
 
-
-
-
 /* ----------------------------------------------------------------------
    OPS BAR (below meta, above iframe)
    ---------------------------------------------------------------------- */
@@ -205,7 +209,7 @@
   padding: 6px 8px;
   min-height: auto;
   line-height: 1;
-  margin: 0 !important;
+  margin: 0px 0px 0px 15px !important;
 }
 
 /* force icon/text colour on inverse button */
@@ -256,7 +260,6 @@
 }
 .dcf-viewer__ops-bar .moj-button-menu__link:hover { background: #f3f2f1; }
 
-
 /* ----------------------------------------------------------------------
    META BODY + INLINE ACTIONS
    ---------------------------------------------------------------------- */
@@ -278,8 +281,6 @@
 /* sits just under the blue meta bar, snug */
 .dcf-viewer__meta-body { padding-top: 0; }
 
-
-
 /* kill the default GOV.UK button margins so the strip doesn’t grow */
 .dcf-meta-inline-actions .govuk-button {
   margin: 0;
@@ -289,4 +290,3 @@
 .dcf-viewer__meta-body > h3:first-of-type {
   margin-top: 0.5rem !important;
 }
-

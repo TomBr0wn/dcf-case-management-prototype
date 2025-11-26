@@ -46,19 +46,61 @@ $dcf-muted:        #505a5f;
 
 .dcf-material-card__main { min-width: 0; }
 
+/* Badge container: holds one or more status chips */
 .dcf-material-card__badge {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  margin-bottom: 6px;
+  /* The background / colour now comes from the inner tags, not the container */
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+}
+
+
+.dcf-status-tag { margin-right: .5rem; vertical-align: text-bottom; }
+
+/* Base styles for status tags (works with both .dcf-tag and legacy .dcf-status-tag) */
+.dcf-tag,
+.dcf-status-tag {
   display: inline-block;
   font-weight: 700;
   font-size: 12px;
   line-height: 1;
   padding: 4px 6px;
-  border-radius: 0px;
-  background: #275ccc;
-  color: #ffffff;
-  margin-bottom: 6px;
+  border-radius: 0;
 }
 
-.dcf-status-tag { margin-right: .5rem; vertical-align: text-bottom; }
+/* "New" – strong blue */
+.dcf-tag--new,
+.dcf-status-tag--new {
+  background: $dcf-title-blue; // #1d70b8
+  color: #ffffff;
+}
+
+/* "Read" – done / completed */
+.dcf-tag--read,
+.dcf-status-tag--read {
+  background: #28a197; // GOV.UK green-ish
+  color: #ffffff;
+}
+
+/* "Unread" – neutral / lower emphasis */
+.dcf-tag--unread,
+.dcf-status-tag--unread {
+  background: #ffdd00;  // GOV.UK light grey-ish
+  color: #0b0c0c;
+}
+
+/* Keep old margin behaviour if anything still uses .dcf-status-tag directly */
+.dcf-status-tag {
+  margin-right: .5rem;
+  vertical-align: text-bottom;
+}
+
 
 .dcf-material-card__title {
   margin: 0 0 3px;

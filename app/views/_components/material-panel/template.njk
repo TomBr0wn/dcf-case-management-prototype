@@ -1,4 +1,6 @@
 {% from "govuk/components/accordion/macro.njk" import govukAccordion %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+
 
 {# expects: params.caseMaterials = { caseId, caseStatus, Material: [...] , RelatedMaterials, DigitalRepresentation, PoliceMaterial, CPSMaterial } #}
 
@@ -104,20 +106,48 @@
 
 {# ---------- Layout ---------- #}
 <div class="govuk-grid-row dcf-materials-layout">
-  <div class="govuk-grid-column-one-third">
+  <div class="govuk-grid-column-one-quarter">
     <div class="dcf-materials-panel">
       <div class="dcf-materials-header">
         <form class="dcf-materials-search" action="/materials/search" method="get" role="search">
-          <label class="govuk-label" for="materials-search">Search materials</label>
+          <label class="govuk-label govuk-!-font-weight-bold" for="materials-search">Search</label>
+
+          {{ govukRadios({
+            classes: "govuk-radios--small",
+            name: "caseOrMaterialSearch",
+            fieldset: {
+              legend: {
+                text: " ",
+                isPageHeading: false,
+                classes: "govuk-fieldset__legend--s"
+              }
+            },
+            items: [
+              {
+                value: "materials",
+                text: "Materials",
+                checked: true
+              },
+              {
+                value: "case",
+                text: "Case"
+              }
+            ]
+          }) }}
+
           <div class="dcf-input-group">
             <input class="govuk-input dcf-input-group__input" id="materials-search" name="q" type="search">
             <button class="dcf-input-group__button" type="submit" aria-label="Search">
-              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" width="20" height="20"><path fill="currentColor" d="M21 20.3l-4.8-4.8c.9-1.2 1.4-2.7 1.4-4.2C17.6 7 14.6 4 11 4S4.4 7 4.4 11s3 7 6.6 7c1.6 0 3.1-.5 4.2-1.4l4.8 4.8 1-1.1zM6 11c0-2.8 2.2-5 5-5s5 2.2 5 5-2.2 5-5 5-5-2.2-5-5z"/></svg>
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" width="20" height="20">
+                <path fill="currentColor" d="M21 20.3l-4.8-4.8c.9-1.2 1.4-2.7 1.4-4.2C17.6 7 14.6 4 11 4S4.4 7 4.4 11s3 7 6.6 7c1.6 0 3.1-.5 4.2-1.4l4.8 4.8 1-1.1zM6 11c0-2.8 2.2-5 5-5s5 2.2 5 5-2.2 5-5 5-5-2.2-5-5z"/>
+              </svg>
             </button>
           </div>
+
           <input type="hidden" name="caseId" value="{{ params.caseMaterials.caseId }}">
         </form>
       </div>
+
 
       {{ govukAccordion({
         id: "materials-accordion",
@@ -134,7 +164,7 @@
     </div>
   </div>
 
-  <div class="govuk-grid-column-two-thirds">
+  <div class="govuk-grid-column-three-quarters">
 
     {# --- SEARCH STATUS (shown only after a search submit) --- #}
     <div id="search-status" class="govuk-!-margin-bottom-3" aria-live="polite" hidden>
@@ -145,7 +175,10 @@
       </div>
       <div data-some hidden>
         <p class="dcf-search-meta">
-          <strong><span data-search-count>0</span></strong> results for “<span data-search-term></span>”.
+          <strong><span data-search-count>0</span></strong>
+          results for “<span data-search-term></span>”
+          <span data-role="back-to-documents-sep" hidden> | </span>
+          <a href="#" class="govuk-link" data-action="back-to-documents" hidden>Back to documents</a>
         </p>
       </div>
     </div>

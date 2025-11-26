@@ -1,7 +1,7 @@
 {% extends "layouts/main.html" %}
 
 {% set navId = 'cases' %}
-{% set pageName = "Cases (:total)" | replace(':total', totalCases | formatNumber) %}
+{% set pageName = "Cases (:total)" | replace(':total', totalCases ) %}
 
 {% block content %}
   <h1 class="govuk-heading-l">{{pageName}}</h1>
@@ -45,9 +45,9 @@
               {% endset %}
 
               <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
-                <a href="/cases/{{_case.id}}/details" class="govuk-link--no-visited-state">{{defendantsValue}}</a>
-                {# Reinstate the line below & delete the line above to get rid of DCF tabby nonsense #}
-                {# <a href="/cases/{{_case.id}}" class="govuk-link--no-visited-state">{{defendantsValue}}</a> #}
+                <div>
+                  <a href="/cases/{{_case.id}}" class="govuk-link--no-visited-state">{{defendantsValue}}</a>
+                </div>
                 <div class="app-list__tag">
                   {% if _case.hasCTL %}
                     {{ govukTag({ text: 'Custody time limit', classes: 'govuk-tag--red' })}}
@@ -131,9 +131,9 @@
                       html: 'Hearing date'
                     },
                     value: {
-                      html: _case.hearing.date | isoDateString | govukDateTime
+                      html: _case.hearings[0].startDate | isoDateString | govukDateTime
                     }
-                  },
+                  } if _case.hearings and _case.hearings.length > 0,
                   {
                     key: {
                       html: 'Custody time limit'

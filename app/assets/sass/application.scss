@@ -32,19 +32,20 @@
 @import "components/materials-viewer";
 @import "components/materials-viewer-tabs";
 @import "components/materials-search-results";
+@import "components/notes-modal";
 
 // Details - Overview panels
 @import "components/overview-areas";
 
-// Details - Overview panels
-@import "components/overview-areas";
-
-
-.govuk-width-container {
-    margin-right: auto;
-    margin-left: auto;
-    max-width: 1400px;
+/* Default: pages without this class use GOV.UK default width */
+.dcf-materials-wide .govuk-width-container {
+  margin-right: auto;
+  margin-left: auto;
+  max-width: 1400px;
 }
+
+
+
 
 
 h1 .govuk-tag {
@@ -244,11 +245,11 @@ $statuses: (
 }
 
 .govuk-template--rebranded .govuk-header {
-  // background: govuk-colour("black") !important;
+  background: govuk-colour("black") !important;
 }
 
 .govuk-template--rebranded .govuk-header__link--homepage:not(:focus) {
-  // background: govuk-colour("black") !important;
+  background: govuk-colour("black") !important;
 }
 
 .app-inset-action {
