@@ -76,20 +76,58 @@ module.exports = router => {
       delete where.AND
     }
 
-    // Fetch case
+    
+  // Fetch case
     const _case = await prisma.case.findUnique({
       where: { id: caseId },
       include: {
-        user: true,
-        witnesses: { include: { statements: true } },
-        lawyers: true,
-        defendants: true,
-        //hearing: true,
+        unit: true,
+        defendants: {
+          include: {
+            defenceLawyer: true,
+            charges: true
+          }
+        },
+        victims: true,
+        witnesses: {
+          include: {
+            statements: true,
+            specialMeasures: true
+          }
+        },
+        hearings: true,
         location: true,
         tasks: true,
-        dga: true
+        directions: true,
+        documents: true,
+        dga: {
+          include: {
+            failureReasons: true
+          }
+        },
+        notes: {
+          include: {
+            user: true            // ✅ Note.user
+          }
+        },
+        activityLogs: {
+          include: {
+            user: true            // ✅ ActivityLog.user
+          }
+        },
+        prosecutors: {
+          include: {
+            user: true            // ✅ CaseProsecutor.user
+          }
+        },
+        paralegalOfficers: {
+          include: {
+            user: true            // ✅ CaseParalegalOfficer.user
+          }
+        }
       }
     })
+
 
     // Fetch documents with filters
     let documents = await prisma.document.findMany({
@@ -143,16 +181,53 @@ module.exports = router => {
     const _case = await prisma.case.findUnique({
       where: { id: caseId },
       include: {
-        user: true,
-        witnesses: { include: { statements: true } },
-        lawyers: true,
-        defendants: true,
-        //hearing: true,
+        unit: true,
+        defendants: {
+          include: {
+            defenceLawyer: true,
+            charges: true
+          }
+        },
+        victims: true,
+        witnesses: {
+          include: {
+            statements: true,
+            specialMeasures: true
+          }
+        },
+        hearings: true,
         location: true,
         tasks: true,
-        dga: true
+        directions: true,
+        documents: true,
+        dga: {
+          include: {
+            failureReasons: true
+          }
+        },
+        notes: {
+          include: {
+            user: true            // ✅ Note.user
+          }
+        },
+        activityLogs: {
+          include: {
+            user: true            // ✅ ActivityLog.user
+          }
+        },
+        prosecutors: {
+          include: {
+            user: true            // ✅ CaseProsecutor.user
+          }
+        },
+        paralegalOfficers: {
+          include: {
+            user: true            // ✅ CaseParalegalOfficer.user
+          }
+        }
       }
     })
+
     if (!_case) return res.status(404).render("not-found")
 
     // Fetch the single document for this case

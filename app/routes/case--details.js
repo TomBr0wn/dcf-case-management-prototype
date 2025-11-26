@@ -38,20 +38,57 @@ module.exports = router => {
       delete where.AND
     }
 
-    // Fetch case
+    // Fetch the case
     const _case = await prisma.case.findUnique({
       where: { id: caseId },
       include: {
-        user: true,
-        witnesses: { include: { statements: true } },
-        lawyers: true,
-        defendants: true,
-        //hearing: true,
+        unit: true,
+        defendants: {
+          include: {
+            defenceLawyer: true,
+            charges: true
+          }
+        },
+        victims: true,
+        witnesses: {
+          include: {
+            statements: true,
+            specialMeasures: true
+          }
+        },
+        hearings: true,
         location: true,
         tasks: true,
-        dga: true
+        directions: true,
+        documents: true,
+        dga: {
+          include: {
+            failureReasons: true
+          }
+        },
+        notes: {
+          include: {
+            user: true
+          }
+        },
+        activityLogs: {
+          include: {
+            user: true
+          }
+        },
+        prosecutors: {
+          include: {
+            user: true
+          }
+        },
+        paralegalOfficers: {
+          include: {
+            user: true
+          }
+        }
       }
     })
+
 
     // Fetch documents with filters
     let documents = await prisma.document.findMany({
@@ -119,16 +156,53 @@ module.exports = router => {
     const _case = await prisma.case.findUnique({
       where: { id: caseId },
       include: {
-        user: true,
-        witnesses: { include: { statements: true } },
-        lawyers: true,
-        defendants: true,
-        // hearing: true,
+        unit: true,
+        defendants: {
+          include: {
+            defenceLawyer: true,
+            charges: true
+          }
+        },
+        victims: true,
+        witnesses: {
+          include: {
+            statements: true,
+            specialMeasures: true
+          }
+        },
+        hearings: true,
         location: true,
         tasks: true,
-        dga: true
+        directions: true,
+        documents: true,
+        dga: {
+          include: {
+            failureReasons: true
+          }
+        },
+        notes: {
+          include: {
+            user: true
+          }
+        },
+        activityLogs: {
+          include: {
+            user: true
+          }
+        },
+        prosecutors: {
+          include: {
+            user: true
+          }
+        },
+        paralegalOfficers: {
+          include: {
+            user: true
+          }
+        }
       }
     })
+
 
     // Fetch documents with filters
     let documents = await prisma.document.findMany({

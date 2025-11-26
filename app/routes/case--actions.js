@@ -4,19 +4,57 @@ const prisma = new PrismaClient()
 
 module.exports = router => {
   router.get("/cases/:caseId/actions", async (req, res) => {
+    // Fetch case
     const _case = await prisma.case.findUnique({
-      where: { id: parseInt(req.params.caseId) },
+      where: { id: caseId },
       include: {
-        user: true,
-        witnesses: true,
-        lawyers: true,
-        defendants: true,
-        //hearing: true,
+        unit: true,
+        defendants: {
+          include: {
+            defenceLawyer: true,
+            charges: true
+          }
+        },
+        victims: true,
+        witnesses: {
+          include: {
+            statements: true,
+            specialMeasures: true
+          }
+        },
+        hearings: true,
         location: true,
         tasks: true,
-        dga: true
+        directions: true,
+        documents: true,
+        dga: {
+          include: {
+            failureReasons: true
+          }
+        },
+        notes: {
+          include: {
+            user: true            // ✅ Note.user
+          }
+        },
+        activityLogs: {
+          include: {
+            user: true            // ✅ ActivityLog.user
+          }
+        },
+        prosecutors: {
+          include: {
+            user: true            // ✅ CaseProsecutor.user
+          }
+        },
+        paralegalOfficers: {
+          include: {
+            user: true            // ✅ CaseParalegalOfficer.user
+          }
+        }
       }
     })
+
 
     res.render("cases/actions/index", { _case })
   })
@@ -29,19 +67,57 @@ module.exports = router => {
     const caseId = parseInt(req.params.caseId, 10)
     const defendantId = parseInt(req.params.defendantId, 10)
 
+    // Fetch case
     const _case = await prisma.case.findUnique({
       where: { id: caseId },
       include: {
-        user: true,
-        witnesses: true,
-        lawyers: true,
-        defendants: true,
-        // hearing: true,
+        unit: true,
+        defendants: {
+          include: {
+            defenceLawyer: true,
+            charges: true
+          }
+        },
+        victims: true,
+        witnesses: {
+          include: {
+            statements: true,
+            specialMeasures: true
+          }
+        },
+        hearings: true,
         location: true,
         tasks: true,
-        dga: true
+        directions: true,
+        documents: true,
+        dga: {
+          include: {
+            failureReasons: true
+          }
+        },
+        notes: {
+          include: {
+            user: true            // ✅ Note.user
+          }
+        },
+        activityLogs: {
+          include: {
+            user: true            // ✅ ActivityLog.user
+          }
+        },
+        prosecutors: {
+          include: {
+            user: true            // ✅ CaseProsecutor.user
+          }
+        },
+        paralegalOfficers: {
+          include: {
+            user: true            // ✅ CaseParalegalOfficer.user
+          }
+        }
       }
     })
+
     if (!_case) return res.status(404).render('not-found')
 
     const defendant = _case.defendants.find(d => d.id === defendantId)

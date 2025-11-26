@@ -46,7 +46,9 @@
 
               <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
                 <div>
-                  <a href="/cases/{{_case.id}}" class="govuk-link--no-visited-state">{{defendantsValue}}</a>
+                  {# uncomment line below to link to case Adam's overview page #}
+                  {# <a href="/cases/{{_case.id}}" class="govuk-link--no-visited-state">{{defendantsValue}}</a> #}
+                  <a href="/cases/{{_case.id}}/details" class="govuk-link--no-visited-state">{{defendantsValue}}</a>
                 </div>
                 <div class="app-list__tag">
                   {% if _case.hasCTL %}
