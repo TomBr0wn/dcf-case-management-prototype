@@ -93,6 +93,20 @@
           items: dateStatusItems,
           values: selectedDateStatusFilters
         }) }}
+
+        {{ govukCheckboxes({
+          idPrefix: "directionListFilters[assignee]",
+          name: "directionListFilters[assignee]",
+          classes: "govuk-checkboxes--small",
+          fieldset: {
+            legend: {
+              text: "Assignee",
+              classes: "govuk-fieldset__legend--s"
+            }
+          },
+          items: assigneeItems,
+          values: selectedAssigneeFilters
+        }) }}
       </form>
     </div>
   </div>
