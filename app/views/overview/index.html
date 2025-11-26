@@ -35,12 +35,12 @@
             <a href="/directions/shortcut/overdue" class="app-overview-card app-overview-card--red">
               <span class="app-overview-card__count">{{overdueDirectionCount}}</span>
               <span class="app-overview-card__status">
-                overdue
                 {% if overdueDirectionCount == 1 %}
                   direction
                 {% else %}
                   directions
                 {% endif %}
+                assigned to prosecution are overdue
               </span>
             </a>
           {% endif %}
@@ -54,7 +54,7 @@
                 {% else %}
                   directions
                 {% endif %}
-                due today
+                assigned to prosecution are due today 
               </span>
             </a>
           {% endif %}
@@ -68,13 +68,13 @@
                 {% else %}
                   directions
                 {% endif %}
-                due tomorrow
+                assigned to prosecution due tomorrow
               </span>
             </a>
           {% endif %}
         </div>
       {% endif %}
-      
+
       {% if urgentTaskCount > 0 or ctlTaskCount > 0 or stlTaskCount > 0 or paceTaskCount > 0 %}
         <h2 class="govuk-heading-m">Tasks</h2>
 

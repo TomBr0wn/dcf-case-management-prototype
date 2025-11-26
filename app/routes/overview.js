@@ -107,21 +107,40 @@ module.exports = router => {
     })
 
     // Fetch directions for cases assigned to current user (as prosecutor or paralegal officer)
-    let directions = await prisma.direction.findMany({
-      where: {
-        AND: [
-          { completedDate: null },
-          {
-            case: {
-              unitId: { in: userUnitIds },
-              OR: [
-                { prosecutors: { some: { userId: currentUser.id } } },
-                { paralegalOfficers: { some: { userId: currentUser.id } } }
-              ]
-            }
+    // Only include directions assigned to Prosecution
+    const directionWhere = {
+      AND: [
+        { completedDate: null },
+        { assignee: 'Prosecution' },
+        {
+          case: {
+            unitId: { in: userUnitIds }
           }
-        ]
-      }
+        }
+      ]
+    }
+
+    // Filter by current user's role
+    if (currentUser.role === 'Prosecutor') {
+      directionWhere.AND.push({
+        case: {
+          prosecutors: {
+            some: { userId: currentUser.id }
+          }
+        }
+      })
+    } else if (currentUser.role === 'Paralegal officer') {
+      directionWhere.AND.push({
+        case: {
+          paralegalOfficers: {
+            some: { userId: currentUser.id }
+          }
+        }
+      })
+    }
+
+    let directions = await prisma.direction.findMany({
+      where: directionWhere
     })
 
     // Categorize directions by due date

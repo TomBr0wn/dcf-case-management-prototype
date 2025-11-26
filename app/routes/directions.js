@@ -19,9 +19,9 @@ module.exports = router => {
     const currentUser = req.session.data.user
     resetFilters(req)
     if (currentUser.role === 'Prosecutor') {
-      res.redirect(`/directions?directionListFilters[prosecutor][]=${currentUser.id}&directionListFilters[dateStatus][]=Overdue`)
+      res.redirect(`/directions?directionListFilters[prosecutor][]=${currentUser.id}&directionListFilters[dateStatus][]=Overdue&directionListFilters[assignee][]=Prosecution`)
     } else {
-      res.redirect(`/directions?directionListFilters[dateStatus][]=Overdue`)
+      res.redirect(`/directions?directionListFilters[dateStatus][]=Overdue&directionListFilters[assignee][]=Prosecution`)
     }
   })
 
@@ -29,9 +29,9 @@ module.exports = router => {
     const currentUser = req.session.data.user
     resetFilters(req)
     if (currentUser.role === 'Prosecutor') {
-      res.redirect(`/directions?directionListFilters[prosecutor][]=${currentUser.id}&directionListFilters[dateStatus][]=Due today`)
+      res.redirect(`/directions?directionListFilters[prosecutor][]=${currentUser.id}&directionListFilters[dateStatus][]=Due today&directionListFilters[assignee][]=Prosecution`)
     } else {
-      res.redirect(`/directions?directionListFilters[dateStatus][]=Due today`)
+      res.redirect(`/directions?directionListFilters[dateStatus][]=Due today&directionListFilters[assignee][]=Prosecution`)
     }
   })
 
@@ -39,9 +39,9 @@ module.exports = router => {
     const currentUser = req.session.data.user
     resetFilters(req)
     if (currentUser.role === 'Prosecutor') {
-      res.redirect(`/directions?directionListFilters[prosecutor][]=${currentUser.id}&directionListFilters[dateStatus][]=Due tomorrow`)
+      res.redirect(`/directions?directionListFilters[prosecutor][]=${currentUser.id}&directionListFilters[dateStatus][]=Due tomorrow&directionListFilters[assignee][]=Prosecution`)
     } else {
-      res.redirect(`/directions?directionListFilters[dateStatus][]=Due tomorrow`)
+      res.redirect(`/directions?directionListFilters[dateStatus][]=Due tomorrow&directionListFilters[assignee][]=Prosecution`)
     }
   })
 
