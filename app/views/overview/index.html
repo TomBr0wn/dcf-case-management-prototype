@@ -28,6 +28,53 @@
         </div>
       {% endif %}
 
+      {% if overdueDirectionCount > 0 or dueTodayDirectionCount > 0 or dueTomorrowDirectionCount > 0 %}
+        <h2 class="govuk-heading-m">Directions</h2>
+        <div class="app-overview-cards govuk-!-margin-bottom-9">
+          {% if overdueDirectionCount > 0 %}
+            <a href="/directions/shortcut/overdue" class="app-overview-card app-overview-card--red">
+              <span class="app-overview-card__count">{{overdueDirectionCount}}</span>
+              <span class="app-overview-card__status">
+                overdue
+                {% if overdueDirectionCount == 1 %}
+                  direction
+                {% else %}
+                  directions
+                {% endif %}
+              </span>
+            </a>
+          {% endif %}
+
+          {% if dueTodayDirectionCount > 0 %}
+            <a href="/directions/shortcut/due-today" class="app-overview-card app-overview-card--orange">
+              <span class="app-overview-card__count">{{dueTodayDirectionCount}}</span>
+              <span class="app-overview-card__status">
+                {% if dueTodayDirectionCount == 1 %}
+                  direction
+                {% else %}
+                  directions
+                {% endif %}
+                due today
+              </span>
+            </a>
+          {% endif %}
+
+          {% if dueTomorrowDirectionCount > 0 %}
+            <a href="/directions/shortcut/due-tomorrow" class="app-overview-card app-overview-card--yellow">
+              <span class="app-overview-card__count">{{dueTomorrowDirectionCount}}</span>
+              <span class="app-overview-card__status">
+                {% if dueTomorrowDirectionCount == 1 %}
+                  direction
+                {% else %}
+                  directions
+                {% endif %}
+                due tomorrow
+              </span>
+            </a>
+          {% endif %}
+        </div>
+      {% endif %}
+      
       {% if urgentTaskCount > 0 or ctlTaskCount > 0 or stlTaskCount > 0 or paceTaskCount > 0 %}
         <h2 class="govuk-heading-m">Tasks</h2>
 
@@ -90,52 +137,6 @@
         </div>
       {% endif %}
 
-      {% if overdueDirectionCount > 0 or dueTodayDirectionCount > 0 or dueTomorrowDirectionCount > 0 %}
-        <h2 class="govuk-heading-m">Directions</h2>
-        <div class="app-overview-cards govuk-!-margin-bottom-9">
-          {% if overdueDirectionCount > 0 %}
-            <a href="/directions/shortcut/overdue" class="app-overview-card app-overview-card--red">
-              <span class="app-overview-card__count">{{overdueDirectionCount}}</span>
-              <span class="app-overview-card__status">
-                overdue
-                {% if overdueDirectionCount == 1 %}
-                  direction
-                {% else %}
-                  directions
-                {% endif %}
-              </span>
-            </a>
-          {% endif %}
-
-          {% if dueTodayDirectionCount > 0 %}
-            <a href="/directions/shortcut/due-today" class="app-overview-card app-overview-card--orange">
-              <span class="app-overview-card__count">{{dueTodayDirectionCount}}</span>
-              <span class="app-overview-card__status">
-                {% if dueTodayDirectionCount == 1 %}
-                  direction
-                {% else %}
-                  directions
-                {% endif %}
-                due today
-              </span>
-            </a>
-          {% endif %}
-
-          {% if dueTomorrowDirectionCount > 0 %}
-            <a href="/directions/shortcut/due-tomorrow" class="app-overview-card app-overview-card--yellow">
-              <span class="app-overview-card__count">{{dueTomorrowDirectionCount}}</span>
-              <span class="app-overview-card__status">
-                {% if dueTomorrowDirectionCount == 1 %}
-                  direction
-                {% else %}
-                  directions
-                {% endif %}
-                due tomorrow
-              </span>
-            </a>
-          {% endif %}
-        </div>
-      {% endif %}
 
       {% if incompleteProfileCount > 0 %}
         <h2 class="govuk-heading-m">Prosecutors</h2>
