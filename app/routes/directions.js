@@ -10,6 +10,7 @@ function resetFilters(req) {
   _.set(req, 'session.data.directionListFilters.paralegalOfficers', null)
   _.set(req, 'session.data.directionListFilters.units', null)
   _.set(req, 'session.data.directionListFilters.dateStatus', null)
+  _.set(req, 'session.data.directionListFilters.assignee', null)
 }
 
 module.exports = router => {
@@ -72,6 +73,7 @@ module.exports = router => {
     let selectedParalegalOfficerFilters = _.get(req.session.data.directionListFilters, 'paralegalOfficers', [])
     let selectedUnitFilters = _.get(req.session.data.directionListFilters, 'units', [])
     let selectedDateStatusFilters = _.get(req.session.data.directionListFilters, 'dateStatus', [])
+    let selectedAssigneeFilters = _.get(req.session.data.directionListFilters, 'assignee', [])
 
     let selectedFilters = { categories: [] }
 
@@ -158,6 +160,19 @@ module.exports = router => {
       })
     }
 
+    // Assignee filter display
+    let selectedAssigneeItems = []
+    if (selectedAssigneeFilters?.length) {
+      selectedAssigneeItems = selectedAssigneeFilters.map(function(assignee) {
+        return { text: assignee, href: '/directions/remove-assignee/' + encodeURIComponent(assignee) }
+      })
+
+      selectedFilters.categories.push({
+        heading: { text: 'Assignee' },
+        items: selectedAssigneeItems
+      })
+    }
+
     // Build Prisma where clause
     let where = { AND: [] }
 
@@ -195,6 +210,11 @@ module.exports = router => {
           }
         }
       })
+    }
+
+    // Assignee filter
+    if (selectedAssigneeFilters?.length) {
+      where.AND.push({ assignee: { in: selectedAssigneeFilters } })
     }
 
     if (selectedUnitFilters?.length) {
@@ -362,6 +382,12 @@ module.exports = router => {
       { text: 'Due later', value: 'Due later' }
     ]
 
+    // Assignee items
+    let assigneeItems = [
+      { text: 'Defence', value: 'Defence' },
+      { text: 'Prosecution', value: 'Prosecution' }
+    ]
+
     // Add grouping metadata to directions based on due date
     directions = groupDirections(directions)
 
@@ -399,6 +425,9 @@ module.exports = router => {
       dateStatusItems,
       selectedDateStatusFilters,
       selectedDateStatusItems,
+      assigneeItems,
+      selectedAssigneeFilters,
+      selectedAssigneeItems,
       selectedFilters
     })
   })
@@ -425,6 +454,13 @@ module.exports = router => {
     const currentFilters = _.get(req, 'session.data.directionListFilters.dateStatus', [])
     const dateStatus = decodeURIComponent(req.params.dateStatus)
     _.set(req, 'session.data.directionListFilters.dateStatus', _.pull(currentFilters, dateStatus))
+    res.redirect('/directions')
+  })
+
+  router.get('/directions/remove-assignee/:assignee', (req, res) => {
+    const currentFilters = _.get(req, 'session.data.directionListFilters.assignee', [])
+    const assignee = decodeURIComponent(req.params.assignee)
+    _.set(req, 'session.data.directionListFilters.assignee', _.pull(currentFilters, assignee))
     res.redirect('/directions')
   })
 
