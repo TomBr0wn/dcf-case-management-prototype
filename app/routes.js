@@ -8,6 +8,10 @@ const checkSignedIn = require('./middleware/checkSignedIn')
 const flash = require('connect-flash')
 router.use(flash())
 
+
+
+
+
 router.all('*', (req, res, next) => {
   res.locals.referrer = req.query.referrer
   res.locals.path = req.path
@@ -62,6 +66,8 @@ router.get('/', (req, res) => {
   res.render("index")
 })
 
+
+
 require('./routes/static')(router)
 
 require('./routes/account')(router)
@@ -79,6 +85,7 @@ require('./routes/cases')(router)
 require('./routes/cases--add-prosecutor')(router)
 require('./routes/cases--add-paralegal-officer')(router)
 require('./routes/case--overview')(router)
+require('./routes/case--details')(router)
 require('./routes/case--dga')(router)
 require('./routes/case--dga--new')(router)
 require('./routes/case--notes')(router)
@@ -90,6 +97,10 @@ require('./routes/case--task--notes')(router)
 require('./routes/case--direction')(router)
 require('./routes/case--direction--complete')(router)
 require('./routes/case--documents')(router)
+require('./routes/case--details')(router)
+require('./routes/case--disclosure')(router)
+require('./routes/case--material')(router)
+require('./routes/case--reviews')(router)
 require('./routes/case--witnesses')(router)
 require('./routes/case--witness')(router)
 require('./routes/case--defendants')(router)

@@ -25,6 +25,29 @@
 // Logo
 @import "components/brand";
 
+// Materials panel
+@import "components/housekeeping";
+@import "components/materials-accordion";
+@import "components/materials-accordion-card";
+@import "components/materials-viewer";
+@import "components/materials-viewer-tabs";
+@import "components/materials-search-results";
+@import "components/notes-modal";
+
+// Details - Overview panels
+@import "components/overview-areas";
+
+/* Default: pages without this class use GOV.UK default width */
+.dcf-materials-wide .govuk-width-container {
+  margin-right: auto;
+  margin-left: auto;
+  max-width: 1400px;
+}
+
+
+
+
+
 h1 .govuk-tag {
   position: relative;
   top: -7px;
@@ -147,6 +170,11 @@ $statuses: (
   }
 }
 
+.x-govuk-secondary-navigation {
+    border-bottom: 1px solid #b1b4b6;
+    margin-top: -35px;
+}
+
 .govuk-summary-list li:last-child {
   margin-bottom: 0;
 }
@@ -217,13 +245,17 @@ $statuses: (
 }
 
 .govuk-template--rebranded .govuk-header {
-  // background: govuk-colour("black") !important;
+  background: govuk-colour("black") !important;
 }
 
 .govuk-template--rebranded .govuk-header__link--homepage:not(:focus) {
-  // background: govuk-colour("black") !important;
+  background: govuk-colour("black") !important;
 }
 
 .app-inset-action {
   margin-top: -30px;
+}
+
+.govuk-tabs__panel{
+  margin-bottom: 0;
 }

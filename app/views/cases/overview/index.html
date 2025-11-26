@@ -1,6 +1,6 @@
 {% extends "layouts/main.html" %}
 {% set navId = 'cases' %}
-{% set secondaryNavId = 'overview' %}
+{% set secondaryNavId = 'details' %}
 {% set pageName = 'Overview' %}
 
 {% block beforeContent %}
@@ -9,7 +9,25 @@
 
 {% block content %}
   {% include "_includes/success-banner.njk" %}
-  {% include "_includes/case/navigation.njk" %}
+  {# {% include "_includes/case/header.njk" %} #}
+
+  {% if _case.dga and not _case.dga.outcome %}
+    {% set inset %}
+      <p>You need to record the Director General Assessment (DGA).</p>
+
+      {{ govukButton({
+        text: 'Record DGA',
+        href: '/cases/:caseId/dga/new' | replace(':caseId', _case.id)
+      }) }}
+    {% endset %}
+
+    {{ govukInsetText({
+      html: inset,
+      classes: 'app-inset-action govuk-!-margin-bottom-9'
+    })}}
+  {% endif %}
+
+  {% include "_includes/case/dcf-navigation.njk" %}
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
