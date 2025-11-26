@@ -71,12 +71,7 @@ module.exports = router => {
             unit: true
           }
         },
-        assignedToUser: true,
-        assignedToTeam: {
-          include: {
-            unit: true
-          }
-        }
+        defendant: true
       }
     })
 

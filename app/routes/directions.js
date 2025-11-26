@@ -7,7 +7,7 @@ const { getDirectionStatus } = require('../helpers/directionState')
 
 function resetFilters(req) {
   _.set(req, 'session.data.directionListFilters.prosecutor', null)
-  _.set(req, 'session.data.directionListFilters.paralegalOfficer', null)
+  _.set(req, 'session.data.directionListFilters.paralegalOfficers', null)
   _.set(req, 'session.data.directionListFilters.units', null)
   _.set(req, 'session.data.directionListFilters.dateStatus', null)
 }
@@ -60,11 +60,16 @@ module.exports = router => {
 
     // Only set default prosecutor to current user on first visit if they're a prosecutor
     if (isFirstVisit && currentUser.role === 'Prosecutor') {
-      _.set(req.session.data.directionListFilters, 'prosecutor', [currentUser.id])
+      _.set(req.session.data.directionListFilters, 'prosecutor', [`${currentUser.id}`])
+    }
+
+    // Only set default paralegal officer to current user on first visit if they're a paralegal officer
+    if (isFirstVisit && currentUser.role === 'Paralegal officer') {
+      _.set(req.session.data.directionListFilters, 'paralegalOfficers', [`${currentUser.id}`])
     }
 
     let selectedProsecutorFilters = _.get(req.session.data.directionListFilters, 'prosecutor', [])
-    let selectedParalegalOfficerFilters = _.get(req.session.data.directionListFilters, 'paralegalOfficer', [])
+    let selectedParalegalOfficerFilters = _.get(req.session.data.directionListFilters, 'paralegalOfficers', [])
     let selectedUnitFilters = _.get(req.session.data.directionListFilters, 'units', [])
     let selectedDateStatusFilters = _.get(req.session.data.directionListFilters, 'dateStatus', [])
 
@@ -114,6 +119,10 @@ module.exports = router => {
       let selectedParalegalOfficerItems = selectedParalegalOfficerFilters.map(function(paralegalOfficerId) {
         const paralegalOfficer = fetchedParalegalOfficers.find(po => po.id === Number(paralegalOfficerId))
         let displayText = paralegalOfficer ? `${paralegalOfficer.firstName} ${paralegalOfficer.lastName}` : paralegalOfficerId
+
+        if (currentUser && paralegalOfficer && paralegalOfficer.id === currentUser.id) {
+          displayText += " (you)"
+        }
 
         return { text: displayText, href: '/directions/remove-paralegal-officer/' + paralegalOfficerId }
       })
@@ -203,6 +212,7 @@ module.exports = router => {
         { dueDate: 'asc' }
       ],
       include: {
+        defendant: true,
         case: {
           include: {
             defendants: {
@@ -316,10 +326,23 @@ module.exports = router => {
       ]
     })
 
-    let paralegalOfficerItems = paralegalOfficers.map(po => ({
-      text: `${po.firstName} ${po.lastName}`,
-      value: `${po.id}`
-    }))
+    let paralegalOfficerItems = paralegalOfficers.map(po => {
+      let text = `${po.firstName} ${po.lastName}`
+      if (currentUser && po.id === currentUser.id) {
+        text += ' (you)'
+      }
+      return {
+        text: text,
+        value: `${po.id}`
+      }
+    })
+
+    // Put current user (you) first
+    paralegalOfficerItems.sort((a, b) => {
+      if (a.text.includes('(you)')) return -1
+      if (b.text.includes('(you)')) return 1
+      return 0
+    })
 
     // Fetch only user's units for the filter
     let units = await prisma.unit.findMany({
@@ -387,8 +410,8 @@ module.exports = router => {
   })
 
   router.get('/directions/remove-paralegal-officer/:paralegalOfficerId', (req, res) => {
-    const currentFilters = _.get(req, 'session.data.directionListFilters.paralegalOfficer', [])
-    _.set(req, 'session.data.directionListFilters.paralegalOfficer', _.pull(currentFilters, req.params.paralegalOfficerId))
+    const currentFilters = _.get(req, 'session.data.directionListFilters.paralegalOfficers', [])
+    _.set(req, 'session.data.directionListFilters.paralegalOfficers', _.pull(currentFilters, req.params.paralegalOfficerId))
     res.redirect('/directions')
   })
 

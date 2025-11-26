@@ -12,7 +12,7 @@ function resetFilters(req) {
   _.set(req, 'session.data.caseListFilters.unit', null)
   _.set(req, 'session.data.caseListFilters.complexities', null)
   _.set(req, 'session.data.caseListFilters.types', null)
-  _.set(req, 'session.data.caseListFilters.lawyers', null)
+  _.set(req, 'session.data.caseListFilters.prosecutors', null)
   _.set(req, 'session.data.caseListFilters.paralegalOfficers', null)
 }
 
@@ -20,7 +20,7 @@ module.exports = router => {
 
   router.get('/cases/shortcut/unassigned', (req, res) => {
     resetFilters(req)
-    res.redirect('/cases/?caseListFilters[lawyers][]=Unassigned')
+    res.redirect('/cases/?caseListFilters[prosecutors][]=Unassigned')
   })
 
   router.get('/cases/shortcut/dga', (req, res) => {
@@ -44,7 +44,7 @@ module.exports = router => {
 
     // Only set default prosecutor filter to current user on first visit if they're a prosecutor
     if (isFirstVisit && currentUser.role === 'Prosecutor') {
-      _.set(req.session.data.caseListFilters, 'lawyers', [currentUser.id.toString()])
+      _.set(req.session.data.caseListFilters, 'prosecutors', [currentUser.id.toString()])
     }
 
     // Only set default paralegal officer filter to current user on first visit if they're a paralegal officer
@@ -57,7 +57,7 @@ module.exports = router => {
     let selectedUnitFilters = _.get(req.session.data.caseListFilters, 'unit', [])
     let selectedComplexityFilters = _.get(req.session.data.caseListFilters, 'complexities', [])
     let selectedTypeFilters = _.get(req.session.data.caseListFilters, 'types', [])
-    let selectedLawyerFilters = _.get(req.session.data.caseListFilters, 'lawyers', [])
+    let selectedProsecutorFilters = _.get(req.session.data.caseListFilters, 'prosecutors', [])
     let selectedParalegalOfficerFilters = _.get(req.session.data.caseListFilters, 'paralegalOfficers', [])
 
     let selectedFilters = { categories: [] }
@@ -121,26 +121,26 @@ module.exports = router => {
       })
     }
 
-    let lawyerIds
+    let prosecutorIds
 
 
     // Prosecutor filter display
-    if (selectedLawyerFilters?.length) {
+    if (selectedProsecutorFilters?.length) {
 
-      lawyerIds = selectedLawyerFilters.filter(function(l) { return l !== "Unassigned" }).map(Number)
+      prosecutorIds = selectedProsecutorFilters.filter(function(l) { return l !== "Unassigned" }).map(Number)
 
       let fetchedProsecutors = []
-      if (lawyerIds.length) {
+      if (prosecutorIds.length) {
         fetchedProsecutors = await prisma.user.findMany({
           where: {
-            id: { in: lawyerIds },
+            id: { in: prosecutorIds },
             role: 'Prosecutor'
           },
           select: { id: true, firstName: true, lastName: true }
         })
       }
 
-      selectedProsecutorItems = selectedLawyerFilters.map(function(selectedProsecutor) {
+      selectedProsecutorItems = selectedProsecutorFilters.map(function(selectedProsecutor) {
         if (selectedProsecutor === "Unassigned") return { text: "Unassigned", href: '/cases/remove-prosecutor/' + selectedProsecutor }
 
         let prosecutor = fetchedProsecutors.find(function(prosecutor) { return prosecutor.id === Number(selectedProsecutor) })
@@ -171,7 +171,7 @@ module.exports = router => {
         })
       }
 
-      let selectedParalegalOfficerItems = selectedParalegalOfficerFilters.map(function(selectedParalegalOfficer) {
+      selectedParalegalOfficerItems = selectedParalegalOfficerFilters.map(function(selectedParalegalOfficer) {
         if (selectedParalegalOfficer === "Unassigned") return { text: "Unassigned", href: '/cases/remove-paralegal-officer/' + selectedParalegalOfficer }
 
         let paralegalOfficer = fetchedParalegalOfficers.find(function(po) { return po.id === Number(selectedParalegalOfficer) })
@@ -260,19 +260,19 @@ module.exports = router => {
       where.AND.push({ type: { in: selectedTypeFilters } })
     }
 
-    if(selectedLawyerFilters?.length) {
-      let lawyerFilters = []
+    if(selectedProsecutorFilters?.length) {
+      let prosecutorFilters = []
 
-      if (selectedLawyerFilters?.includes("Unassigned")) {
-        lawyerFilters.push({ prosecutors: { none: {} } })
+      if (selectedProsecutorFilters?.includes("Unassigned")) {
+        prosecutorFilters.push({ prosecutors: { none: {} } })
       }
 
-      if (lawyerIds?.length) {
-        lawyerFilters.push({ prosecutors: { some: { userId: { in: lawyerIds } } } })
+      if (prosecutorIds?.length) {
+        prosecutorFilters.push({ prosecutors: { some: { userId: { in: prosecutorIds } } } })
       }
 
-      if (lawyerFilters.length) {
-        where.AND.push({ OR: lawyerFilters })
+      if (prosecutorFilters.length) {
+        where.AND.push({ OR: prosecutorFilters })
       }
 
     }
@@ -519,8 +519,8 @@ module.exports = router => {
   })
 
   router.get('/cases/remove-prosecutor/:prosecutor', (req, res) => {
-    const currentFilters = _.get(req, 'session.data.caseListFilters.lawyers', [])
-    _.set(req, 'session.data.caseListFilters.lawyers', _.pull(currentFilters, req.params.prosecutor))
+    const currentFilters = _.get(req, 'session.data.caseListFilters.prosecutors', [])
+    _.set(req, 'session.data.caseListFilters.prosecutors', _.pull(currentFilters, req.params.prosecutor))
     res.redirect('/cases')
   })
 

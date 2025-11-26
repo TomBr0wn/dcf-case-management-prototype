@@ -376,14 +376,27 @@ async function main() {
     },
   ];
 
-  // Generate 16 additional users to reach 20 total
-  for (let i = 0; i < 16; i++) {
+  // Generate 200 Prosecutors
+  for (let i = 0; i < 200; i++) {
     const firstName = faker.helpers.arrayElement(firstNames);
     const lastName = faker.helpers.arrayElement(lastNames);
     userData.push({
-      email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}@example.com`,
+      email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}.p${i}@example.com`,
       password: "password123",
-      role: "USER",
+      role: "Prosecutor",
+      firstName: firstName,
+      lastName: lastName,
+    });
+  }
+
+  // Generate 200 Paralegal officers
+  for (let i = 0; i < 200; i++) {
+    const firstName = faker.helpers.arrayElement(firstNames);
+    const lastName = faker.helpers.arrayElement(lastNames);
+    userData.push({
+      email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}.po${i}@example.com`,
+      password: "password123",
+      role: "Paralegal officer",
       firstName: firstName,
       lastName: lastName,
     });
@@ -910,8 +923,8 @@ async function main() {
       // Assignee: Prosecution or Defence
       const assignee = faker.helpers.arrayElement(['Prosecution', 'Defence']);
 
-      // 50% chance to assign to a specific defendant from this case
-      const defendantId = faker.datatype.boolean() && assignedDefendants.length > 0
+      // Always assign to a specific defendant from this case
+      const defendantId = assignedDefendants.length > 0
         ? faker.helpers.arrayElement(assignedDefendants).id
         : null;
 
@@ -988,24 +1001,29 @@ async function main() {
       }
     }
 
-    // Assign paralegal officers to case (99% get 1, 1% get 2)
-    const paralegalAssignmentChoice = faker.number.float({ min: 0, max: 1 });
-    const numParalegals = paralegalAssignmentChoice < 0.99 ? 1 : 2;
+    // Assign paralegal officers to case
+    // 80% get assigned (99% of those get 1, 1% get 2), 20% remain unassigned
+    const shouldAssignParalegal = faker.number.float({ min: 0, max: 1 }) >= 0.20;
 
-    // Get paralegal officers from this case's unit
-    const unitParalegals = users.filter(u =>
-      u.role === 'Paralegal officer' && u.units.some(uu => uu.unitId === caseUnitId)
-    );
+    if (shouldAssignParalegal) {
+      const paralegalAssignmentChoice = faker.number.float({ min: 0, max: 1 });
+      const numParalegals = paralegalAssignmentChoice < 0.99 ? 1 : 2;
 
-    if (unitParalegals.length > 0) {
-      const assignedParalegals = faker.helpers.arrayElements(unitParalegals, Math.min(numParalegals, unitParalegals.length));
-      for (const paralegal of assignedParalegals) {
-        await prisma.caseParalegalOfficer.create({
-          data: {
-            caseId: createdCase.id,
-            userId: paralegal.id
-          }
-        });
+      // Get paralegal officers from this case's unit
+      const unitParalegals = users.filter(u =>
+        u.role === 'Paralegal officer' && u.units.some(uu => uu.unitId === caseUnitId)
+      );
+
+      if (unitParalegals.length > 0) {
+        const assignedParalegals = faker.helpers.arrayElements(unitParalegals, Math.min(numParalegals, unitParalegals.length));
+        for (const paralegal of assignedParalegals) {
+          await prisma.caseParalegalOfficer.create({
+            data: {
+              caseId: createdCase.id,
+              userId: paralegal.id
+            }
+          });
+        }
       }
     }
 
