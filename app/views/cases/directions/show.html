@@ -47,17 +47,8 @@
       </div>
 
       {% set defendantsValue %}
-        {{direction.case.defendants[0].firstName}} {{direction.case.defendants[0].lastName}}
-        {% if direction.case.defendants.length > 1 %}
-          and {{direction.case.defendants.length - 1}} more
-        {% endif %}
-      {% endset %}
-
-      {% set ownerValue %}
-        {% if direction.assignedToUser %}
-          {{direction.assignedToUser.firstName}} {{direction.assignedToUser.lastName}}
-        {% elif direction.assignedToTeam %}
-          {{direction.assignedToTeam.name}} ({{direction.assignedToTeam.unit.name}})
+        {% if direction.defendant %}
+          {{direction.defendant.firstName}} {{direction.defendant.lastName}}
         {% endif %}
       {% endset %}
 
@@ -86,6 +77,14 @@
           },
           {
             key: {
+              text: 'Assignee'
+            },
+            value: {
+              text: direction.assignee
+            }
+          },
+          {
+            key: {
               text: 'Due date'
             },
             value: {
@@ -100,23 +99,6 @@
               html: (_case.soonestCTL | isoDateString | govukDateTime) + ' (' + (_case.soonestCTL | daysUntil) + ')'
             }
           } if _case.hasCTL,
-          {
-            key: {
-              html: 'Owner'
-            },
-            value: {
-              html: ownerValue
-            },
-            actions: {
-              items: [
-                {
-                  href: "#",
-                  text: "Change",
-                  visuallyHiddenText: "Owner"
-                }
-              ]
-            }
-          },
           {
             key: {
               html: 'Unit'

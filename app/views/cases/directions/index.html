@@ -47,17 +47,25 @@
                 <span>({{ direction.dueDate | daysUntil }})</span>
               {% endset %}
 
-              {% set ownerValue %}
-                {% if direction.assignedToUser %}
-                  {{direction.assignedToUser.firstName}} {{direction.assignedToUser.lastName}}
-                {% elif direction.assignedToTeam %}
-                  {{direction.assignedToTeam.name}} ({{direction.assignedToTeam.unit.name}})
-                {% endif %}
-              {% endset %}
-
               {{ govukSummaryList({
                 classes: 'govuk-summary-list--no-border app-summary-list--compact app-summary-list--small-text',
                 rows: [
+                  {
+                    key: {
+                      text: 'Defendant'
+                    },
+                    value: {
+                      html: (direction.defendant.firstName + ' ' + direction.defendant.lastName) if direction.defendant else ''
+                    }
+                  } if direction.defendant,
+                  {
+                    key: {
+                      text: 'Assignee'
+                    },
+                    value: {
+                      text: direction.assignee
+                    }
+                  },
                   {
                     key: {
                       text: 'Due date'
@@ -74,14 +82,6 @@
                       html: (_case.soonestCTL | isoDateString | govukDateTime) + ' (' + (_case.soonestCTL | daysUntil) + ')'
                     }
                   } if _case.hasCTL,
-                  {
-                    key: {
-                      html: 'Owner'
-                    },
-                    value: {
-                      html: ownerValue
-                    }
-                  },
                   {
                     key: {
                       html: 'Hearing'

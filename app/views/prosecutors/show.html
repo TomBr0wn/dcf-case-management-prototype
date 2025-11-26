@@ -68,7 +68,21 @@
           No restricted areas
         {% endif %}
       {% endset %}
-      
+
+      {% set units %}
+        {% if prosecutor.units.length %}
+          <ul class="govuk-list govuk-list--bullet">
+            {% for item in prosecutor.units %}
+              <li>
+                {{item.unit.name}}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          No units
+        {% endif %}
+      {% endset %}
+
       {{ govukSummaryList({
         rows: [
           {
@@ -107,17 +121,17 @@
           },
           {
             key: {
-              text: "Unit"
+              text: "Units"
             },
             value: {
-              html: prosecutor.unit.name
+              html: units
             },
             actions: {
               items: [
                 {
-                  href: "/prosecutors/:prosecutorId/edit-unit" | replace(':prosecutorId', prosecutor.id),
+                  href: "/prosecutors/:prosecutorId/edit-units" | replace(':prosecutorId', prosecutor.id),
                   text: "Change",
-                  visuallyHiddenText: "Unit"
+                  visuallyHiddenText: "Units"
                 }
               ]
             }

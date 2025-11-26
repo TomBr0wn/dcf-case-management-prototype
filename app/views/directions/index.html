@@ -31,7 +31,7 @@
             <div class="app-list__item">
               <h3 class="govuk-heading-s govuk-!-margin-bottom-1">
                 <div>
-                  <a href="/cases/{{direction.case.id}}/directions" class="govuk-link--no-visited-state">{{ direction.description | truncate(115) }}</a>
+                  <a href="/cases/{{direction.case.id}}/directions/{{direction.id}}" class="govuk-link--no-visited-state">{{ direction.description | truncate(115) }}</a>
                 </div>
                 {% if direction.status %}
                   <div class="app-list__tag">
@@ -41,25 +41,14 @@
               </h3>
 
               {% set defendantsValue %}
-                {{direction.case.defendants[0].firstName}} {{direction.case.defendants[0].lastName}}
-                {% if direction.case.defendants.length > 1 %}
-                  and {{direction.case.defendants.length - 1}} more
+                {% if direction.defendant %}
+                  {{direction.defendant.firstName}} {{direction.defendant.lastName}}
                 {% endif %}
               {% endset %}
 
               {% set dueDateValue %}
                 {{ direction.dueDate | isoDateString | govukDateTime }}
                 <span>({{ direction.dueDate | daysUntil }})</span>
-              {% endset %}
-
-              {% set ownerValue %}
-                {% if direction.assignedToUser %}
-                  {{direction.assignedToUser.firstName}} {{direction.assignedToUser.lastName}}
-                {% elif direction.assignedToTeam %}
-                  {{direction.assignedToTeam.name}} ({{direction.assignedToTeam.unit.name}})
-                {% else %}
-                  Unassigned
-                {% endif %}
               {% endset %}
 
               {% if direction.case.hearings and direction.case.hearings.length > 0 %}
@@ -110,14 +99,6 @@
                       html: ctlValue
                     }
                   } if direction.case.hasCTL,
-                  {
-                    key: {
-                      html: 'Owner'
-                    },
-                    value: {
-                      html: ownerValue
-                    }
-                  },
                   {
                     key: {
                       html: 'Unit'

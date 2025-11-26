@@ -17,12 +17,12 @@
           <a href="/cases/shortcut/unassigned" class="app-overview-card app-overview-card--green">
             <span class="app-overview-card__count">{{unassignedCaseCount}}</span>
             <span class="app-overview-card__status">
-              unassigned
               {% if unassignedCaseCount == 1 %}
-                case
+                case does not
               {% else %}
-                cases
+                cases do not
               {% endif %}
+              have a prosecutor assigned
             </span>
           </a>
         </div>
