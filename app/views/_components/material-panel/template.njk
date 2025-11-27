@@ -31,7 +31,12 @@
 {# Single card renderer so meta stays consistent for all sections #}
 {% macro renderCard(m, cm) %}
   {% set linkText = m.Title or filenameFromUrl(m.myFileUrl) %}
-  <article class="dcf-material-card" data-item-id="{{ m.ItemId }}">
+  <article
+    class="dcf-material-card"
+    data-item-id="{{ m.ItemId }}"
+    {# NEW: expose the date to JS for sorting #}
+    {% if m.date %}data-material-date="{{ m.date }}"{% endif %}
+  >
     <div class="dcf-material-card__main">
 
       {# --- status badge (show only when status is exactly "New") --- #}
@@ -173,14 +178,39 @@
           No results for “<span data-search-term></span>”.
         </div>
       </div>
+      
       <div data-some hidden>
-        <p class="dcf-search-meta">
-          <strong><span data-search-count>0</span></strong>
-          results for “<span data-search-term></span>”
-          <span data-role="back-to-documents-sep" hidden> | </span>
-          <a href="#" class="govuk-link" data-action="back-to-documents" hidden>Back to documents</a>
-        </p>
+        <div class="dcf-search-status-row">
+          <p class="dcf-search-meta dcf-search-status-row__meta">
+            <strong><span data-search-count>0</span></strong>
+            results for “<span data-search-term></span>”
+            <span data-role="back-to-documents-sep" hidden> | </span>
+            <a href="#" class="govuk-link" data-action="back-to-documents" hidden>Back to documents</a>
+          </p>
+
+          <div class="dcf-search-order dcf-search-status-row__order"
+              aria-label="Search result sort options">
+            <span class="dcf-search-order__label"><b>Sort by: </b> </span>
+
+            <a href="#"
+              class="govuk-link dcf-search-order__link"
+              data-sort-key="date"
+              aria-pressed="true">
+              Date added
+            </a>
+
+            <span aria-hidden="true" class="dcf-search-order__separator">&nbsp;|&nbsp;</span>
+
+            <a href="#"
+              class="govuk-link dcf-search-order__link"
+              data-sort-key="results"
+              aria-pressed="false">
+              Results per document
+            </a>
+          </div>
+        </div>
       </div>
+
     </div>
 
     <div id="material-viewer" class="dcf-viewer" hidden aria-live="polite">

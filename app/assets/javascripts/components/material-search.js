@@ -23,9 +23,9 @@
     ''
 
   // Render into the viewer in either "message" or "search results" mode
-  function setViewer(html, options) {
+  function setViewer (html, options) {
     options = options || {}
-    var mode = options.mode || 'message'  // "message" | "results"
+    var mode = options.mode || 'message' // "message" | "results"
 
     if (mode === 'results') {
       // Store last search so the viewer can restore it later
@@ -46,19 +46,22 @@
   }
 
   // --- helpers to determine result count -------------------------------------
-  function num(val) { var n = Number(val); return isNaN(n) ? 0 : n }
+  function num (val) {
+    var n = Number(val)
+    return isNaN(n) ? 0 : n
+  }
 
-  function countRenderedResults() {
+  function countRenderedResults () {
     // Prefer an explicit data-results-count if the fragment provides it
     var container = viewer.querySelector('[data-results-count]')
     if (container) {
       return num(container.getAttribute('data-results-count'))
     }
-    // Fallback: count rendered cards
-    return viewer.querySelectorAll('.dcf-material-card').length
+    // Fallback: count rendered hits/cards
+    return viewer.querySelectorAll('.dcf-search-hit, .dcf-material-card').length
   }
 
-  function ensureStatus() {
+  function ensureStatus () {
     // If it still exists, refresh refs and return
     if (status && status.isConnected) {
       zeroWrap = status.querySelector('[data-zero]')
@@ -92,6 +95,13 @@
             '<span data-role="back-to-documents-sep" hidden> | </span>',
             '<a href="#" class="govuk-link" data-action="back-to-documents" hidden>Back to documents</a>',
           '</p>',
+          // Sort controls (fallback markup, matches template)
+          '<div class="dcf-search-order govuk-!-margin-top-1 govuk-!-margin-bottom-2" aria-label="Search result sort options">',
+            '<span class="dcf-search-order__label">Sort by:</span>',
+            '<a href="#" class="govuk-link dcf-search-order__link" data-sort-key="date" aria-pressed="true">Date added</a>',
+            '<span aria-hidden="true" class="dcf-search-order__separator">&nbsp;|&nbsp;</span>',
+            '<a href="#" class="govuk-link dcf-search-order__link" data-sort-key="results" aria-pressed="false">Results per document</a>',
+          '</div>',
         '</div>'
       ].join('')
       viewer.parentNode.insertBefore(status, viewer)
@@ -107,7 +117,7 @@
     return status
   }
 
-  function updateStatusUI(count, q) {
+  function updateStatusUI (count, q) {
     ensureStatus()
     if (!status) return
 
@@ -130,6 +140,141 @@
       if (someWrap) someWrap.hidden = true
     }
   }
+
+  // ---------------------------------------------------------------------------
+  // Sorting utilities for "Sort by" controls
+  // ---------------------------------------------------------------------------
+
+  // Parse a date string into a timestamp so we can sort by it
+  function parseMaterialDate (str) {
+    if (!str) return null
+
+    // Handle DD/MM/YYYY explicitly
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(str)) {
+      var parts = str.split('/') // [dd, mm, yyyy]
+      return new Date(
+        parseInt(parts[2], 10),
+        parseInt(parts[1], 10) - 1,
+        parseInt(parts[0], 10)
+      ).getTime()
+    }
+
+    // Fallback – let the browser try
+    var d = new Date(str)
+    return isNaN(d.getTime()) ? null : d.getTime()
+  }
+
+  // Read the date for a hit/card: prefer data attribute, then JSON, then text
+  function getCardDate (card) {
+    if (!card) return null
+
+    // 1) Prefer data-material-date on the card itself
+    var raw = card.getAttribute('data-material-date')
+    if (raw) return parseMaterialDate(raw)
+
+    // 2) Or on a descendant (e.g. inner article/card)
+    var dateNode = card.querySelector('[data-material-date]')
+    if (dateNode && dateNode !== card) {
+      var raw2 = dateNode.getAttribute('data-material-date')
+      if (raw2) return parseMaterialDate(raw2)
+    }
+
+    // 3) Fallback: from embedded JSON (if present)
+    var tag = card.querySelector('script.js-material-data[type="application/json"]')
+    if (tag) {
+      try {
+        var json = JSON.parse(tag.textContent || '{}')
+
+        // NEW: support both top-level date and nested Material.date
+        if (json) {
+          if (json.date) {
+            return parseMaterialDate(json.date)
+          }
+          if (json.Material && json.Material.date) {
+            return parseMaterialDate(json.Material.date)
+          }
+        }
+      } catch (e) {
+        // ignore parse errors
+      }
+    }
+
+    // 4) Last resort: try to scrape "Date: ..." from text
+    var text = card.textContent || ''
+    var match = text.match(/Date:\s*(\d{2}\/\d{2}\/\d{4}|\d{4}-\d{2}-\d{2})/)
+    if (match && match[1]) {
+      return parseMaterialDate(match[1])
+    }
+
+    return null
+  }
+
+  // Sort the visible search results in place
+  function sortSearchResults (byKey) {
+    // Try inside the viewer first, then anywhere on the page
+    var container =
+      viewer.querySelector('.dcf-search-results') ||
+      document.querySelector('.dcf-search-results')
+
+    if (!container) return
+
+    // Treat each hit wrapper as the sortable unit
+    var cards = Array.prototype.slice.call(
+      container.querySelectorAll('.dcf-search-hit, .dcf-material-card')
+    )
+    if (!cards.length) return
+
+    if (byKey === 'date') {
+      cards.sort(function (a, b) {
+        var da = getCardDate(a)
+        var db = getCardDate(b)
+
+        // Newest first; missing dates go last
+        if (da === null && db === null) return 0
+        if (da === null) return 1
+        if (db === null) return -1
+        return db - da
+      })
+
+      cards.forEach(function (card) {
+        container.appendChild(card)
+      })
+    }
+
+    if (byKey === 'results') {
+      // For now, "Results per document" is a no-op on ordering.
+      // You can later plug in logic to sort by per-document hit count.
+      return
+    }
+  }
+
+  // Toggle aria-pressed state on the sort links
+  function updateSortControls (clickedLink) {
+    var wrap = clickedLink.closest('.dcf-search-order')
+    if (!wrap) return
+
+    var links = wrap.querySelectorAll('.dcf-search-order__link')
+    Array.prototype.forEach.call(links, function (lnk) {
+      lnk.setAttribute('aria-pressed', lnk === clickedLink ? 'true' : 'false')
+    })
+  }
+
+  // Global click handler: listen for clicks on sort controls
+  document.addEventListener('click', function (event) {
+    var link = event.target.closest('.dcf-search-order__link[data-sort-key]')
+    if (!link) return
+
+    event.preventDefault()
+
+    var key = link.getAttribute('data-sort-key')
+    if (!key) return
+
+    updateSortControls(link)
+    sortSearchResults(key)
+  })
+
+  // ---------------------------------------------------------------------------
+  // Submit handler: AJAX search
   // ---------------------------------------------------------------------------
 
   form.addEventListener('submit', function (e) {
@@ -169,6 +314,7 @@
           { mode: 'message' }
         )
         updateStatusUI(0, q)
-      })
+    })  
   }, false)
 })()
+// End of file: app/assets/javascripts/components/material-search.js
