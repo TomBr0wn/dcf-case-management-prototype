@@ -53,12 +53,38 @@ module.exports = router => {
     const caseId = parseInt(req.params.caseId)
     const taskId = parseInt(req.params.taskId)
     const description = req.session.data.addTaskNote.description
+    const userId = req.session.data.user.id
+
+    // Fetch task details for activity log
+    const task = await prisma.task.findUnique({
+      where: { id: taskId }
+    })
 
     // Create the task note
-    await prisma.taskNote.create({
+    const taskNote = await prisma.taskNote.create({
       data: {
         description,
-        taskId
+        taskId,
+        userId
+      }
+    })
+
+    // Create activity log entry
+    await prisma.activityLog.create({
+      data: {
+        userId,
+        model: 'TaskNote',
+        recordId: taskNote.id,
+        action: 'CREATE',
+        title: 'Task note added',
+        caseId,
+        meta: {
+          task: {
+            id: task.id,
+            name: task.name
+          },
+          description: description
+        }
       }
     })
 

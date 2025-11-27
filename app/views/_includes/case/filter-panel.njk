@@ -14,6 +14,44 @@
     values: data.caseListFilters.dga
   }) }} #}
 
+  {{ appCheckboxFilter({
+    idPrefix: "caseListFilters[prosecutors]",
+    name: "caseListFilters[prosecutors]",
+    classes: "govuk-checkboxes--small prosecutor-filter" ,
+    attributes: {
+      id: 'prosecutor-filter'
+    },
+    fieldset: {
+      legend: {
+        text: "Prosecutor",
+        classes: "govuk-fieldset__legend--s"
+      }
+    },
+    maxHeight: true,
+    items: prosecutorItems,
+    values: data.caseListFilters.prosecutors,
+    selectedItems: selectedProsecutorItems
+  }) }}
+
+  {{ appCheckboxFilter({
+    idPrefix: "caseListFilters[paralegalOfficers]",
+    name: "caseListFilters[paralegalOfficers]",
+    classes: "govuk-checkboxes--small paralegal-officer-filter" ,
+    attributes: {
+      id: 'paralegal-officer-filter'
+    },
+    fieldset: {
+      legend: {
+        text: "Paralegal officer",
+        classes: "govuk-fieldset__legend--s"
+      }
+    },
+    maxHeight: true,
+    items: paralegalOfficerItems,
+    values: data.caseListFilters.paralegalOfficers,
+    selectedItems: selectedParalegalOfficerItems
+  }) }}
+
   {{ govukCheckboxes({
     idPrefix: "caseListFilters[isCTL]",
     name: "caseListFilters[isCTL]",
@@ -68,44 +106,6 @@
     },
     items: typeItems,
     values: data.caseListFilters.types
-  }) }}
-
-  {{ appCheckboxFilter({
-    idPrefix: "caseListFilters[prosecutors]",
-    name: "caseListFilters[prosecutors]",
-    classes: "govuk-checkboxes--small prosecutor-filter" ,
-    attributes: {
-      id: 'prosecutor-filter'
-    },
-    fieldset: {
-      legend: {
-        text: "Prosecutor",
-        classes: "govuk-fieldset__legend--s"
-      }
-    },
-    maxHeight: true,
-    items: prosecutorItems,
-    values: data.caseListFilters.prosecutors,
-    selectedItems: selectedProsecutorItems
-  }) }}
-
-  {{ appCheckboxFilter({
-    idPrefix: "caseListFilters[paralegalOfficers]",
-    name: "caseListFilters[paralegalOfficers]",
-    classes: "govuk-checkboxes--small paralegal-officer-filter" ,
-    attributes: {
-      id: 'paralegal-officer-filter'
-    },
-    fieldset: {
-      legend: {
-        text: "Paralegal officer",
-        classes: "govuk-fieldset__legend--s"
-      }
-    },
-    maxHeight: true,
-    items: paralegalOfficerItems,
-    values: data.caseListFilters.paralegalOfficers,
-    selectedItems: selectedParalegalOfficerItems
   }) }}
 
 {% endset %}

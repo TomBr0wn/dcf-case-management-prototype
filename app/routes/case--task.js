@@ -62,6 +62,9 @@ module.exports = router => {
           }
         },
         notes: {
+          include: {
+            user: true
+          },
           orderBy: {
             createdAt: 'desc'
           }

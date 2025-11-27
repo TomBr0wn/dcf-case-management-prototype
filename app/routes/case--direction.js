@@ -71,7 +71,15 @@ module.exports = router => {
             unit: true
           }
         },
-        defendant: true
+        defendant: true,
+        notes: {
+          include: {
+            user: true
+          },
+          orderBy: {
+            createdAt: 'desc'
+          }
+        }
       }
     })
 

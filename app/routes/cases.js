@@ -64,65 +64,7 @@ module.exports = router => {
     let selectedProsecutorItems = []
     let selectedParalegalOfficerItems = []
 
-    // Priority filter display
-    if (selectedDgaFilters?.length) {
-      selectedFilters.categories.push({
-        heading: { text: 'DGA' },
-        items: selectedDgaFilters.map(function(label) {
-          return { text: label, href: '/cases/remove-dga/' + label }
-        })
-      })
-    }
-
-    // CTL filter display
-    if (selectedCtlFilters?.length) {
-      selectedFilters.categories.push({
-        heading: { text: 'Custody time limit' },
-        items: selectedCtlFilters.map(function(label) {
-          return { text: label, href: '/cases/remove-ctl/' + label }
-        })
-      })
-    }
-
-
-    if (selectedUnitFilters?.length) {
-      const unitIds = selectedUnitFilters.map(Number)
-
-      let fetchedUnits = await prisma.unit.findMany({
-        where: { id: { in: unitIds } }
-      })
-
-      let items = selectedUnitFilters.map(function (selectedUnit) {
-        let unit = fetchedUnits.find(u => u.id === Number(selectedUnit))
-        return { text: unit ? unit.name : selectedUnit, href: '/cases/remove-unit/' + selectedUnit }
-      })
-
-      selectedFilters.categories.push({ heading: { text: 'Unit' }, items })
-    }
-
-
-    // Type filter display
-    if (selectedComplexityFilters?.length) {
-      selectedFilters.categories.push({
-        heading: { text: 'Complexity' },
-        items: selectedComplexityFilters.map(function(label) {
-          return { text: label, href: '/cases/remove-complexity/' + label }
-        })
-      })
-    }
-
-    // Type filter display
-    if (selectedTypeFilters?.length) {
-      selectedFilters.categories.push({
-        heading: { text: 'Hearing type' },
-        items: selectedTypeFilters.map(function(label) {
-          return { text: label, href: '/cases/remove-type/' + label }
-        })
-      })
-    }
-
     let prosecutorIds
-
 
     // Prosecutor filter display
     if (selectedProsecutorFilters?.length) {
@@ -185,6 +127,63 @@ module.exports = router => {
       })
 
       selectedFilters.categories.push({ heading: { text: 'Paralegal officer' }, items: selectedParalegalOfficerItems })
+    }
+
+    // Priority filter display
+    if (selectedDgaFilters?.length) {
+      selectedFilters.categories.push({
+        heading: { text: 'DGA' },
+        items: selectedDgaFilters.map(function(label) {
+          return { text: label, href: '/cases/remove-dga/' + label }
+        })
+      })
+    }
+
+    // CTL filter display
+    if (selectedCtlFilters?.length) {
+      selectedFilters.categories.push({
+        heading: { text: 'Custody time limit' },
+        items: selectedCtlFilters.map(function(label) {
+          return { text: label, href: '/cases/remove-ctl/' + label }
+        })
+      })
+    }
+
+
+    if (selectedUnitFilters?.length) {
+      const unitIds = selectedUnitFilters.map(Number)
+
+      let fetchedUnits = await prisma.unit.findMany({
+        where: { id: { in: unitIds } }
+      })
+
+      let items = selectedUnitFilters.map(function (selectedUnit) {
+        let unit = fetchedUnits.find(u => u.id === Number(selectedUnit))
+        return { text: unit ? unit.name : selectedUnit, href: '/cases/remove-unit/' + selectedUnit }
+      })
+
+      selectedFilters.categories.push({ heading: { text: 'Unit' }, items })
+    }
+
+
+    // Type filter display
+    if (selectedComplexityFilters?.length) {
+      selectedFilters.categories.push({
+        heading: { text: 'Complexity' },
+        items: selectedComplexityFilters.map(function(label) {
+          return { text: label, href: '/cases/remove-complexity/' + label }
+        })
+      })
+    }
+
+    // Type filter display
+    if (selectedTypeFilters?.length) {
+      selectedFilters.categories.push({
+        heading: { text: 'Hearing type' },
+        items: selectedTypeFilters.map(function(label) {
+          return { text: label, href: '/cases/remove-type/' + label }
+        })
+      })
     }
 
     // Build Prisma where clause
