@@ -56,67 +56,66 @@
     }
   }
 
-    // When the notes form is submitted, append a new note into the list.
-    if (notesModal) {
-      var notesForm = notesModal.querySelector('.dcf-notes-modal__form')
-      if (notesForm) {
-        notesForm.addEventListener('submit', function (e) {
-          // For now we keep this entirely client-side
-          e.preventDefault()
+  // When the notes form is submitted, append a new note into the list.
+  if (notesModal) {
+    var notesForm = notesModal.querySelector('.dcf-notes-modal__form')
+    if (notesForm) {
+      notesForm.addEventListener('submit', function (e) {
+        // For now we keep this entirely client-side
+        e.preventDefault()
 
-          var textarea = notesModal.querySelector('#dcf-note-text')
-          if (!textarea) return
+        var textarea = notesModal.querySelector('#dcf-note-text')
+        if (!textarea) return
 
-          var text = (textarea.value || '').trim()
-          if (!text) return // nothing to add
+        var text = (textarea.value || '').trim()
+        if (!text) return // nothing to add
 
-          var list = notesModal.querySelector('[data-notes-list]')
-          var emptyMsg = notesModal.querySelector('[data-notes-empty]')
+        var list = notesModal.querySelector('[data-notes-list]')
+        var emptyMsg = notesModal.querySelector('[data-notes-empty]')
 
-          if (!list) return
+        if (!list) return
 
-          // Hide the "No notes..." message once we have at least one note
-          if (emptyMsg) {
-            emptyMsg.hidden = true
+        // Hide the "No notes..." message once we have at least one note
+        if (emptyMsg) {
+          emptyMsg.hidden = true
+        }
+
+        // Build the note block using your placeholder values
+        var noteEl = document.createElement('article')
+        noteEl.className = 'dcf-note'
+
+        var nameEl = document.createElement('h4')
+        nameEl.className = 'govuk-heading-s'
+        nameEl.textContent = '[User_name]' // placeholder for now
+
+        var dateEl = document.createElement('p')
+        dateEl.className = 'govuk-body'
+        dateEl.textContent = '[govukDateTime]' // placeholder – hook up govukDateTime server-side later
+
+        var textEl = document.createElement('p')
+        textEl.className = 'govuk-body'
+        textEl.textContent = text
+
+        noteEl.appendChild(nameEl)
+        noteEl.appendChild(dateEl)
+        noteEl.appendChild(textEl)
+
+        // Add newest note at the top
+        list.prepend(noteEl)
+
+        // Clear the textarea + (optionally) reset char count
+        textarea.value = ''
+
+        var counter = notesModal.querySelector('#dcf-note-char-count')
+        if (counter) {
+          var max = parseInt(counter.getAttribute('data-maxlength') || '0', 10)
+          if (max) {
+            counter.textContent = 'You have ' + max + ' characters remaining'
           }
-
-          // Build the note block using your placeholder values
-          var noteEl = document.createElement('article')
-          noteEl.className = 'dcf-note'
-
-          var nameEl = document.createElement('h4')
-          nameEl.className = 'govuk-heading-s'
-          nameEl.textContent = '[User_name]' // placeholder for now
-
-          var dateEl = document.createElement('p')
-          dateEl.className = 'govuk-body'
-          dateEl.textContent = '[govukDateTime]' // placeholder – hook up govukDateTime server-side later
-
-          var textEl = document.createElement('p')
-          textEl.className = 'govuk-body'
-          textEl.textContent = text
-
-          noteEl.appendChild(nameEl)
-          noteEl.appendChild(dateEl)
-          noteEl.appendChild(textEl)
-
-          // Add newest note at the top
-          list.prepend(noteEl)
-
-          // Clear the textarea + (optionally) reset char count
-          textarea.value = ''
-
-          var counter = notesModal.querySelector('#dcf-note-char-count')
-          if (counter) {
-            var max = parseInt(counter.getAttribute('data-maxlength') || '0', 10)
-            if (max) {
-              counter.textContent = 'You have ' + max + ' characters remaining'
-            }
-          }
-        })
-      }
+        }
+      })
     }
-
+  }
 
   // Global handler for anything with data-action="close-notes"
   document.addEventListener('click', function (e) {
@@ -261,10 +260,20 @@
     if (iframe && url) iframe.setAttribute('src', buildPdfViewerUrl(url))
 
     setActiveTab(tab)
-    // point _currentCard to the card for this tab (so status/menu reflect correctly)
+
+    // point _currentCard to the card for this tab (so status/menu + card highlight reflect correctly)
     var itemId = tab.getAttribute('data-item-id')
     if (itemId) {
-      viewer._currentCard = document.querySelector('.dcf-material-card[data-item-id="' + CSS.escape(itemId) + '"]') || null
+      var cardForTab = document.querySelector('.dcf-material-card[data-item-id="' + CSS.escape(itemId) + '"]')
+      viewer._currentCard = cardForTab || null
+      if (cardForTab) {
+        setActiveCard(cardForTab)   // keep left-hand card in sync with active tab
+      } else {
+        setActiveCard(null)
+      }
+    } else {
+      viewer._currentCard = null
+      setActiveCard(null)
     }
 
     // update meta
@@ -360,12 +369,31 @@
     )
   }
 
-  // Mark one card as “active” (visually selected) and clear any previous
-  function setActiveCard (linkEl) {
-    document.querySelectorAll('.dcf-material-card--active')
+  // Mark one card as “active” (visually selected) and clear any previous.
+  // Accepts either a link inside the card OR the card element itself.
+  function setActiveCard (targetEl) {
+    // Clear any existing active card
+    document
+      .querySelectorAll('.dcf-material-card--active')
       .forEach(function (el) { el.classList.remove('dcf-material-card--active') })
-    var card = linkEl.closest('.dcf-material-card')
-    if (card) card.classList.add('dcf-material-card--active')
+
+    if (!targetEl) return
+
+    var card = null
+
+    // If we were given a descendant (e.g. a link), walk up to the card
+    if (typeof targetEl.closest === 'function') {
+      card = targetEl.closest('.dcf-material-card')
+    }
+
+    // Or if we were given the card directly
+    if (!card && targetEl.classList && targetEl.classList.contains('dcf-material-card')) {
+      card = targetEl
+    }
+
+    if (card) {
+      card.classList.add('dcf-material-card--active')
+    }
   }
 
   // Normalise file URLs so pdf.js can load them from /public
@@ -780,6 +808,8 @@
       viewer._currentCard = card
       // Just record that it has been visited (does NOT affect New/Unread tags)
       markCardVisited(card)
+      // And visually mark this card as the active one
+      setActiveCard(card)
     }
 
     // We're now in "document" mode, and we remember whether this came from search
@@ -829,6 +859,7 @@
     if (card) {
       viewer._currentCard = card
       markCardVisited(card)
+      setActiveCard(card) // highlight this card when opened from the list
     }
 
     // Cards on the left are "normal documents" (not from search)

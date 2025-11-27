@@ -110,9 +110,9 @@
     <div class="dcf-materials-panel">
       <div class="dcf-materials-header">
         <form class="dcf-materials-search" action="/materials/search" method="get" role="search">
-          <label class="govuk-label govuk-!-font-weight-bold" for="materials-search">Search</label>
+          <label class="govuk-label govuk-!-font-weight-bold" for="materials-search">Search documents</label>
 
-          {{ govukRadios({
+          {# {{ govukRadios({
             classes: "govuk-radios--small",
             name: "caseOrMaterialSearch",
             fieldset: {
@@ -133,7 +133,7 @@
                 text: "Case"
               }
             ]
-          }) }}
+          }) }} #}
 
           <div class="dcf-input-group">
             <input class="govuk-input dcf-input-group__input" id="materials-search" name="q" type="search">
