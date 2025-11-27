@@ -1,7 +1,9 @@
 module.exports = [
+  'Case note added',
   'DGA recorded',
-  'Note added',
+  'Direction note added',
   'Prosecutor assigned',
+  'Task note added',
   'Witness marked as appearing in court',
   'Witness marked as not appearing in court',
   'Witness statement marked as Section 9',

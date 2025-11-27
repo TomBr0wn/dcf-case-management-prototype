@@ -1287,11 +1287,13 @@ async function main() {
         const daysAgo = faker.number.int({ min: 1, max: 30 });
         const createdAt = new Date();
         createdAt.setDate(createdAt.getDate() - daysAgo);
+        const randomUser = faker.helpers.arrayElement(users);
 
         await prisma.taskNote.create({
           data: {
             description,
             taskId: task.id,
+            userId: randomUser.id,
             createdAt,
             updatedAt: createdAt
           }
@@ -1640,6 +1642,64 @@ console.log(`✅ Assigned ${DGA_TARGET} cases needing DGA review with failure re
   console.log(`✅ Created ${ctlChargesCreated} charges with CTL expiring today/tomorrow for ${usersExcludingTony.length} users`);
   console.log(`✅ Created ${ctlTasksCreated} CTL-related tasks for these charges`);
 
+  // -------------------- Seed Case Notes --------------------
+  // Fetch all cases and add notes to 30% of them
+  const allCases = await prisma.case.findMany();
+  let caseNotesCreated = 0;
+  let casesWithNotes = 0;
+
+  for (const _case of allCases) {
+    // 30% chance this case gets notes
+    if (faker.datatype.boolean({ probability: 0.3 })) {
+      const numNotes = faker.number.int({ min: 1, max: 3 });
+
+      for (let n = 0; n < numNotes; n++) {
+        const randomUser = faker.helpers.arrayElement(users);
+        await prisma.note.create({
+          data: {
+            content: faker.lorem.sentences(2),
+            caseId: _case.id,
+            userId: randomUser.id,
+            createdAt: faker.date.recent({ days: 30 })
+          }
+        });
+        caseNotesCreated++;
+      }
+      casesWithNotes++;
+    }
+  }
+
+  console.log(`✅ Created ${caseNotesCreated} case notes across ${casesWithNotes} cases`);
+
+  // -------------------- Seed Direction Notes --------------------
+  // Fetch all directions and add notes to 30% of them
+  const allDirections = await prisma.direction.findMany();
+  let directionNotesCreated = 0;
+  let directionsWithNotes = 0;
+
+  for (const direction of allDirections) {
+    // 30% chance this direction gets notes
+    if (faker.datatype.boolean({ probability: 0.3 })) {
+      const numNotes = faker.number.int({ min: 1, max: 3 });
+
+      for (let n = 0; n < numNotes; n++) {
+        const randomUser = faker.helpers.arrayElement(users);
+        await prisma.directionNote.create({
+          data: {
+            description: faker.lorem.sentences(2),
+            directionId: direction.id,
+            userId: randomUser.id,
+            createdAt: faker.date.recent({ days: 30 })
+          }
+        });
+        directionNotesCreated++;
+      }
+      directionsWithNotes++;
+    }
+  }
+
+  console.log(`✅ Created ${directionNotesCreated} direction notes across ${directionsWithNotes} directions`);
+
   // -------------------- Activity Logs --------------------
   const eventTypes = [
     'DGA recorded',
@@ -1734,6 +1794,44 @@ console.log(`✅ Assigned ${DGA_TARGET} cases needing DGA review with failure re
         possibleEvents.push('Witness statement unmarked as Section 9');
       }
 
+      // Task note events - if case has tasks with notes
+      const tasksWithNotes = await prisma.task.findMany({
+        where: {
+          caseId: fullCase.id,
+          notes: { some: {} }
+        },
+        include: {
+          notes: true
+        }
+      });
+      if (tasksWithNotes.length > 0) {
+        possibleEvents.push('Task note added');
+      }
+
+      // Direction note events - if case has directions with notes
+      const directionsWithNotes = await prisma.direction.findMany({
+        where: {
+          caseId: fullCase.id,
+          notes: { some: {} }
+        },
+        include: {
+          notes: true
+        }
+      });
+      if (directionsWithNotes.length > 0) {
+        possibleEvents.push('Direction note added');
+      }
+
+      // Case note events - if case has notes
+      const caseNotes = await prisma.note.findMany({
+        where: {
+          caseId: fullCase.id
+        }
+      });
+      if (caseNotes.length > 0) {
+        possibleEvents.push('Case note added');
+      }
+
       // If no possible events, skip
       if (possibleEvents.length === 0) continue;
 
@@ -1814,6 +1912,46 @@ console.log(`✅ Assigned ${DGA_TARGET} cases needing DGA review with failure re
               firstName: witnessWithStatement.firstName,
               lastName: witnessWithStatement.lastName
             }
+          };
+          break;
+
+        case 'Task note added':
+          const taskWithNote = faker.helpers.arrayElement(tasksWithNotes);
+          const taskNote = faker.helpers.arrayElement(taskWithNote.notes);
+          activityData.model = 'TaskNote';
+          activityData.recordId = taskNote.id;
+          activityData.action = 'CREATE';
+          activityData.meta = {
+            task: {
+              id: taskWithNote.id,
+              name: taskWithNote.name
+            },
+            description: taskNote.description
+          };
+          break;
+
+        case 'Direction note added':
+          const directionWithNote = faker.helpers.arrayElement(directionsWithNotes);
+          const directionNote = faker.helpers.arrayElement(directionWithNote.notes);
+          activityData.model = 'DirectionNote';
+          activityData.recordId = directionNote.id;
+          activityData.action = 'CREATE';
+          activityData.meta = {
+            direction: {
+              id: directionWithNote.id,
+              description: directionWithNote.description
+            },
+            description: directionNote.description
+          };
+          break;
+
+        case 'Case note added':
+          const caseNote = faker.helpers.arrayElement(caseNotes);
+          activityData.model = 'Note';
+          activityData.recordId = caseNote.id;
+          activityData.action = 'CREATE';
+          activityData.meta = {
+            content: caseNote.content
           };
           break;
       }

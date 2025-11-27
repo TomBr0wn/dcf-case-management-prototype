@@ -18,7 +18,7 @@ module.exports = router => {
     // Event type filter display
     if (selectedEventTypeFilters?.length) {
       selectedFilters.categories.push({
-        heading: { text: 'Event type' },
+        heading: { text: 'Event' },
         items: selectedEventTypeFilters.map(function(label) {
           return { text: label, href: '/activity/remove-type/' + label }
         })

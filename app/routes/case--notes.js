@@ -117,7 +117,7 @@ module.exports = router => {
         model: 'Note',
         recordId: note.id,
         action: 'CREATE',
-        title: 'Note added',
+        title: 'Case note added',
         caseId,
         meta: {
           content: content

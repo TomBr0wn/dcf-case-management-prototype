@@ -17,6 +17,8 @@ model User {
   notes                 Note[]
   activityLogs          ActivityLog[]
   tasks                 Task[]
+  taskNotes             TaskNote[]
+  directionNotes        DirectionNote[]
   units                 UserUnit[]
   caseProsecutors       CaseProsecutor[]
   caseParalegalOfficers CaseParalegalOfficer[]
@@ -334,23 +336,37 @@ model TaskNote {
   description String
   taskId      Int
   task        Task     @relation(fields: [taskId], references: [id])
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
 model Direction {
-  id               Int        @id @default(autoincrement())
+  id               Int             @id @default(autoincrement())
   title            String
   description      String
   dueDate          DateTime
   completedDate    DateTime?
-  assignee         String     // 'Prosecution' or 'Defence'
-  case             Case       @relation(fields: [caseId], references: [id])
+  assignee         String          // 'Prosecution' or 'Defence'
+  case             Case            @relation(fields: [caseId], references: [id])
   caseId           Int
-  defendant        Defendant? @relation(fields: [defendantId], references: [id])
+  defendant        Defendant?      @relation(fields: [defendantId], references: [id])
   defendantId      Int?
-  createdAt        DateTime   @default(now())
-  updatedAt        DateTime   @updatedAt
+  notes            DirectionNote[]
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+}
+
+model DirectionNote {
+  id          Int       @id @default(autoincrement())
+  description String
+  directionId Int
+  direction   Direction @relation(fields: [directionId], references: [id])
+  userId      Int
+  user        User      @relation(fields: [userId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 model Document {

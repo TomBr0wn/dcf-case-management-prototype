@@ -269,6 +269,10 @@
                 classes: 'govuk-summary-list--no-border app-summary-list--compact app-summary-list--small-text',
                 rows: [
                   {
+                    key: { html: 'User' },
+                    value: { html: note.user.firstName + ' ' + note.user.lastName }
+                  },
+                  {
                     key: { html: 'Date added' },
                     value: { html: note.createdAt | isoDateString | govukDateTime }
                   }
