@@ -290,34 +290,46 @@ module.exports = router => {
     const status = mat.materialStatus || m.materialStatus || m.Status || '';
     const date   = mat.Date || m.Date || m.date || '';
     const href   = mat.myFileUrl || m.myFileUrl || '';
+    const itemId = mat.ItemId || m.ItemId || '';
 
     const titleHtml = href
-      ? `<a href="${esc(href)}" class="govuk-link dcf-viewer-link">${esc(title)}</a>`
+      ? `<a href="${esc(href)}"
+            class="govuk-link dcf-viewer-link"
+            data-file-url="${esc(href)}"
+            data-title="${esc(title)}">${esc(title)}</a>`
       : esc(title);
 
-  return `
-    <section class="dcf-search-hit dcf-material-card dcf-material-card--unstyled">
+    return `
+      <section
+        class="dcf-search-hit dcf-material-card dcf-material-card--unstyled"
+        data-item-id="${esc(itemId)}"
+        ${date ? `data-material-date="${esc(date)}"` : ''}
+      >
 
-      <dl class="govuk-summary-list dcf-summary dcf-summary--results govuk-!-margin-bottom-0">
-        <h3 class="govuk-heading-s govuk-!-margin-bottom-2">${titleHtml}</h3>
-        <div class="govuk-summary-list__row">
-          <dt class="govuk-summary-list__key">Type</dt>
-          <dd class="govuk-summary-list__value">${esc(m.Type || '')}</dd>
-        </div>
-        <div class="govuk-summary-list__row">
-          <dt class="govuk-summary-list__key">Status</dt>
-          <dd class="govuk-summary-list__value">${esc(m.materialStatus || '')}</dd>
-        </div>
-        <div class="govuk-summary-list__row">
-          <dt class="govuk-summary-list__key">Date</dt>
-          <dd class="govuk-summary-list__value">${esc(m.date || m.Date || '')}</dd>
-        </div>
-      </dl>
+        <dl class="govuk-summary-list dcf-summary dcf-summary--results govuk-!-margin-bottom-0">
+          <h3 class="govuk-heading-s govuk-!-margin-bottom-2">${titleHtml}</h3>
 
-      <!-- RAW JSON (not escaped) so getMaterialJSONFromLink can parse it -->
-      <script type="application/json" class="js-material-data">${JSON.stringify(meta)}</script>
-    </section>`;
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Type</dt>
+            <dd class="govuk-summary-list__value">${esc(type)}</dd>
+          </div>
+
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Status</dt>
+            <dd class="govuk-summary-list__value">${esc(status)}</dd>
+          </div>
+
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Date</dt>
+            <dd class="govuk-summary-list__value">${esc(date)}</dd>
+          </div>
+        </dl>
+
+        <!-- RAW JSON (not escaped) so getMaterialJSONFromLink can parse it -->
+        <script type="application/json" class="js-material-data">${JSON.stringify(meta)}</script>
+      </section>`;
   }
+
 
 
 
