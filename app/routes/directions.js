@@ -239,6 +239,12 @@ module.exports = router => {
       ],
       include: {
         defendant: true,
+        notes: {
+          orderBy: {
+            createdAt: 'desc'
+          },
+          take: 1
+        },
         case: {
           include: {
             defendants: {

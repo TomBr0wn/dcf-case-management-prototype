@@ -16,7 +16,13 @@ module.exports = router => {
             { dueDate: 'asc' }
           ],
           include: {
-            defendant: true
+            defendant: true,
+            notes: {
+              orderBy: {
+                createdAt: 'desc'
+              },
+              take: 1
+            }
           }
         },
         unit: true,

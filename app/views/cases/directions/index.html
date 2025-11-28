@@ -76,6 +76,14 @@
                   },
                   {
                     key: {
+                      html: 'Latest note'
+                    },
+                    value: {
+                      html: direction.notes[0].description
+                    }
+                  } if direction.notes and direction.notes.length > 0,
+                  {
+                    key: {
                       text: 'Custody time limit'
                     },
                     value: {
