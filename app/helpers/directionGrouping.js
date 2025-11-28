@@ -6,7 +6,7 @@
  * Get the date group key for a given date
  * @param {Date} date - The date to categorize
  * @param {Date} today - Today's date (midnight)
- * @returns {string} - Group key: 'overdue', 'today', 'tomorrow', 'later', or 'noDate'
+ * @returns {string} - Group key: 'overdue', 'today', 'tomorrow', 'thisWeek', 'later', or 'noDate'
  */
 function getDateGroup(date, today) {
   if (!date) {
@@ -21,6 +21,9 @@ function getDateGroup(date, today) {
   const tomorrow = new Date(today)
   tomorrow.setDate(tomorrow.getDate() + 1)
 
+  // Calculate days difference
+  const daysDifference = Math.floor((dateOnly - today) / (1000 * 60 * 60 * 24))
+
   // Categorize the date
   if (dateOnly < today) {
     return 'overdue'
@@ -28,6 +31,8 @@ function getDateGroup(date, today) {
     return 'today'
   } else if (dateOnly.getTime() === tomorrow.getTime()) {
     return 'tomorrow'
+  } else if (daysDifference >= 2 && daysDifference <= 7) {
+    return 'thisWeek'
   } else {
     return 'later'
   }
@@ -43,6 +48,7 @@ function getDateGroupHeading(groupKey) {
     overdue: 'Overdue',
     today: 'Due today',
     tomorrow: 'Due tomorrow',
+    thisWeek: 'Due this week',
     later: 'Due later',
     noDate: 'No due date'
   }
@@ -60,8 +66,9 @@ function getDateGroupSortOrder(groupKey) {
     'overdue': 1,
     'today': 2,
     'tomorrow': 3,
-    'later': 4,
-    'noDate': 5
+    'thisWeek': 4,
+    'later': 5,
+    'noDate': 6
   }
 
   return order[groupKey] || 999
