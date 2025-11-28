@@ -191,14 +191,19 @@
   margin: 0;
   padding: 12px;
   // border-top: #fff 2px solid;
+
+  display: flex;
+  align-items: center;
 }
 
 .dcf-ops-actions {
+  margin-left: auto;            // this moves the whole actions block to the right
   display: flex;
-  justify-content: flex-start;
+  justify-content: flex-end;    // keep your existing alignment for inner items
   align-items: center;
   gap: 12px;
 }
+
 
 /* compact inverse icon button */
 .dcf-viewer__ops-bar .govuk-button { margin: 0 !important; width: auto; }
