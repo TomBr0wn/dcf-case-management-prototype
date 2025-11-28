@@ -14,8 +14,8 @@
   {% if _case.statutoryTimeLimit %}
     {{ govukTag({ text: 'Statutory time limit', classes: 'govuk-tag--orange' })}}
   {% endif %}
-  {% if _case.paceTimeLimit %}
-    {{ govukTag({ text: 'PACE time limit', classes: 'govuk-tag--yellow' })}}
+  {% if _case.paceClock %}
+    {{ govukTag({ text: 'PACE clock', classes: 'govuk-tag--yellow' })}}
   {% endif %}
 {% endset %}
 {{ appIdentityBar({

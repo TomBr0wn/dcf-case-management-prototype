@@ -63,7 +63,7 @@ module.exports = router => {
   router.get('/tasks/shortcut/pace', (req, res) => {
     const currentUser = req.session.data.user
     resetFilters(req)
-    res.redirect(`/tasks?taskListFilters[owner][]=user-${currentUser.id}&taskListFilters[timeLimitType][]=PACE`)
+    res.redirect(`/tasks?taskListFilters[owner][]=user-${currentUser.id}&taskListFilters[timeLimitType][]=PACE clock`)
   })
 
   router.get("/tasks", async (req, res) => {
@@ -365,7 +365,7 @@ module.exports = router => {
         return selectedTimeLimitTypeFilters.some(filter => {
           if (filter === 'Custody time limit' && task.case.custodyTimeLimit) return true
           if (filter === 'Statutory time limit' && task.case.statutoryTimeLimit) return true
-          if (filter === 'PACE' && task.case.paceTimeLimit) return true
+          if (filter === 'PACE clock' && task.case.paceClock) return true
           return false
         })
       })
@@ -471,7 +471,7 @@ module.exports = router => {
     let timeLimitTypeItems = [
       { text: 'Custody time limit', value: 'Custody time limit' },
       { text: 'Statutory time limit', value: 'Statutory time limit' },
-      { text: 'PACE', value: 'PACE' }
+      { text: 'PACE clock', value: 'PACE clock' }
     ]
 
     // Handle sorting
@@ -487,7 +487,7 @@ module.exports = router => {
       })
     }
 
-    if (sortBy === 'Time limit' || sortBy === 'Custody time limit' || sortBy === 'Statutory time limit' || sortBy === 'PACE') {
+    if (sortBy === 'Time limit' || sortBy === 'Custody time limit' || sortBy === 'Statutory time limit' || sortBy === 'PACE clock') {
       // Sort by specific time limit date
       // Tasks with the matching time limit type come first, then others
       tasks.sort((a, b) => {
@@ -500,13 +500,13 @@ module.exports = router => {
         } else if (sortBy === 'Statutory time limit') {
           aDate = a.case.statutoryTimeLimit
           bDate = b.case.statutoryTimeLimit
-        } else if (sortBy === 'PACE') {
-          aDate = a.case.paceTimeLimit
-          bDate = b.case.paceTimeLimit
+        } else if (sortBy === 'PACE clock') {
+          aDate = a.case.paceClock
+          bDate = b.case.paceClock
         } else {
           // For 'Time limit', find earliest of all three types
-          const aDates = [a.case.custodyTimeLimit, a.case.statutoryTimeLimit, a.case.paceTimeLimit].filter(d => d)
-          const bDates = [b.case.custodyTimeLimit, b.case.statutoryTimeLimit, b.case.paceTimeLimit].filter(d => d)
+          const aDates = [a.case.custodyTimeLimit, a.case.statutoryTimeLimit, a.case.paceClock].filter(d => d)
+          const bDates = [b.case.custodyTimeLimit, b.case.statutoryTimeLimit, b.case.paceClock].filter(d => d)
           aDate = aDates.length > 0 ? new Date(Math.min(...aDates.map(d => new Date(d)))) : null
           bDate = bDates.length > 0 ? new Date(Math.min(...bDates.map(d => new Date(d)))) : null
         }

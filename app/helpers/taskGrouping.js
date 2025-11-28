@@ -100,14 +100,14 @@ function getDateGroupHeading(groupKey, sortBy) {
       later: 'Statutory time limit ends later',
       noDate: 'No statutory time limit'
     },
-    'PACE': {
-      overdue: 'PACE time limit expired',
-      today: 'PACE time limit ends today',
-      tomorrow: 'PACE time limit ends tomorrow',
-      thisWeek: 'PACE time limit ends this week',
-      nextWeek: 'PACE time limit ends next week',
-      later: 'PACE time limit ends later',
-      noDate: 'No PACE time limit'
+    'PACE clock': {
+      overdue: 'PACE clock expired',
+      today: 'PACE clock ends today',
+      tomorrow: 'PACE clock ends tomorrow',
+      thisWeek: 'PACE clock ends this week',
+      nextWeek: 'PACE clock ends next week',
+      later: 'PACE clock ends later',
+      noDate: 'No PACE clock'
     },
     'Hearing date': {
       overdue: 'Hearing date has passed',
@@ -130,7 +130,7 @@ function getDateGroupHeading(groupKey, sortBy) {
  * @returns {Array} - Tasks with groupKey, groupHeading, sortOrder, and severity properties added
  */
 function groupTasks(tasks, sortBy) {
-  if (sortBy === 'Time limit' || sortBy === 'Custody time limit' || sortBy === 'Statutory time limit' || sortBy === 'PACE' || sortBy === 'Hearing date') {
+  if (sortBy === 'Time limit' || sortBy === 'Custody time limit' || sortBy === 'Statutory time limit' || sortBy === 'PACE clock' || sortBy === 'Hearing date') {
     // Use date-based grouping
     const today = new Date()
     today.setHours(0, 0, 0, 0)
@@ -140,7 +140,7 @@ function groupTasks(tasks, sortBy) {
 
       if (sortBy === 'Time limit') {
         // For generic 'Time limit', use the soonest time limit across all types
-        const dates = [task.case?.custodyTimeLimit, task.case?.statutoryTimeLimit, task.case?.paceTimeLimit].filter(d => d)
+        const dates = [task.case?.custodyTimeLimit, task.case?.statutoryTimeLimit, task.case?.paceClock].filter(d => d)
         dateToUse = dates.length > 0 ? new Date(Math.min(...dates.map(d => new Date(d)))) : null
       } else if (sortBy === 'Custody time limit') {
         // Only use date if this task has a CTL
@@ -148,9 +148,9 @@ function groupTasks(tasks, sortBy) {
       } else if (sortBy === 'Statutory time limit') {
         // Only use date if this task has a STL
         dateToUse = task.case?.statutoryTimeLimit || null
-      } else if (sortBy === 'PACE') {
-        // Only use date if this task has a PACE time limit
-        dateToUse = task.case?.paceTimeLimit || null
+      } else if (sortBy === 'PACE clock') {
+        // Only use date if this task has a PACE clock
+        dateToUse = task.case?.paceClock || null
       } else if (sortBy === 'Hearing date') {
         dateToUse = task.case?.hearings?.[0]?.startDate
       }

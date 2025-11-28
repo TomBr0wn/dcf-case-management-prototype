@@ -230,8 +230,8 @@ function generateSTL() {
   return d;
 }
 
-// Generate PACE between yesterday and 24 hours from now
-function generatePACE() {
+// Generate PACE clock between yesterday and 24 hours from now
+function generatePACEClock() {
   const hoursFromNow = faker.number.int({ min: -24, max: 24 });
   const d = new Date();
   d.setHours(d.getHours() + hoursFromNow);
@@ -582,7 +582,7 @@ async function main() {
   console.log("✅ Defence lawyers seeded");
 
   // -------------------- Defendants with Charges --------------------
-  // Step 1: Batch create all defendants with time limit distribution
+  // Step 1: Batch create all defendants with time limit type distribution
   // 50% CTL, 25% STL, 25% PACE
   const defendantData = Array.from({ length: 200 }, (_, index) => {
     const timeLimitType = index < 100 ? 'CTL' : index < 150 ? 'STL' : 'PACE';
@@ -595,7 +595,7 @@ async function main() {
       occupation: faker.helpers.arrayElement([...occupations, null]), // Some nulls
       dateOfBirth: faker.date.birthdate({ min: 18, max: 75, mode: "age" }),
       remandStatus: faker.helpers.arrayElement(remandStatuses),
-      paceTimeLimit: timeLimitType === 'PACE' ? generatePACE() : null,
+      paceClock: timeLimitType === 'PACE' ? generatePACEClock() : null,
       defenceLawyerId: faker.helpers.arrayElement(defenceLawyers).id,
     };
   });
@@ -722,7 +722,8 @@ async function main() {
     // Randomly choose which time limit type this case will have
     const timeLimitType = faker.helpers.arrayElement(['CTL', 'STL', 'PACE']);
 
-    // Select defendants only from the appropriate group
+    // Select defendants ONLY from the appropriate pool
+    // This ensures no mixing of time limit types within a case
     let defendantPool;
     if (timeLimitType === 'CTL') {
       defendantPool = ctlDefendants;
@@ -1554,6 +1555,33 @@ console.log(`✅ Assigned ${DGA_TARGET} cases needing DGA review with failure re
       }
     });
 
+    // Update ALL other defendants in this case to have the same CTL expiring today
+    // This ensures the case only has ONE time limit
+    const existingDefendants = await prisma.defendant.findMany({
+      where: {
+        cases: { some: { id: caseForTodayCtl.id } },
+        id: { not: todayCtlDefendant.id }
+      },
+      include: { charges: true }
+    });
+
+    for (const defendant of existingDefendants) {
+      for (const charge of defendant.charges) {
+        await prisma.charge.update({
+          where: { id: charge.id },
+          data: {
+            custodyTimeLimit: getTodayDate(),
+            statutoryTimeLimit: null // Remove STL if present
+          }
+        });
+      }
+      // Remove PACE clock from defendant
+      await prisma.defendant.update({
+        where: { id: defendant.id },
+        data: { paceClock: null }
+      });
+    }
+
     // Create task for today's CTL
     const todayCtlDueDate = getTodayDate();
     const todayCtlReminderDate = new Date(todayCtlDueDate);
@@ -1613,6 +1641,33 @@ console.log(`✅ Assigned ${DGA_TARGET} cases needing DGA review with failure re
         }
       }
     });
+
+    // Update ALL other defendants in this case to have the same CTL expiring tomorrow
+    // This ensures the case only has ONE time limit
+    const existingDefendantsTomorrow = await prisma.defendant.findMany({
+      where: {
+        cases: { some: { id: caseForTomorrowCtl.id } },
+        id: { not: tomorrowCtlDefendant.id }
+      },
+      include: { charges: true }
+    });
+
+    for (const defendant of existingDefendantsTomorrow) {
+      for (const charge of defendant.charges) {
+        await prisma.charge.update({
+          where: { id: charge.id },
+          data: {
+            custodyTimeLimit: getTomorrowDate(),
+            statutoryTimeLimit: null // Remove STL if present
+          }
+        });
+      }
+      // Remove PACE clock from defendant
+      await prisma.defendant.update({
+        where: { id: defendant.id },
+        data: { paceClock: null }
+      });
+    }
 
     // Create task for tomorrow's CTL
     const tomorrowCtlDueDate = getTomorrowDate();
