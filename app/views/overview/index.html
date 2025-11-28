@@ -121,16 +121,16 @@
             </a>
           {% endif %}
 
-          {% if paceTaskCount > 0 %}
+          {% if paceClockTaskCount > 0 %}
             <a href="/tasks/shortcut/pace" class="app-overview-card app-overview-card--turquoise">
-              <span class="app-overview-card__count">{{paceTaskCount}}</span>
+              <span class="app-overview-card__count">{{paceClockTaskCount}}</span>
               <span class="app-overview-card__status">
-                {% if paceTaskCount == 1 %}
+                {% if paceClockTaskCount == 1 %}
                   task
                 {% else %}
                   tasks
                 {% endif %}
-                with PACE time limit
+                with PACE clock
               </span>
             </a>
           {% endif %}

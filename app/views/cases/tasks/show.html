@@ -160,12 +160,12 @@
           } if _case.statutoryTimeLimit,
           {
             key: {
-              text: 'PACE time limit'
+              text: 'PACE clock'
             },
             value: {
-              html: (_case.paceTimeLimit | isoDateString | govukDateTime) + ' (' + (_case.paceTimeLimit | daysUntil) + ')'
+              html: (_case.paceClock | isoDateString | govukDateTime) + ' (' + (_case.paceClock | daysUntil) + ')'
             }
-          } if _case.paceTimeLimit,
+          } if _case.paceClock,
           {
             key: {
               text: 'Urgent reason'

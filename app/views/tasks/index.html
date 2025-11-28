@@ -136,12 +136,12 @@
                     } if task.case.statutoryTimeLimit,
                     {
                       key: {
-                        text: 'PACE time limit'
+                        text: 'PACE clock'
                       },
                       value: {
-                        html: (task.case.paceTimeLimit | isoDateString | govukDateTime) + ' (' + (task.case.paceTimeLimit | daysUntil) + ')'
+                        html: (task.case.paceClock | isoDateString | govukDateTime) + ' (' + (task.case.paceClock | daysUntil) + ')'
                       }
-                    } if task.case.paceTimeLimit,
+                    } if task.case.paceClock,
                     {
                       key: {
                         text: 'Reason for marking as urgent'

@@ -89,7 +89,7 @@ module.exports = router => {
     // Count tasks by time limit type
     let ctlTaskCount = 0
     let stlTaskCount = 0
-    let paceTaskCount = 0
+    let paceClockTaskCount = 0
 
     tasks.forEach(task => {
       const severity = getTaskSeverity(task)
@@ -103,7 +103,7 @@ module.exports = router => {
       // Count by time limit type
       if (task.case.custodyTimeLimit) ctlTaskCount++
       if (task.case.statutoryTimeLimit) stlTaskCount++
-      if (task.case.paceTimeLimit) paceTaskCount++
+      if (task.case.paceClock) paceClockTaskCount++
     })
 
     // Fetch directions for cases assigned to current user (as prosecutor or paralegal officer)
@@ -202,7 +202,7 @@ module.exports = router => {
       urgentTaskCount,
       ctlTaskCount,
       stlTaskCount,
-      paceTaskCount,
+      paceClockTaskCount,
       criticallyOverdueTaskCount: tasksBySeverity['Critically overdue'].length,
       overdueTaskCount: tasksBySeverity['Overdue'].length,
       dueSoonTaskCount: tasksBySeverity['Due soon'].length,

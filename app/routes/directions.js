@@ -18,7 +18,9 @@ module.exports = router => {
   router.get('/directions/shortcut/overdue', (req, res) => {
     const currentUser = req.session.data.user
     resetFilters(req)
-    if (currentUser.role === 'Prosecutor') {
+    if (currentUser.role === 'Paralegal officer') {
+      res.redirect(`/directions?directionListFilters[paralegalOfficers][]=${currentUser.id}&directionListFilters[dateStatus][]=Overdue&directionListFilters[assignee][]=Prosecution`)
+    } else if (currentUser.role === 'Prosecutor') {
       res.redirect(`/directions?directionListFilters[prosecutor][]=${currentUser.id}&directionListFilters[dateStatus][]=Overdue&directionListFilters[assignee][]=Prosecution`)
     } else {
       res.redirect(`/directions?directionListFilters[dateStatus][]=Overdue&directionListFilters[assignee][]=Prosecution`)
@@ -28,7 +30,9 @@ module.exports = router => {
   router.get('/directions/shortcut/due-today', (req, res) => {
     const currentUser = req.session.data.user
     resetFilters(req)
-    if (currentUser.role === 'Prosecutor') {
+    if (currentUser.role === 'Paralegal officer') {
+      res.redirect(`/directions?directionListFilters[paralegalOfficers][]=${currentUser.id}&directionListFilters[dateStatus][]=Due today&directionListFilters[assignee][]=Prosecution`)
+    } else if (currentUser.role === 'Prosecutor') {
       res.redirect(`/directions?directionListFilters[prosecutor][]=${currentUser.id}&directionListFilters[dateStatus][]=Due today&directionListFilters[assignee][]=Prosecution`)
     } else {
       res.redirect(`/directions?directionListFilters[dateStatus][]=Due today&directionListFilters[assignee][]=Prosecution`)
@@ -38,10 +42,24 @@ module.exports = router => {
   router.get('/directions/shortcut/due-tomorrow', (req, res) => {
     const currentUser = req.session.data.user
     resetFilters(req)
-    if (currentUser.role === 'Prosecutor') {
+    if (currentUser.role === 'Paralegal officer') {
+      res.redirect(`/directions?directionListFilters[paralegalOfficers][]=${currentUser.id}&directionListFilters[dateStatus][]=Due tomorrow&directionListFilters[assignee][]=Prosecution`)
+    } else if (currentUser.role === 'Prosecutor') {
       res.redirect(`/directions?directionListFilters[prosecutor][]=${currentUser.id}&directionListFilters[dateStatus][]=Due tomorrow&directionListFilters[assignee][]=Prosecution`)
     } else {
       res.redirect(`/directions?directionListFilters[dateStatus][]=Due tomorrow&directionListFilters[assignee][]=Prosecution`)
+    }
+  })
+
+  router.get('/directions/shortcut/due-this-week', (req, res) => {
+    const currentUser = req.session.data.user
+    resetFilters(req)
+    if (currentUser.role === 'Paralegal officer') {
+      res.redirect(`/directions?directionListFilters[paralegalOfficers][]=${currentUser.id}&directionListFilters[dateStatus][]=Due this week&directionListFilters[assignee][]=Prosecution`)
+    } else if (currentUser.role === 'Prosecutor') {
+      res.redirect(`/directions?directionListFilters[prosecutor][]=${currentUser.id}&directionListFilters[dateStatus][]=Due this week&directionListFilters[assignee][]=Prosecution`)
+    } else {
+      res.redirect(`/directions?directionListFilters[dateStatus][]=Due this week&directionListFilters[assignee][]=Prosecution`)
     }
   })
 
@@ -233,6 +251,12 @@ module.exports = router => {
       ],
       include: {
         defendant: true,
+        notes: {
+          orderBy: {
+            createdAt: 'desc'
+          },
+          take: 1
+        },
         case: {
           include: {
             defendants: {
@@ -379,6 +403,7 @@ module.exports = router => {
       { text: 'Overdue', value: 'Overdue' },
       { text: 'Due today', value: 'Due today' },
       { text: 'Due tomorrow', value: 'Due tomorrow' },
+      { text: 'Due this week', value: 'Due this week' },
       { text: 'Due later', value: 'Due later' }
     ]
 
